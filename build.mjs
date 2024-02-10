@@ -8,8 +8,8 @@ import esbuild from "rollup-plugin-esbuild";
 import commonjs from "@rollup/plugin-commonjs";
 import nodeResolve from "@rollup/plugin-node-resolve";
 import swc from "@swc/core";
-import os from "os"
-import express from "express"
+// import os from "os"
+// import express from "express"
 
 const extensions = [".js", ".jsx", ".mjs", ".ts", ".tsx", ".cts", ".mts"];
 const PORT = 5000
@@ -143,6 +143,8 @@ for (let plug of await readdir(`./${revengePath}`)) {
 */
 
 
+// USED for local testing
+/* 
 const IPs = Object.values(os.networkInterfaces())
     .flat()
     .filter(({ family, internal }) => family === "IPv4" && !internal)
@@ -155,3 +157,4 @@ app.use(express.static('dist'))
 
 app.listen(PORT)
 console.log(`\nServed on ${IPs[0]}:${PORT}`)
+*/ 
