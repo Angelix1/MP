@@ -1,4 +1,5 @@
 import { readFile, writeFile, readdir } from "fs/promises";
+import { existsSync } from "fs";
 import { extname } from "path";
 import { createHash } from "crypto";
 
@@ -7,8 +8,12 @@ import esbuild from "rollup-plugin-esbuild";
 import commonjs from "@rollup/plugin-commonjs";
 import nodeResolve from "@rollup/plugin-node-resolve";
 import swc from "@swc/core";
+import os from "os"
+import express from "express"
 
 const extensions = [".js", ".jsx", ".mjs", ".ts", ".tsx", ".cts", ".mts"];
+const PORT = 5000
+
 
 /** @type import("rollup").InputPluginOption */
 const plugins = [
@@ -45,16 +50,21 @@ const plugins = [
             return result.code;
         },
     },
-    esbuild({ minify: true }),
+    esbuild({ minify: false }),
 ];
 
-for (let plug of await readdir("./plugins")) {
-    const manifest = JSON.parse(await readFile(`./plugins/${plug}/manifest.json`));
-    const outPath = `./dist/${plug}/index.js`;
+
+
+// Venddy
+const venddyPath = "vendetta"
+for (let plug of await readdir(`./${venddyPath}`)) {
+    const manifest = JSON.parse(await readFile(`./${venddyPath}/${plug}/manifest.json`));
+    const distro = "./dist/vendetta"
+    const outPath = `${distro}/${plug}/index.js`;
 
     try {
         const bundle = await rollup({
-            input: `./plugins/${plug}/${manifest.main}`,
+            input: `./${venddyPath}/${plug}/${manifest.main}`,
             onwarn: () => {},
             plugins,
         });
@@ -78,11 +88,70 @@ for (let plug of await readdir("./plugins")) {
         const toHash = await readFile(outPath);
         manifest.hash = createHash("sha256").update(toHash).digest("hex");
         manifest.main = "index.js";
-        await writeFile(`./dist/${plug}/manifest.json`, JSON.stringify(manifest));
+
+        await writeFile(`${distro}/${plug}/manifest.json`, JSON.stringify(manifest));
     
-        console.log(`Successfully built ${manifest.name}!`);
+        console.log(`[path: vendetta/${plug}] [VENDDY] Successfully built ${manifest.name}!`);
     } catch (e) {
         console.error("Failed to build plugin...", e);
         process.exit(1);
     }
 }
+
+/*
+const revengePath = "revenge"
+for (let plug of await readdir(`./${revengePath}`)) {
+    const manifest = JSON.parse(await readFile(`./${venddyPath}/${plug}/manifest.json`));
+    const distroKid = "./dist/revenge"
+    const outPath = `${distro}/${plug}/index.js`;
+
+    try {
+        const bundle = await rollup({
+            input: `./plugins/${plug}/${manifest.main}`,
+            onwarn: () => {},
+            plugins,
+        });
+    
+        await bundle.write({
+            file: outPath,
+            globals(id) {
+                if (id.startsWith("@revenge")) return id.substring(1).replace(/\//g, ".");
+                const map = {
+                    react: "window.React",
+                };
+
+                return map[id] || null;
+            },
+            format: "iife",
+            compact: true,
+            exports: "named",
+        });
+        await bundle.close();
+    
+        const toHash = await readFile(outPath);
+        manifest.hash = createHash("sha256").update(toHash).digest("hex");
+        manifest.main = "index.js";
+
+        await writeFile(`${distro}/${plug}/manifest.json`, JSON.stringify(manifest));
+    
+        console.log(`[VENDDY] Successfully built ${manifest.name}!`);
+    } catch (e) {
+        console.error("Failed to build plugin...", e);
+        process.exit(1);
+    }
+}
+*/
+
+
+const IPs = Object.values(os.networkInterfaces())
+    .flat()
+    .filter(({ family, internal }) => family === "IPv4" && !internal)
+    .map(({ address }) => address)
+
+
+const app = express();
+
+app.use(express.static('dist'))
+
+app.listen(PORT)
+console.log(`\nServed on ${IPs[0]}:${PORT}`)

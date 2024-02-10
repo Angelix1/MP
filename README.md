@@ -1,7 +1,4 @@
-# Vendetta Plugins Template
-This repo contains a template for creating [Vendetta](https://github.com/vendetta-mod/Vendetta) plugins.
+### Reused Vendetta Action Thing to serve the plugins for dc client mods, idk
 
-# How to install?
-Paste a plugin URL into the Plugins page of Vendetta, following a basic format of:
-
-https://`YOUR_GITHUB_USERNAME`.github.io/`REPO_NAME`/`PLUGIN_NAME`
+# Description
+- Includes a discord mobile client mod with their own respective folders

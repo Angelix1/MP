@@ -1,0 +1,14 @@
+{
+    "name": "ChaTransform 🏳️‍⚧️🏳️‍⚧️🏳️‍⚧️",
+    "description": "VISIBLE ONLY TO YOU. Trans from le chatto.",
+    "authors": [
+        {
+            "name": "Angelica",
+            "id": "692632336961110087"
+        }
+    ],
+    "main": "index.js",
+    "vendetta": {
+        "icon": "ic_legacy_username"
+    }
+}
