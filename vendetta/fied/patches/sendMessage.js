@@ -5,6 +5,7 @@ import { getAssetIDByName } from "@vendetta/ui/assets";
 import { showToast } from "@vendetta/ui/toasts";
 
 import { transform } from "../lib/index";
+import * as textModule from "../lib/module";
 
 const Messages = findByProps("sendMessage", "receiveMessage");
 
@@ -19,6 +20,11 @@ export default () => before("sendMessage", Messages, (args) => {
 	}
 	
 	if(storage?.type && ENM[storage?.type]) {
-		args[1].content = ENM[storage.type](args[1].content);
+
+		const splitters = textModule.processText(args[1].content, textModule.regexPatterns);
+
+		const modifiedCode = textModule.modifyText(splitters, "", ENM[storage.type])
+
+		args[1].content = modifiedCode;
 	}
 });

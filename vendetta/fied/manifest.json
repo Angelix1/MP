@@ -1,13 +1,14 @@
 {
-    "name": "-fied v1.0.0",
+    "name": "-fied v1.0.1",
     "description": "-fied your messages",
+    "main": "index.js",
+    "version": "1.0.1",
     "authors": [
         {
             "name": "Angelica",
             "id": "692632336961110087"
         }
     ],
-    "main": "index.js",
     "vendetta": {
         "icon": "ic_switch_accounts"
     }

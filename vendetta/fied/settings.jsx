@@ -18,6 +18,9 @@ function createDT(id, label, subLabel) {
 	return { id, label, subLabel }
 }
 
+import ChangeRow from "./components/ChangeRow"
+import updates from "./updates";
+
 const dataTypes = [
 	createDT("emoji", "Emojify your messages", "Replace punctuations with random emoji"),
 	createDT("leet", "Speak Leet", "Speak like Leet"),
@@ -36,6 +39,14 @@ const NameTypes = {
 	unset: "Disabled"
 }
 
+const enabled = getAssetIDByName("ic_radio_square_checked_24px");
+const disabled = getAssetIDByName("ic_radio_square_24px")
+const wrench = getAssetIDByName("ic_progress_wrench_24px")
+
+
+function addIcon(icon) {
+	return (<FormIcon style={{ opacity: 1 }} source={icon} />)
+}
 
 export default () => {
 	useProxy(storage)
@@ -47,6 +58,7 @@ export default () => {
 		        label={data?.label || "Placeholder Title"}
 		        subLabel={data?.subLabel || null}
 		        disabled={(data?.id == storage?.type) || false}
+		        leading={(data?.id == storage?.type) ? addIcon(enabled) : addIcon(disabled)}
 		        onPress={(ctx) => {
 		        	if(data?.id == "unset") {
 		        		storage.type = null
@@ -99,25 +111,40 @@ export default () => {
 
 	return (<>
 		<ScrollView>
-			<FormSection title="Plugin Settings">
-				<FormRow
-					label={`Type: ${
-						storage?.type ? 
-							NameTypes[storage?.type] ? 
-								NameTypes[storage?.type] : 
-							storage?.type : 
-						"Disabled" 
-					}`}
-					subLabel="Modify how the messages changes"
-					onPress={openMT}
-					trailing={
-						<TouchableOpacity onPress={openMT}>
-							<FormIcon style={{ opacity: 1 }} source={getAssetIDByName("ic_add_24px")} />
-						</TouchableOpacity>
-					}
-				/>
-				<FormDivider />
-			</FormSection>
+			<View style={{ margin: 5, padding: 10, borderRadius: 10, backgroundColor: "rgba(0, 0, 0, 0.15)" }}>
+				<FormSection title="Plugin Settings">
+					<FormRow
+						label={`Type: ${
+							storage?.type ? 
+								NameTypes[storage?.type] ? 
+									NameTypes[storage?.type] : 
+								storage?.type : 
+							"Disabled" 
+						}`}
+						subLabel="Modify how the messages changes"
+						onPress={openMT}
+						leading={<FormIcon style={{ opacity: 1 }} source={wrench} />}
+					/>
+					<FormDivider />
+				</FormSection>
+				{
+					updates && (
+					<FormSection title="Updates">
+						<View style={{ 
+							margin: 5, 
+							padding: 5,
+							borderRadius: 10,
+							backgroundColor: "rgba(0, 0, 0, 0.3)"
+						}}>
+							{
+								updates.map((data, index) => {
+									return <ChangeRow change={data} index={index} totalIndex={updates.length}/>
+								})
+							}
+						</View>
+					</FormSection>)
+				}				
+			</View>
 		</ScrollView>
 	</>);
 }
