@@ -8,7 +8,7 @@ function makeDefaults(object, defaults) {
             object[key] = {};
           makeDefaults(object[key], defaults[key]);
         } else {
-          object[key] ??= defaults[key];
+          object[key] ?? (object[key] = defaults[key]);
         }
       }
     }
