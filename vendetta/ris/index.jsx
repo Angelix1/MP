@@ -95,8 +95,10 @@ export default {
 							buttonRows.push(filtered.map((id) => {
 
 								const onPress = () => {
-									if(listOfServices[id].url) {										
-										openURL(listOfServices[id].url.replace("%s", targetURL))
+									if(listOfServices[id].url) {
+										const parsedCode = new URL(targetURL)
+
+										openURL(listOfServices[id].url.replace("%s", `${parsedCode.origin}${parsedCode.pathname}`))
 									}
 									else {
 										
