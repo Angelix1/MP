@@ -8,5 +8,12 @@
         "jsx": "react-native",
         "allowJs": true
     },
-    "include": ["plugins", "node_modules/vendetta-types"]
+    "include": [
+        "plugins", 
+        "vendetta", 
+        "revenge", 
+        "lib", 
+        "nexx_lib", 
+        "node_modules/vendetta-types"
+    ]
 }

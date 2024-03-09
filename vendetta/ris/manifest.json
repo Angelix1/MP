@@ -1,0 +1,14 @@
+{
+	"name": "Reverse Image search",
+	"description": "Lookup target image in several image search.",
+	"authors": [
+		{
+			"name": "Angelica",
+			"id": "692632336961110087"
+		}
+	],
+	"main": "index.jsx",
+	"vendetta": {
+		"icon": "search"
+	}
+}
