@@ -4,5 +4,3 @@ pnpm-lock.yaml
 yarn.lock
 package-lock.json
 test.js
-.github
-LICENSE
