@@ -1,0 +1,46 @@
+{
+  "private": true,
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "dependencies": {
+    "@nexpid/vdp-shared": "^1.0.2",
+    "@swc/helpers": "^0.5.6",
+    "axios": "^1.6.7",
+    "express": "^4.18.3"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@swc/core": "^1.4.6",
+    "esbuild": "^0.20.1",
+    "rollup": "^4.12.1",
+    "rollup-plugin-esbuild": "^6.1.1",
+    "vendetta-types": "^2.4.21"
+  },
+  "pnpm": {
+    "peerDependencyRules": {
+      "ignoreMissing": [
+        "react",
+        "react-native"
+      ]
+    }
+  },
+  "name": "multi_plugin_repo",
+  "description": "- Includes a discord mobile client mod with their own respective folders",
+  "version": "1.0.0",
+  "main": "build.mjs",
+  "directories": {
+    "lib": "lib"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Angelix1/MP.git"
+  },
+  "author": "Angelix1 | Azrae",
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/Angelix1/MP/issues"
+  },
+  "homepage": "https://github.com/Angelix1/MP#readme"
+}
