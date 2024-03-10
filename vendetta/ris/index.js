@@ -213,7 +213,8 @@ var index = {
             buttonRows.push(filtered.map(function(id) {
               const onPress = function() {
                 if (listOfServices[id].url) {
-                  openURL(listOfServices[id].url.replace("%s", targetURL));
+                  const parsedCode = new URL(targetURL);
+                  openURL(listOfServices[id].url.replace("%s", `${parsedCode.origin}${parsedCode.pathname}`));
                 } else {
                   const navigator = function() {
                     return /* @__PURE__ */ common.React.createElement(Navigator, {
