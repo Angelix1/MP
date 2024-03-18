@@ -1,6 +1,6 @@
 {
-    "name": "Custom Tags v0.0.1",
-    "description": "Shows extra tags for members.",
+    "name": "Custom Tags v1.0.0",
+    "description": "Shows extra tags for members. Fully Customizeable",
     "authors": [
         {
             "name": "Angelica",
@@ -9,6 +9,6 @@
     ],
     "main": "index.js",
     "vendetta": {
-        "icon": "ic_moderation_24px"
+        "icon": "ic_tag"
     }
 }

@@ -15,7 +15,7 @@ import express from "express"
 import { isProd } from "./config.js"
 
 const extensions = [".js", ".jsx", ".mjs", ".ts", ".tsx", ".cts", ".mts"];
-const PORT = 5000;
+const PORT = 8000;
 
 const venddyPath = "vendetta"
 const revengePath = "revenge"

@@ -14,6 +14,8 @@
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@swc/core": "^1.4.6",
     "esbuild": "^0.20.1",
+    "eslint": "^8.57.0",
+    "eslint-plugin-react": "^7.34.1",
     "rollup": "^4.12.1",
     "rollup-plugin-esbuild": "^6.1.1",
     "vendetta-types": "^2.4.21"
