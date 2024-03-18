@@ -28,9 +28,15 @@ export default function FuzzySearchPage({ url }) {
 	const [data, setData] = React.useState([])
 
 	if(Array.isArray(data) && data?.length < 1) {
-		const urx = new URL(url)
+		
+		let finalUrl = url;
+		if(storage?.toggle?.removeTracking) {
+			const parsedCode = new URL(url)
+			finalUrl = `${parsedCode.origin}${parsedCode.pathname}`;
+		}
+
 		// console.log(`${urx.origin}${urx.pathname}`)
-		getData(`${urx.origin}${urx.pathname}`).then(datax => setData(datax))
+		getData(finalUrl).then(datax => setData(datax))
 	}
 
 	return (<>

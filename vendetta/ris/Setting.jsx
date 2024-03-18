@@ -13,6 +13,18 @@ export default () => {
 
 	return (
 		<ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 38 }}>
+			<FormSection>
+				<FormRow 
+					label="Remove Telementry"
+					subLabel="Remove additional Telementry from url and site tracking"
+					trailing={
+						<FormSwitch
+							value={storage?.toggle?.removeTracking || false}
+							onValueChange={ (value) => (storage.toggle.removeTracking = value) }
+						/>
+					}
+				/>
+			</FormSection>
 			<FormSection title="Services">
 				<ReactNative.FlatList
 					data={Object.entries(storage.services)}

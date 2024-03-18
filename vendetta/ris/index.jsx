@@ -68,7 +68,10 @@ const listOfServices = {
 
 
 makeDefaults(storage, {
-	services: listOfServices
+	services: listOfServices,
+	toggle: {
+		removeTracking: false
+	}
 })
 
 const patches = [];
@@ -96,12 +99,16 @@ export default {
 
 								const onPress = () => {
 									if(listOfServices[id].url) {
-										const parsedCode = new URL(targetURL)
+										let finalUrl = targetURL;
 
-										openURL(listOfServices[id].url.replace("%s", `${parsedCode.origin}${parsedCode.pathname}`))
+										if(storage?.toggle?.removeTracking) {
+											const parsedCode = new URL(targetURL)
+											finalUrl = `${parsedCode.origin}${parsedCode.pathname}`;
+										}
+
+										openURL(listOfServices[id].url.replace("%s", finalUrl))
 									}
-									else {
-										
+									else {										
 										const navigator = () => (
 											<Navigator
 												initialRouteName="ServicePage"
