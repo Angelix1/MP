@@ -13,7 +13,7 @@ export default function Settings() {
             <FormSwitchRow
                 label="Use top role color for tag backgrounds"
                 value={storage.useRoleColor}
-                onValueChange={(v: boolean) => {
+                onValueChange={(v) => {
                     storage.useRoleColor = v;
                 }}
             />

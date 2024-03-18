@@ -15,7 +15,10 @@ import express from "express"
 import { isProd } from "./config.js"
 
 const extensions = [".js", ".jsx", ".mjs", ".ts", ".tsx", ".cts", ".mts"];
-const PORT = 5000
+const PORT = 5000;
+
+const venddyPath = "vendetta"
+const revengePath = "revenge"
 
 
 /** @type import("rollup").InputPluginOption */
@@ -53,13 +56,11 @@ const plugins = [
 			return result.code;
 		},
 	},
-	esbuild({ minify: false }),
+	esbuild({ minify: isProd ? true : false }),
 ];
 
 
-
 // Venddy
-const venddyPath = "vendetta"
 for (let plug of await readdir(`./${venddyPath}`)) {
 	const manifest = JSON.parse(await readFile(`./${venddyPath}/${plug}/manifest.json`));
 	const distro = "./dist/vendetta"
@@ -102,11 +103,10 @@ for (let plug of await readdir(`./${venddyPath}`)) {
 }
 
 /*
-const revengePath = "revenge"
 for (let plug of await readdir(`./${revengePath}`)) {
-	const manifest = JSON.parse(await readFile(`./${venddyPath}/${plug}/manifest.json`));
+	const manifest = JSON.parse(await readFile(`./${revengePath}/${plug}/manifest.json`));
 	const distroKid = "./dist/revenge"
-	const outPath = `${distro}/${plug}/index.js`;
+	const outPath = `${distroKid}/${plug}/index.js`;
 
 	try {
 		const bundle = await rollup({
@@ -135,9 +135,9 @@ for (let plug of await readdir(`./${revengePath}`)) {
 		manifest.hash = createHash("sha256").update(toHash).digest("hex");
 		manifest.main = "index.js";
 
-		await writeFile(`${distro}/${plug}/manifest.json`, JSON.stringify(manifest));
+		await writeFile(`${distroKid}/${plug}/manifest.json`, JSON.stringify(manifest));
 	
-		console.log(`[VENDDY] Successfully built ${manifest.name}!`);
+		console.log(`[Revenge] Successfully built ${manifest.name}!`);
 	} catch (e) {
 		console.error("Failed to build plugin...", e);
 		process.exit(1);
