@@ -70,6 +70,8 @@ export default function getTag(guild, channel, user) {
 				textColor = tag?.colors?.text?.hex || tag.textColor || rawColors.BRAND_500;
 			}
 
+			if(tag.name) tag.text = tag.name;
+
 			return {
 				...tag,
 				textColor,
