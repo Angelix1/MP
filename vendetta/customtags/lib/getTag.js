@@ -56,14 +56,18 @@ export default function getTag(guild, channel, user) {
 		) {
 			let backgroundColor, textColor;
 
+            // let roleColor = storage.useRoleColor ? GuildMemberStore.getMember(guild?.id, user.id)?.colorString : undefined
+            // let backgroundColor = roleColor ? roleColor : tag.backgroundColor ?? rawColors.BRAND_500
+            // let textColor = (roleColor || !tag.textColor) ? (chroma(backgroundColor).get('lab.l') < 70 ? rawColors.WHITE_500 : rawColors.BLACK_500) : tag.textColor
+
+
 			if(storage.useRoleColor) {
 				backgroundColor = GuildMemberStore.getMember(guild?.id, user.id)?.colorString;
 				textColor = chroma(backgroundColor).get('lab.l') < 70 ? rawColors.WHITE_500 : rawColors.BLACK_500;
 			}
 			else {
-				backgroundColor = tag?.backgroundColor || tag?.colors?.bg?.hex;
-				textColor = tag?.colors?.text?.hex || 
-					(chroma(backgroundColor).get('lab.l') < 70) ? rawColors.WHITE_500 : rawColors.BLACK_500;
+				backgroundColor = tag?.backgroundColor || tag?.colors?.bg?.hex || rawColors.BRAND_500;
+				textColor = tag?.colors?.text?.hex || tag.textColor || rawColors.BRAND_500;
 			}
 
 			return {
