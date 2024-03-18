@@ -1,0 +1,14 @@
+{
+    "name": "Custom Tags v0.0.1",
+    "description": "Shows extra tags for members.",
+    "authors": [
+        {
+            "name": "Angelica",
+            "id": "692632336961110087"
+        }
+    ],
+    "main": "index.js",
+    "vendetta": {
+        "icon": "ic_moderation_24px"
+    }
+}
