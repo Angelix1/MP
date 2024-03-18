@@ -34,6 +34,10 @@ export default function FuzzySearchPage({ url }) {
 			const parsedCode = new URL(url)
 			finalUrl = `${parsedCode.origin}${parsedCode.pathname}`;
 		}
+		
+		if(storage?.toggle?.encodeURL) {
+			finalUrl = encodeURIComponent(finalUrl)
+		}
 
 		// console.log(`${urx.origin}${urx.pathname}`)
 		getData(finalUrl).then(datax => setData(datax))

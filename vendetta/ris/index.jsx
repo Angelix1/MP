@@ -70,7 +70,8 @@ const listOfServices = {
 makeDefaults(storage, {
 	services: listOfServices,
 	toggle: {
-		removeTracking: false
+		removeTracking: false,
+		encodeURL: false
 	}
 })
 
@@ -104,6 +105,10 @@ export default {
 										if(storage?.toggle?.removeTracking) {
 											const parsedCode = new URL(targetURL)
 											finalUrl = `${parsedCode.origin}${parsedCode.pathname}`;
+										}
+
+										if(storage?.toggle?.encodeURL) {
+											finalUrl = encodeURIComponent(finalUrl)
 										}
 
 										openURL(listOfServices[id].url.replace("%s", finalUrl))

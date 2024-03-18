@@ -1,6 +1,6 @@
 export async function getData(url) {
 	if(url) {
-		const finalLink = `https://api-next.fuzzysearch.net/v1/url?url=${encodeURIComponent(url)}`
+		const finalLink = `https://api-next.fuzzysearch.net/v1/url?url=${url}`
 
 		const response = await fetch(finalLink, {
 			method: 'GET',
