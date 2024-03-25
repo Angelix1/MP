@@ -6,8 +6,12 @@ export function getCustomAvatar(id) {
 	if(Object.keys(storage.users)?.length > 0) {
 		const target = storage?.users[id];
 		if(target && target?.avatar) {
-			
+
+			// console.log(target)
+
 			const url = new URL(target?.avatar);
+
+			// console.log(url)
 			return url.toString()
 		}
 	}
