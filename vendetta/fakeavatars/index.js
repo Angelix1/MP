@@ -31,7 +31,7 @@ export let isEnabled = false;
 export default {
 	onLoad: async () => {
 		// console.log(hash)
-		isEnabled = true
+		// isEnabled = true
 		// console.log(isEnabled)
 		try {
 			unpatch = await patcher();
