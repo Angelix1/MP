@@ -1,0 +1,15 @@
+{
+    "name": "Fake Avatars v1.0.0",
+    "description": "(VISIBLE ONLY TO YOU) Change other's pfp",
+    "main": "index.js",
+    "version": "1.0.0",
+    "authors": [
+        {
+            "name": "Angelica",
+            "id": "692632336961110087"
+        }
+    ],
+    "vendetta": {
+        "icon": "tab-you"
+    }
+}
