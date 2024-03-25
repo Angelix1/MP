@@ -6,16 +6,8 @@ import { isEnabled } from "..";
 
 const avatarStuff = findByProps("getUserAvatarURL", "getUserAvatarSource");
 
-export default () => after("getUserAvatarURL", avatarStuff, ([{ id }, animate]) => {	
-	
-	/*
-	[
-		<USER_OBJECT>,
-	  	true,
-	  	4096 
-	]
-	*/
+export default () => after("getUserAvatarURL", avatarStuff, ([{ id }]) => {
 	if(isEnabled) {
 		return getCustomAvatar(id)
 	}
-})
+}) 

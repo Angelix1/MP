@@ -9,12 +9,13 @@ import { passIcon } from "../setting";
 import { showToast } from "@vendetta/ui/toasts";
 import { styles } from "../css";
 import { semanticColors } from "@vendetta/ui";
+import { UIElements } from "../../../lib/utility";
 
 const { 
 	ScrollView, View, Text, TouchableOpacity, TextInput, Image, Animated, 
 	FormLabel, FormIcon, FormArrow, FormRow, FormSwitch, FormSwitchRow, 
 	FormSection, FormDivider, FormInput, FormRadioRow 
-} = UIE;
+} = UIElements;
 
 const useIsFocused = findByName("useIsFocused");
 const { getUser } = findByProps('getUser');
@@ -98,8 +99,8 @@ export default function UserListPage() {
 									openDetailedData(data)
 								}}
 							/>
+							{ inx == Object.keys(storage?.users)?.length+1 ? undefined : <FormDivider/> }
 						</>)
-						{inx == Object.keys(storage?.users).length+1 ? undefined : <FormDivider/>}
 					})
 				}
 			</View>

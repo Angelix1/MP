@@ -49,7 +49,7 @@ export default {
 	},
 	onunload: () => {
 		isEnabled = false
-    	unpatch?.();
+		unpatch?.();
 	},
 	settings: settingPage
 }
