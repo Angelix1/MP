@@ -5,7 +5,7 @@ import { findByName, findByProps } from "@vendetta/metro";
 
 import UserInfo from "./UserInfo";
 import { UIE } from "../lib/lib";
-import { passIcon } from "../setting";
+import { passIcon } from "../settings";
 import { showToast } from "@vendetta/ui/toasts";
 import { styles } from "../css";
 import { semanticColors } from "@vendetta/ui";
