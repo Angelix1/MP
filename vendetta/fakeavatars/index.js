@@ -1,6 +1,6 @@
 import { makeDefaults } from "../../lib/utility";
 import { hash } from "./lib/lib";
-import settingPage from "./setting";
+import settingPage from "./settings";
 
 import getUser from "./patches/getUser";
 import getUserAvatarSource from "./patches/getUserAvatarSource";
