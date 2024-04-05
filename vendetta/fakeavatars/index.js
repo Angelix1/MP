@@ -29,14 +29,14 @@ const patcher = () => patches.forEach((x) => x());
 export let isEnabled = false;
 
 export default {
-	onLoad: async () => {
+	onLoad: () => {
 		
 		// console.log(hash)
 		isEnabled = true
 		// console.log(isEnabled)
 
 		try {
-			unpatch = await patcher();
+			unpatch = patcher();
 		} catch (e) {
 			console.error(`[Fake Avatars] Error when Loading`);
 

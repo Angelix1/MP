@@ -1,6 +1,6 @@
 {
-    "name": "Custom Tags v1.0.2",
-    "description": "Shows extra tags for members. Fully Customizeable",
+    "name": "Azzy Utils v1.0.0",
+    "description": "This is may utility plwugins, dawnt stael it",
     "authors": [
         {
             "name": "Angelica",
@@ -9,6 +9,6 @@
     ],
     "main": "index.js",
     "vendetta": {
-        "icon": "ic_tag"
+        "icon": "ic_progress_wrench_24px"
     }
 }

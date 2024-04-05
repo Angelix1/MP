@@ -12,6 +12,7 @@
         "plugins", 
         "vendetta", 
         "revenge", 
+        "angel",
         "lib", 
         "nexx_lib", 
         "node_modules/vendetta-types"

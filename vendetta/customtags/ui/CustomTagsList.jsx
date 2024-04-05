@@ -23,7 +23,8 @@ export default function CustomTagsList() {
 		if(target < 0) target = 0;
 
 		if(!storage.customTags[target]) {
-			storage.customTags[target] = { 
+			storage.customTags[target] = {
+				indexTag: target,
 				name: '' , 
 				colors: {
 					text: {
@@ -83,7 +84,7 @@ export default function CustomTagsList() {
 							<FormRow 
 								label={comp?.name}
 								trailing={<FormIcon style={{ opacity: 1 }} source={getAssetIDByName("ic_edit_24px")} />}
-								onPress={() => openRulePage(storage?.customTags?.findIndex(e => e?.name == comp?.name)) }
+								onPress={() => openRulePage(i) }
 							/>
 							{i !== storage.customTags?.length - 1 && <FormDivider />}
 						</>);

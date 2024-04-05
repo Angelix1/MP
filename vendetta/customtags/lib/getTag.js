@@ -49,6 +49,8 @@ export default function getTag(guild, channel, user) {
 		usedTags.push(...customTag)
 	}
 
+	let response; // Null
+
 	for (const tag of usedTags) {
 		if(
 			tag.condition?.(guild, channel, user) || 
@@ -72,7 +74,7 @@ export default function getTag(guild, channel, user) {
 
 			if(tag.name) tag.text = tag.name;
 
-			return {
+			response = {
 				...tag,
 				textColor,
 				backgroundColor,
@@ -80,6 +82,9 @@ export default function getTag(guild, channel, user) {
 				condition: undefined,
 				permissions: undefined
 			}
+			break;
 		}
 	}
+
+	return response;
 }

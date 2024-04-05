@@ -60,92 +60,76 @@ const plugins = [
 ];
 
 
-// Venddy
-for (let plug of await readdir(`./${venddyPath}`)) {
-	const manifest = JSON.parse(await readFile(`./${venddyPath}/${plug}/manifest.json`));
-	const distro = "./dist/vendetta"
-	const outPath = `${distro}/${plug}/index.js`;
+async function buildPlugin(NOTE, path, doMinify = true, usesKeyword = "@vendetta") {
 
-	try {
-		const bundle = await rollup({
-			input: `./${venddyPath}/${plug}/${manifest.main}`,
-			onwarn: () => {},
-			plugins,
-		});
-	
-		await bundle.write({
-			file: outPath,
-			globals(id) {
-				if (id.startsWith("@vendetta")) return id.substring(1).replace(/\//g, ".");
-				const map = {
-					react: "window.React",
-				};
+	const files = await readdir(`./${path}`);
+	for (let plug of files) {
+		const manifest = JSON.parse(await readFile(`./${path}/${plug}/manifest.json`));
+		const distro = `./dist/${path}`
+		const outPath = `${distro}/${plug}/index.js`;
 
-				return map[id] || null;
-			},
-			format: "iife",
-			compact: true,
-			exports: "named",
-		});
-		await bundle.close();
-	
-		const toHash = await readFile(outPath);
-		manifest.hash = createHash("sha256").update(toHash).digest("hex");
-		manifest.main = "index.js";
+		try {
+			const bundle = await rollup({
+				input: `./${path}/${plug}/${manifest.main}`,
+				onwarn: () => {},
+				plugins,
+			});
+		
+			await bundle.write({
+				file: outPath,
+				globals(id) {
+					if (id.startsWith(usesKeyword)) return id.substring(1).replace(/\//g, ".");
+					const map = {
+						react: "window.React",
+					};
 
-		await writeFile(`${distro}/${plug}/manifest.json`, JSON.stringify(manifest));
-	
-		console.log(`[path: vendetta/${plug}] [VENDDY] Successfully built ${manifest.name}!`);
-	} catch (e) {
-		console.error("Failed to build plugin...", e);
-		process.exit(1);
+					return map[id] || null;
+				},
+				format: "iife",
+				compact: true,
+				exports: "named",
+			});
+			await bundle.close();
+		
+			const toHash = await readFile(outPath);
+			manifest.hash = createHash("sha256").update(toHash).digest("hex");
+			manifest.main = "index.js";
+
+			await writeFile(`${distro}/${plug}/manifest.json`, JSON.stringify(manifest));
+		
+			console.log(`[path: ${path}/${plug}] [${NOTE}] Successfully built ${manifest.name}!`);
+		} catch (e) {
+			console.error("Failed to build plugin...", e);
+			process.exit(1);
+		}
 	}
+	if(files?.length) {
+		console.log(NOTE + " | Done Building")
+	} else console.log(NOTE + " | ENDED WITHOUT ANY FILES")
 }
 
+
+await buildPlugin(
+	"VENDY",
+	venddyPath,
+	isProd ? true : false,
+	"@vendetta"
+)
 /*
-for (let plug of await readdir(`./${revengePath}`)) {
-	const manifest = JSON.parse(await readFile(`./${revengePath}/${plug}/manifest.json`));
-	const distroKid = "./dist/revenge"
-	const outPath = `${distroKid}/${plug}/index.js`;
-
-	try {
-		const bundle = await rollup({
-			input: `./plugins/${plug}/${manifest.main}`,
-			onwarn: () => {},
-			plugins,
-		});
-	
-		await bundle.write({
-			file: outPath,
-			globals(id) {
-				if (id.startsWith("@revenge")) return id.substring(1).replace(/\//g, ".");
-				const map = {
-					react: "window.React",
-				};
-
-				return map[id] || null;
-			},
-			format: "iife",
-			compact: true,
-			exports: "named",
-		});
-		await bundle.close();
-	
-		const toHash = await readFile(outPath);
-		manifest.hash = createHash("sha256").update(toHash).digest("hex");
-		manifest.main = "index.js";
-
-		await writeFile(`${distroKid}/${plug}/manifest.json`, JSON.stringify(manifest));
-	
-		console.log(`[Revenge] Successfully built ${manifest.name}!`);
-	} catch (e) {
-		console.error("Failed to build plugin...", e);
-		process.exit(1);
-	}
-}
+await buildPlugin(
+	"REVENGE",
+	revengePath,
+	isProd ? true : false,
+	"@revenge"
+)
 */
 
-
+await buildPlugin(
+	"ANGEL",
+	"angel",
+	false,
+	"@vendetta"
+)
 
 if(!isProd) {
 	const IPs = Object.values(os.networkInterfaces())

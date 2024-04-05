@@ -78,6 +78,10 @@ export default function CreateRuleData({ data, index, notBuiltIn = true, builtIn
 		<ScrollView>
 			<ErrorBoundary>
 				<FormSection title="Tag Information">
+					<FormRow
+						label={`Index: ${index}`}
+						subLabel="Custom Tag Indexes"
+					/>
 					{ 
 						notBuiltIn && !builtInButEditAble ? 
 							createInputs(data, "Display Tag", "name", "Administrator", true) :
