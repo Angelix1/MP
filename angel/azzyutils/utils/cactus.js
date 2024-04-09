@@ -22,12 +22,10 @@ const yapsArray = [
 	];
 
 
-export function Cactus(event) {
-	if(event.type == "MESSAGE_CREATE") {
-		if(event?.message?.content?.length > 24 && withinChance(4)) { // This is 4% chance i hope
+export function Cactus(message) {
+	if(message?.content?.length > 24 && withinChance(4)) { // This is 4% chance i hope
 
-			const randomIndex = Math.floor(Math.random() * yapsArray.length);
-			event.message.content = `${event?.message?.content}\n\n*${yapsArray[randomIndex]}* - \`${storage.utils.cactus.name || "Angel"}\``;
-		}
+		const randomIndex = Math.floor(Math.random() * yapsArray.length);
+		message.content = `${message?.content}\n\n*${yapsArray[randomIndex]}* - \`${storage?.utils?.cactus?.name || "Angel"}\``;
 	}	
 }

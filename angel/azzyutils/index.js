@@ -10,6 +10,7 @@ import { startTyping, stopTyping } from "./utils/noTyping";
 import { beforeEdit, beforeStartEdit } from "./patches/editMessage";
 import { getUser } from "./patches/getUser";
 import { stopPlugin } from "@vendetta/plugins";
+import sendMessage from "./patches/sendMessage";
 
 makeDefaults(storage, {
 	toggle: {
@@ -59,6 +60,7 @@ patches.push(
 	beforeStartEdit,
 	beforeEdit,
 	getUser,
+	sendMessage,
 )
 
 const patcher = () => patches.forEach((x) => x());
