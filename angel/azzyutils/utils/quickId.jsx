@@ -75,7 +75,7 @@ export default function quickCopyID(component, args, actionMessage, ActionSheet)
 					buttons.splice(targetPos, 0, (<>
 						<FormRow
 							label={btn?.label}
-							subLabel={btn?.subLabel}
+							subLabel={btn?.sub}
 							onPress ={btn?.callback}
 							leading={btn?.icon && (<FormIcon style={{ opacity: 1 }} source={getAssetIDByName(btn?.icon)} />)}
 						/>

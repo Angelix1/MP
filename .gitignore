@@ -6,3 +6,5 @@ package-lock.json
 test.js
 config.js
 ./config.js
+config.js
+.eslintrc.js

@@ -1,7 +1,7 @@
 import { useProxy } from "@vendetta/storage";
-import { UIElements, numToHex, openSheet, transparentBase64 } from "../../../../lib/utility"
+import { UIElements, convert, numToHex, openSheet, transparentBase64 } from "../../../../lib/utility"
 import { storage } from "@vendetta/plugin";
-import { ReactNative } from "@vendetta/metro/common";
+import { React, ReactNative } from "@vendetta/metro/common";
 import { logger } from "@vendetta";
 import { findByName } from "@vendetta/metro";
 
@@ -9,7 +9,7 @@ import { findByName } from "@vendetta/metro";
 const { 
 	ScrollView, View, Text, TouchableOpacity, TextInput, Image, Animated, 
 	FormLabel, FormIcon, FormArrow, FormRow, FormSwitch, FormSwitchRow, 
-	FormSection, FormDivider, FormInput, FormRadioRow 
+	FormSection, FormDivider, FormInput, FormRadioRow, FormSliderRow
 } = UIElements;
 
 const CustomColorPickerActionSheet = findByName("CustomColorPickerActionSheet");
@@ -19,6 +19,16 @@ export default function ReplyAlertSetting() {
 	useProxy(storage)
 	const reply = storage.utils.replyAlert;
 
+	const [CA, setCA] = React.useState(
+		convert.toDecimal(
+			convert.hexAlphaToPercent(reply.colorAlpha) || 100)
+		)
+
+	const [GA, setGA] = React.useState(
+		convert.toDecimal(
+			convert.hexAlphaToPercent(reply.gutterAlpha) || 100)
+		)
+
 	const colorSet = () => openSheet(
 		CustomColorPickerActionSheet, {
 			color: (ReactNative.processColor(reply?.customColor) || 0),
@@ -27,11 +37,23 @@ export default function ReplyAlertSetting() {
 				
 				reply.customColor = hex
 			
-				if(storage?.debug) logger.log("Reply Alert Color", "[Changed]", hex);
+				if(storage?.debug) logger.log("Reply Alert BG Color", "[Changed]", hex);
 			}
 		}
 	);
 
+	const gutterSet = () => openSheet(
+		CustomColorPickerActionSheet, {
+			color: (ReactNative.processColor(reply?.customColor) || 0),
+			onSelect: (color) => {
+				const hex = numToHex(color)
+				
+				reply.gutterColor = hex
+			
+				if(storage?.debug) logger.log("Reply Alert Gutter Color", "[Changed]", hex);
+			}
+		}
+	);
 
 	return (<>
 		<FormRow
@@ -47,7 +69,7 @@ export default function ReplyAlertSetting() {
 		/>
 		<FormDivider />
 		<FormRow
-			label="Color"
+			label="Background Color"
 			subLabel="Click to Update"
 			onPress={colorSet}
 			trailing={
@@ -63,6 +85,46 @@ export default function ReplyAlertSetting() {
 					/>
 				</TouchableOpacity>
 			}
+		/>
+		<FormDivider />
+		<FormRow
+			label="Gutter Color"
+			subLabel="Click to Update"
+			onPress={gutterSet}
+			trailing={
+				<TouchableOpacity onPress={gutterSet}>
+					<Image 
+						source={{ uri: transparentBase64 }}
+						style={{ 
+							width: 128, 
+							height: 128,
+							borderRadius: 10, 
+							backgroundColor: (reply?.gutterColor || "#000")
+						}}
+					/>
+				</TouchableOpacity>
+			}
+		/>
+		<FormDivider />
+
+		<FormSliderRow
+			label={`Background Color Alpha: ${convert.toPercentage(CA)}%`}
+			value={CA}
+			style={{ width: "90%" }}
+			onValueChange={(v) => {
+				setCA(Number(convert.formatDecimal(v)))
+				reply.colorAlpha = convert.alphaToHex(convert.toPercentage(v));
+			}}
+		/>
+		<FormDivider />
+		<FormSliderRow
+			label={`Gutter Color Alpha: ${convert.toPercentage(GA)}%`}
+			value={GA}
+			style={{ width: "90%" }}
+			onValueChange={(v) => {
+				setGA(Number(convert.formatDecimal(v)))
+				reply.gutterAlpha = convert.alphaToHex(convert.toPercentage(v));
+			}}
 		/>
 	</>)
 }

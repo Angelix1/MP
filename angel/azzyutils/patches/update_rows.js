@@ -1,8 +1,8 @@
 import { ReactNative, moment } from "@vendetta/metro/common";
 import { after, before } from "@vendetta/patcher";
-import { ctimePatch, renderTimestamp } from "../utils/customTimestamp";
 import { storage } from "@vendetta/plugin";
 import { isEnabled } from "..";
+import { updateRowReplyAlertPatch } from "../utils/replyAlert";
 
 const { DCDChatManager } = ReactNative.NativeModules;
 
@@ -11,7 +11,7 @@ export const patchUpdateRowBefore = () => before("updateRows", DCDChatManager, (
 		let rows = JSON.parse(r[1]);
 
 		rows.forEach((row) => {		
-			ctimePatch.beforePatch(row, moment) // Custom TimeStamp
+			updateRowReplyAlertPatch(row) // ReplyAlert
 
 		})
 
@@ -25,7 +25,7 @@ export const patchUpdateRowAfter = () => after("updateRows", DCDChatManager, (r)
 		let rows = JSON.parse(r[1]);
 
 		rows.forEach((row) => {
-			ctimePatch.afterPatch(row) // Custom TimeStamp
+			updateRowReplyAlertPatch(row) // ReplyAlert
 		})	
 		
 		r[1] = JSON.stringify(rows);

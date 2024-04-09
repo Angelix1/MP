@@ -110,21 +110,6 @@ async function buildPlugin(NOTE, path, doMinify = true, usesKeyword = "@vendetta
 
 
 await buildPlugin(
-	"VENDY",
-	venddyPath,
-	isProd ? true : false,
-	"@vendetta"
-)
-/*
-await buildPlugin(
-	"REVENGE",
-	revengePath,
-	isProd ? true : false,
-	"@revenge"
-)
-*/
-
-await buildPlugin(
 	"ANGEL",
 	"angel",
 	false,

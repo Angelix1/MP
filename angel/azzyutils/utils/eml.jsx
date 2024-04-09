@@ -36,17 +36,54 @@ export default function eml_Sheet(component, args, actionMessage, ActionSheet) {
 					0
 				)
 
-				buttons.splice(position, 0, (<>
-					<FormRow
-						label="Edit Message Locally"
-						subLabel="Added by Azzy Util"
-						leading={<FormIcon style={{ opacity: 1 }} source={getAssetIDByName("ic_edit_24px")} />}								
-						onPress={() => {
-							Messages.startEditMessage(`AZZYEML-${message.channel_id}`, message.id, message.content);
-							ActionSheet.hideActionSheet()
-						}}
-					/>
-				</>))
+				const savedMsg = storage?.utils?.eml?.editedMsg?.find(m => m.id == message?.id);
+
+				if(savedMsg) {
+					buttons.splice(position, 0, (<>
+						<FormRow
+							label="Revert Locally Edited Message"
+							subLabel="Added by Azzy Util"
+							leading={<FormIcon style={{ opacity: 1 }} source={getAssetIDByName("ic_edit_24px")} />}								
+							onPress={() => {
+
+								const origin = MessageStore.getMessage(message.channel_id, message.id);
+
+								FluxDispatcher.dispatch({
+									type: "MESSAGE_UPDATE",
+									message: {
+										...origin,
+										...message,
+										content: savedMsg.content,
+										edited_timestamp: origin.editedTimestamp, 
+										mention_roles: origin.mentionRoles, 
+										mention_everyone: origin.mentionEveryone, 
+										guild_id: ChannelStore.getChannel(
+											origin.channel_id || message.channel_id
+										)?.guild_id
+									},
+									otherPluginBypass: true
+								})
+
+								storage.utils.eml.editedMsg = storage?.utils?.eml?.editedMsg?.filter(x => x.id != message.id);
+								ActionSheet.hideActionSheet()
+							}}
+						/>
+					</>))
+				} 
+				else {					
+					buttons.splice(position, 0, (<>
+						<FormRow
+							label="Edit Message Locally"
+							subLabel="Added by Azzy Util"
+							leading={<FormIcon style={{ opacity: 1 }} source={getAssetIDByName("ic_edit_24px")} />}								
+							onPress={() => {
+								Messages.startEditMessage(`AZZYEML-${message.channel_id}`, message.id, message.content);
+								ActionSheet.hideActionSheet()
+							}}
+						/>
+					</>))
+				}
+
 			})
 		})
 	}
@@ -69,6 +106,8 @@ export function eml_editMessage(args) {
 		let [channelId, messageId, msg] = args;
 
 		const origin = MessageStore.getMessage(channelId, messageId);
+
+		storage?.utils?.eml?.editedMsg.push(origin)
 		
 		FluxDispatcher.dispatch({
 			type: "MESSAGE_UPDATE",

@@ -1,9 +1,13 @@
 import { storage } from "@vendetta/plugin"
 import { useProxy } from "@vendetta/storage"
 import { UIElements } from "../../lib/utility";
-import customTimestampSetting from "./pages/utils/customTimestampSetting";
 import ReplyAlertSetting from "./pages/utils/replyAlertSetting";
 import EML from "./pages/utils/eml";
+import updates from "./update";
+import VersionChange from "../../lib/components/versionChange";
+import NoShareSetting from "./pages/utils/NoShareSetting";
+import CAT from "./pages/utils/cat";
+
 
 
 const { 
@@ -27,17 +31,22 @@ export default () => {
 
 
 	const PageChildren = [
-		createList("ctime", "Custom Timestamp", "open Custom TimeStamp Settings", null, customTimestampSetting),
-		createList("ralert", "Reply Alert", "open Reply Alert Settings", null, ReplyAlertSetting),
+		createList("cactus", "Cactus", "Toggle uhhh.. something", null, CAT),
+		createList("eml", "EML", "Toggle Edit Message Locally", null, EML),
 		createList("notype", "No Type", "Toggle No Typings", null, null),
 		createList("quickid", "QID", "Toggle Quick ID", null, null),
-		createList("noshare", "No Share", "Toggle No Share", null, null),	
-		createList("eml", "EML", "Toggle Edit Message Locally", null, EML),
+		createList("noshare", "No Share", "Toggle No Share", null, NoShareSetting),	
+		createList("ralert", "Reply Alert & Custom Mentions", "open Reply Alert Settings", null, ReplyAlertSetting),
+		createList("removeDecor", "I HATE DECORATIONS", "Toggle Remove Avatar Decoration", null, null),
 	]
 
 	return (<>
 		<ScrollView>
-			<View style={{paddingBottom: 36}}>
+			<View style={{
+				paddingBottom: 36,
+				borderRadius: 10, 
+				backgroundColor: "rgba(0, 12, 46, 0.15)"
+			}}>
 			{
 				PageChildren.map((element, i) => {				
 					return (<>
@@ -72,6 +81,25 @@ export default () => {
 				})
 			}
 			</View>
+			<FormDivider />
+			{
+				updates && (
+					<FormSection title="Updates">
+						<View style={{ 
+							margin: 5, 
+							padding: 5,
+							borderRadius: 10,
+							backgroundColor: "rgba(59, 30, 55, 0.15)"
+						}}>
+							{
+								updates.map((data, index) => {
+									return <VersionChange change={data} index={index} totalIndex={updates.length}/>
+								})
+							}
+						</View>
+					</FormSection>
+				)
+			}
 		</ScrollView>
 	</>)
 }
