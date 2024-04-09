@@ -11,7 +11,7 @@ export default function CAT() {
 			title="Name"
 			keyboardType="default"
 			placeholder="Angel"
-			value={storage?.utils?.cactus?.name || "Angel"}
+			value={storage?.utils?.cactus?.name}
 			onChange={(val) => (storage.utils.cactus.name = val.toString())}
 		/>
 	</>)
