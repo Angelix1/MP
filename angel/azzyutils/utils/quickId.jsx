@@ -80,12 +80,10 @@ export default function quickCopyID(component, args, actionMessage, ActionSheet)
 
 				customButtons.reverse()
 
-				const targetPos = position || 1;
-
 				buttons.splice(position, 1) // remove Mention Button
 
 				for(const btn of customButtons) {
-					buttons.splice(targetPos, 0, (<>
+					buttons.splice(position, 0, (<>
 						<FormRow
 							label={btn?.label}
 							subLabel={btn?.sub}

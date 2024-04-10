@@ -28,6 +28,7 @@ const update = [
 		ma(
 			"[1.0.21] Fix Cactus",
 			"[1.0.22] Fix No Share fails to find Share button",
+			"[1.0.23] Fix Quick ID removing edit message button",
 		)
 	),
 	// createList(
