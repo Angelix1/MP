@@ -31,39 +31,52 @@ export default function quickCopyID(component, args, actionMessage, ActionSheet)
 					return { label, sub, icon, callback }
 				}
 
-				let customButtons = [
-					createButton(
-						"Copy User's Id",
-						"Result: <Some ID>",
-						"ic_copy_id",
-						function () {
-							ActionSheet.hideActionSheet()
-							clipboard.setString(message?.author?.id ?? '')
-							showToast("Copied User's ID to clipboard", getAssetIDByName("toast_copy_link"))
-						}
-					),
-					createButton(
-						"Copy User's Mention",
-						"Result: <Mention>",
-						"ic_copy_id",
-						function () {
-							ActionSheet.hideActionSheet()
-							clipboard.setString(`<@${message?.author?.id ?? ''}>`)
-							showToast("Copied User's Mention to clipboard", getAssetIDByName("toast_copy_link"))
-						}
-					),
-					createButton(
-						"Copy User's Id and Mention",
-						"Result: <Some ID> <Mention>",
-						"ic_copy_id",
-						function () {
-							ActionSheet.hideActionSheet()
-							clipboard.setString(`${message?.author?.id ?? ''} <@${message?.author?.id ?? ''}>`)
-							showToast("Copied User to clipboard", getAssetIDByName("toast_copy_link"))
-						}
+				let customButtons = []
 
-					),
-				]
+				const { addID, addMention, addCombine } = storage?.utils?.quickid;
+
+				if(addID) {
+					customButtons.push(
+						createButton(
+							"Copy User's Id",
+							"Result: <Some ID>",
+							"ic_copy_id",
+							function () {
+								ActionSheet.hideActionSheet()
+								clipboard.setString(message?.author?.id ?? '')
+								showToast("Copied User's ID to clipboard", getAssetIDByName("toast_copy_link"))
+							}
+						)
+					)
+				}
+				if(addMention) {
+					customButtons.push(
+						createButton(
+							"Copy User's Mention",
+							"Result: <Mention>",
+							"ic_copy_id",
+							function () {
+								ActionSheet.hideActionSheet()
+								clipboard.setString(`<@${message?.author?.id ?? ''}>`)
+								showToast("Copied User's Mention to clipboard", getAssetIDByName("toast_copy_link"))
+							}
+						)
+					)
+				}
+				if(addCombine) {
+					customButtons.push(
+						createButton(
+							"Copy User's Id and Mention",
+							"Result: <Some ID> <Mention>",
+							"ic_copy_id",
+							function () {
+								ActionSheet.hideActionSheet()
+								clipboard.setString(`${message?.author?.id ?? ''} <@${message?.author?.id ?? ''}>`)
+								showToast("Copied User to clipboard", getAssetIDByName("toast_copy_link"))
+							}
+						)
+					)
+				}
 
 				customButtons.reverse()
 

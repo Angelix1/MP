@@ -57,6 +57,19 @@ export default function ReplyAlertSetting() {
 
 	return (<>
 		<FormRow
+			label="Toggle Force Alert"
+			subLabel="When someone replying to your message with mention disabled, this option will force ping you"
+			trailing={
+				<FormSwitch
+					value={reply?.useReplyAlert || true}
+					onValueChange={(value) => {
+						reply.useReplyAlert = value
+					}}
+				/>
+			}
+		/>
+		<FormDivider />
+		<FormRow
 			label="Use Custom Color Mentions"
 			trailing={
 				<FormSwitch
@@ -67,6 +80,48 @@ export default function ReplyAlertSetting() {
 				/>
 			}
 		/>
+		<FormDivider />
+		<FormRow
+			label="Ignore self Reply"
+			subLabel="When replying to own message, do not ping"
+			trailing={
+				<FormSwitch
+					value={reply?.ignoreSelf || false}
+					onValueChange={(value) => {
+						reply.ignoreSelf = value
+					}}
+				/>
+			}
+		/>
+		<FormDivider />
+		<FormRow 
+			label="Preview"
+			subLabel="How it looks in then chat"
+		/>
+		<View style={[{
+			flexDirection: "row", 
+			height: 80,
+			width: "100%", 
+			overflow: "hidden", 
+			borderRadius: 12,
+			marginBottom: 20,
+			marginRight: 10,
+			marginLeft: 10
+		}]}>
+			<View style={{ 
+				width: "2%",
+				backgroundColor: `${reply?.gutterColor}${convert.alphaToHex(convert.toPercentage(GA))}`,
+			}}/>
+			<View style={{ 
+				flex: 1,
+				backgroundColor: `${reply?.customColor}${convert.alphaToHex(convert.toPercentage(CA))}`,
+				justifyContent: 'center', 
+				alignItems: 'center',
+			}}>
+				<Text style={{ fontSize: 20, color: "#FFFFFF" }}> Example White Text </Text>
+				<Text style={{ fontSize: 20, color: "#000000" }}> Example Black Text </Text>									
+			</View>
+		</View>
 		<FormDivider />
 		<FormRow
 			label="Background Color"

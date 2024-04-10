@@ -12,12 +12,26 @@ export const selfId = UserStore?.getCurrentUser?.()?.id
 
 export function replyAlertPatch(event) {
 	if(event.type == "MESSAGE_CREATE") {
-		// console.log(event)
-		if(
-			event.message?.referenced_message?.author?.id == selfId ||
-			event.message?.mentions?.some(e => e?.id === selfId )
-		) {
-			event.message.mentions.push({ id: selfId })
+		
+		const check1 = (event?.message?.referenced_message?.author?.id == selfId);
+		const check2 = event?.message?.mentions?.some(e => e?.id === selfId );
+
+		if(check1 || check2) {
+			
+			if(event?.message?.author?.id != selfId) { 
+				event.message.mentions.push({ id: selfId })
+			} 
+			else {
+				
+				// if ignoreSelf option is false, ping
+				// (not using ! cuz this prefix, will says false if it null or undefined, need it to be explicit)
+
+				if(storage?.utils?.replyAlert?.ignoreSelf == false) { 
+					event.message.mentions.push({ id: selfId })
+				}
+				
+			}
+			
 		}
 	}
 }

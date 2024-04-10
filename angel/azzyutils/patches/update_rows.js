@@ -3,6 +3,7 @@ import { after, before } from "@vendetta/patcher";
 import { storage } from "@vendetta/plugin";
 import { isEnabled } from "..";
 import { updateRowReplyAlertPatch } from "../utils/replyAlert";
+import { updateRowTextMod } from "../utils/textMod";
 
 const { DCDChatManager } = ReactNative.NativeModules;
 
@@ -12,6 +13,7 @@ export const patchUpdateRowBefore = () => before("updateRows", DCDChatManager, (
 
 		rows.forEach((row) => {		
 			updateRowReplyAlertPatch(row) // ReplyAlert
+			// updateRowTextMod(row) // Text Color Mod
 
 		})
 

@@ -32,7 +32,10 @@ export default function eml_Sheet(component, args, actionMessage, ActionSheet) {
 				if (!buttons) return comp;
 
 				const position = Math.max(
-					buttons.findIndex((x) => x?.props?.message === i18n?.Messages?.MESSAGE_ACTION_REPLY),
+					buttons.findIndex((x) => (
+						x?.props?.message === i18n?.Messages?.MESSAGE_ACTION_REPLY || 
+						x?.props?.label === i18n?.Messages?.MESSAGE_ACTION_REPLY 
+					)),
 					0
 				)
 

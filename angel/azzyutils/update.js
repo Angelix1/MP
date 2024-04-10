@@ -17,14 +17,25 @@ const update = [
 	),
 	createList(
 		"1.0.2",
-		null,
 		ma(
-			"Remove Custom Timestamp"
+			"[1.0.22] Setting for Quick Id",
+			"[1.0.22] Option to toggle Force alert",
+			"[1.0.22] Preview for ReplyAlert"
 		),
 		ma(
-			"[1.0.21] Fix Cactus"
+			"[1.0.2] Remove Custom Timestamp",
+		),
+		ma(
+			"[1.0.21] Fix Cactus",
+			"[1.0.22] Fix No Share fails to find Share button",
 		)
-	),	
+	),
+	// createList(
+	// 	"1.0.3",
+	// 	ma(
+	// 		""
+	// 	)
+	// ),	
 ]
 
 

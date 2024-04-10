@@ -27,12 +27,19 @@ makeDefaults(storage, {
 		cactus: {
 			name: "",
 		},
+		quickid: {
+			addID: false,
+			addMention: false,
+			addCombine: false
+		},
 		replyAlert: {
 			customColor: "#000",
 			gutterColor: "#FFF",
 			colorAlpha: "33",
 			gutterAlpha: "33",
-			useCustomColor: false
+			useReplyAlert: true,
+			useCustomColor: false,
+			ignoreSelf: false
 		},
 		eml: {
 			logEdit: false,

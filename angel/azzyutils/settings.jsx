@@ -7,6 +7,7 @@ import updates from "./update";
 import VersionChange from "../../lib/components/versionChange";
 import NoShareSetting from "./pages/utils/NoShareSetting";
 import CAT from "./pages/utils/cat";
+import QuickIdSetting from "./pages/utils/quickIdSetting";
 
 
 
@@ -34,10 +35,10 @@ export default () => {
 		createList("cactus", "Cactus", "Toggle uhhh.. something", null, CAT),
 		createList("eml", "EML", "Toggle Edit Message Locally", null, EML),
 		createList("notype", "No Type", "Toggle No Typings", null, null),
-		createList("quickid", "QID", "Toggle Quick ID", null, null),
+		createList("quickid", "QID", "Toggle Quick ID Setting", null, QuickIdSetting),
 		createList("noshare", "No Share", "Toggle No Share", null, NoShareSetting),	
-		createList("ralert", "Reply Alert & Custom Mentions", "open Reply Alert Settings", null, ReplyAlertSetting),
-		createList("removeDecor", "I HATE DECORATIONS", "Toggle Remove Avatar Decoration", null, null),
+		createList("ralert", "Reply Alert & Custom Mentions", "Toggle Reply Alert Settings", null, ReplyAlertSetting),
+		createList("removeDecor", "I HATE AVATAR DECORATIONS", "Toggle Remove Avatar Decoration", null, null),
 	]
 
 	return (<>

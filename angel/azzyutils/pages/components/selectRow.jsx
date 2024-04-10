@@ -14,3 +14,16 @@ export function SelectRow({ label, subLabel, selected, onPress }) {
         />
     )
 }
+/*
+
+modes.map(({ label, key, renderExtra }, i) => (<>
+    <SelectRow 
+        label={label} 
+        subLabel={renderTimestamp(moment(), key)} 
+        selected={storage.selected === key} 
+        onPress={() => storage.selected = key} 
+    />
+        {renderExtra && renderExtra(storage.selected === key)}
+        {i !== modes.length - 1 && <FormDivider />}
+</>)
+*/

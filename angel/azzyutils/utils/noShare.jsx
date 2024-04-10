@@ -26,8 +26,12 @@ export default function noShare(component, args, actionMessage, ActionSheet) {
 
 					const buttonRows = res.props.children.props.children;
 
+					// console.log(buttonRows)
+
 					const position = Math.max(
-						buttonRows.findIndex((x) => x?.props?.message === i18n?.Messages?.SHARE),
+						buttonRows.findIndex((x) => (
+							x?.props?.label === i18n?.Messages?.SHARE || x?.props?.label === "Share"
+						)),
 						0
 					)
 					const leButton = (
@@ -56,17 +60,23 @@ export default function noShare(component, args, actionMessage, ActionSheet) {
 						/>
 					)
 
+					const arr = [leButton]
+
+					if(storage.utils.noshare.addSaveImage) {
+						arr.push(saveButton)
+					}
+
 
 					if(buttonRows) {				
 						if(position >= 0) {
 							buttonRows.splice(position, 1) // remove Share Button, Hoepfully
 							
-							for(const b of [leButton, saveButton]) {
+							for(const b of arr) {
 								buttonRows.splice(position, 0, b)
 							}
 						}
 						else {
-							buttonRows.push(leButton, saveButton)
+							buttonRows.push(...arr)
 						}
 					}
 				})
