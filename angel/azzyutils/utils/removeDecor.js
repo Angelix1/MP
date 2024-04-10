@@ -1,6 +1,8 @@
 // import { findByName, findByStoreName } from "@vendetta/metro";
 // import { after, instead } from "@vendetta/patcher";
 
+import { storage } from "@vendetta/plugin";
+
 
 // const UserStore = findByStoreName('UserStore');
 // const ImageResolver = findByProps('getAvatarDecorationURL', 'default');
