@@ -28,12 +28,10 @@ export default function noShare(component, args, actionMessage, ActionSheet) {
 
 					// console.log(buttonRows)
 
-					const position = Math.max(
-						buttonRows.findIndex((x) => (
-							x?.props?.label === i18n?.Messages?.SHARE || x?.props?.label === "Share"
-						)),
-						0
-					)
+					const position = buttonRows.findIndex((x) => (
+						x?.props?.label === i18n?.Messages?.SHARE || x?.props?.label === "Share"
+					))
+					
 					const leButton = (
 						<FormRow
 							label="Copy Image Link"

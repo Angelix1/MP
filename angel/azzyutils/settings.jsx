@@ -48,6 +48,19 @@ export default () => {
 				borderRadius: 10, 
 				backgroundColor: "rgba(0, 12, 46, 0.15)"
 			}}>
+			<FormRow
+				label="Debug"
+				subLabel="enable console logging"
+				trailing={
+					<FormSwitch
+						value={storage.debug}
+						onValueChange={(value) => {
+							storage.debug = value
+						}}
+					/>
+				}
+			/>
+			<FormDivider/>
 			{
 				PageChildren.map((element, i) => {				
 					return (<>

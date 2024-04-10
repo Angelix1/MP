@@ -22,10 +22,15 @@ export default function quickCopyID(component, args, actionMessage, ActionSheet)
 				const buttons = findInReactTree(comp, (x) => x?.[0]?.type?.name === "ButtonRow");
 				if (!buttons) return comp;
 
-				const position = Math.max(
-					buttons.findIndex((x) => x?.props?.message === i18n?.Messages?.MENTION),
-					0
-				)
+				const position = buttons.findIndex((x) => (
+					x?.props?.message === i18n?.Messages?.MENTION ||
+					x?.props?.label === i18n?.Messages?.MENTION
+				))
+
+				if(storage.debug) {
+					console.log(buttons)
+					console.log("Position => " + position)
+				}
 
 				function createButton(label, sub, icon, callback) {
 					return { label, sub, icon, callback }
@@ -78,19 +83,28 @@ export default function quickCopyID(component, args, actionMessage, ActionSheet)
 					)
 				}
 
-				customButtons.reverse()
-
-				buttons.splice(position, 1) // remove Mention Button
+				customButtons.reverse();
+				
+				if(position >= 0) {
+					buttons.splice(position, 1) // remove Mention Button
+				}
 
 				for(const btn of customButtons) {
-					buttons.splice(position, 0, (<>
+					const newButton = (<>
 						<FormRow
 							label={btn?.label}
 							subLabel={btn?.sub}
 							onPress ={btn?.callback}
 							leading={btn?.icon && (<FormIcon style={{ opacity: 1 }} source={getAssetIDByName(btn?.icon)} />)}
 						/>
-					</>))
+					</>)
+
+					if(position >= 0) {
+						buttons.splice(position, 0, newButton)
+					} 
+					else {
+						buttons.push(newButton)
+					}
 				}
 			})
 		})
