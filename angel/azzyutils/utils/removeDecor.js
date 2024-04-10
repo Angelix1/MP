@@ -6,7 +6,7 @@
 // const ImageResolver = findByProps('getAvatarDecorationURL', 'default');
 
 export function removeDecorGetUser(user) {
-	if(user?.avatarDecorationData) {
+	if(user?.avatarDecorationData && storage?.toggle?.removeDecor) {
 		user.avatarDecorationData = null;
 	}	
 	return user	

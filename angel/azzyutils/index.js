@@ -62,8 +62,6 @@ patches.push(
 	fluxDispatch,
 	patchUpdateRowBefore,
 	patchUpdateRowAfter,
-	startTyping,
-	stopTyping,
 	beforeStartEdit,
 	beforeEdit,
 	getUser,
@@ -78,7 +76,10 @@ const unLoadDatas = () => {
 
 export default {
 	onLoad: () => {
-		isEnabled = true		
+		isEnabled = true
+		if(storage?.toggle?.notype) {	
+			patches.push(startTyping, stopTyping)
+		}
 		unpatch = patcher()?.catch(err => {
 			console.log("AZZYUTIL, Crash On Load")
 			console.log(err)
