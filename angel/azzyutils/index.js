@@ -37,7 +37,7 @@ makeDefaults(storage, {
 			gutterColor: "#FFF",
 			colorAlpha: "33",
 			gutterAlpha: "33",
-			useReplyAlert: true,
+			useReplyAlert: false,
 			useCustomColor: false,
 			ignoreSelf: false
 		},

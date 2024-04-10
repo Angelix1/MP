@@ -61,7 +61,7 @@ export default function ReplyAlertSetting() {
 			subLabel="When someone replying to your message with mention disabled, this option will force ping you"
 			trailing={
 				<FormSwitch
-					value={reply?.useReplyAlert || true}
+					value={reply?.useReplyAlert || false}
 					onValueChange={(value) => {
 						reply.useReplyAlert = value
 					}}
