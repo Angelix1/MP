@@ -37,7 +37,7 @@ export default () => {
 		createList("notype", "No Type", "Toggle No Typings", null, null),
 		createList("quickid", "QID", "Toggle Quick ID Setting", null, QuickIdSetting),
 		createList("noshare", "No Share", "Toggle No Share", null, NoShareSetting),	
-		createList("ralert", "Reply Alert & Custom Mentions", "Toggle Reply Alert Settings", null, ReplyAlertSetting),
+		createList("ralert", "Reply Alert & Custom Mentions", "Toggle Reply Alert & Custom Mentions Settings", null, ReplyAlertSetting),
 		createList("removeDecor", "I HATE AVATAR DECORATIONS", "Toggle Remove Avatar Decoration", null, null),
 	]
 
