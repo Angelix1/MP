@@ -24,6 +24,7 @@ const update = [
 		),
 		ma(
 			"[1.0.2] Remove Custom Timestamp",
+			"[1.0.24] EML will wipe its log when onunload and revert every message its edit",
 		),
 		ma(
 			"[1.0.21] Fix Cactus",

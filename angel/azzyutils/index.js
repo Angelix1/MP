@@ -11,6 +11,7 @@ import { beforeEdit, beforeStartEdit } from "./patches/editMessage";
 import { getUser } from "./patches/getUser";
 import { stopPlugin } from "@vendetta/plugins";
 import sendMessage from "./patches/sendMessage";
+import { FluxDispatcher } from "@vendetta/metro/common";
 
 makeDefaults(storage, {
 	toggle: {
@@ -71,7 +72,15 @@ patches.push(
 const patcher = () => patches.forEach((x) => x());
 
 const unLoadDatas = () => {
-	storage.utils.eml.editedMsg = [];	
+	storage.utils.eml.editedMsg.forEach(savedMsg => {
+		FluxDispatcher.dispatch({
+			type: "MESSAGE_UPDATE",
+			message: savedMsg,
+			otherPluginBypass: true
+		})
+	})
+
+	storage.utils.eml.editedMsg = [];
 }
 
 export default {
