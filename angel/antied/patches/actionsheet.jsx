@@ -53,7 +53,7 @@ export default () => before("openLazy", ActionSheet, ([component, args, actionMe
 
 							const DAN = regexEscaper(Edited)
 
-							const regexPattern = new RegExp(`(?:(?:\\s${DAN}\\s\\(<t:\\d+:[tTdDfFR]>\\)\\n{2})|(?:(?:\\s\\(<t:\\d+:[tTdDfFR]>\\) ${DAN}\\n{2})))`, "gm");
+							const regexPattern = new RegExp(`(?:(?:\\s${DAN}(\\s\\(<t:\\d+:[tTdDfFR]>\\))?\\n{2})|(?:(?:\\s\\(<t:\\d+:[tTdDfFR]>\\) ${DAN}\\n{2})))`, "gm");
 							const lats = message?.content?.split(regexPattern);
 
 							if(storage.debug) {

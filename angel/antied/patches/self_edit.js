@@ -11,7 +11,7 @@ export default () => before('startEditMessage', Message, (args) => {
 
 	const DAN = regexEscaper(Edited)
 
-	const regexPattern = new RegExp(`(?:(?:\\s${DAN}\\s\\(<t:\\d+:[tTdDfFR]>\\)\\n{2})|(?:(?:\\s\\(<t:\\d+:[tTdDfFR]>\\) ${DAN}\\n{2})))`, "gm");
+	const regexPattern = new RegExp(`(?:(?:\\s${DAN}(\\s\\(<t:\\d+:[tTdDfFR]>\\))?\\n{2})|(?:(?:\\s\\(<t:\\d+:[tTdDfFR]>\\) ${DAN}\\n{2})))`, "gm");
 
 	const [channelId, messageId, msg] = args;
 	const lats = msg.split(regexPattern);
