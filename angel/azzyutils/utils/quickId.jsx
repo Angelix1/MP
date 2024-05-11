@@ -3,11 +3,10 @@ import { storage } from "@vendetta/plugin";
 import { getAssetIDByName } from "@vendetta/ui/assets";
 import { showToast } from "@vendetta/ui/toasts";
 import { findInReactTree } from "@vendetta/utils";
-import { addIcon } from "../../../lib/misc";
-import { UIElements } from "../../../lib/utility";
 import { after } from "@vendetta/patcher";
+import { findByProps } from "@vendetta/metro";
 
-const { FormRow, FormIcon } = UIElements
+const { ActionSheetRow } = findByProps("ActionSheetRow");
 
 export default function quickCopyID(component, args, actionMessage, ActionSheet) {
 
@@ -19,13 +18,13 @@ export default function quickCopyID(component, args, actionMessage, ActionSheet)
 			const unpatch = after("default", instance, (_, comp) => {
 				React.useEffect(() => () => { unpatch() }, []);
 
-				const buttons = findInReactTree(comp, (x) => x?.[0]?.type?.name === "ButtonRow");
+				const buttons = findInReactTree(comp, c => c?.find?.(child => child?.props?.label == i18n?.Messages?.MENTION))
 				if (!buttons) return comp;
-
-				const position = buttons.findIndex((x) => (
-					x?.props?.message === i18n?.Messages?.MENTION ||
-					x?.props?.label === i18n?.Messages?.MENTION
-				))
+				
+				const position = Math.max(
+					buttons.findIndex((x) => x?.props?.label == i18n?.Messages?.MENTION), 
+					buttons.length - 1
+				);
 
 				if(storage.debug) {
 					console.log(buttons)
@@ -91,11 +90,11 @@ export default function quickCopyID(component, args, actionMessage, ActionSheet)
 
 				for(const btn of customButtons) {
 					const newButton = (<>
-						<FormRow
+						<ActionSheetRow
 							label={btn?.label}
 							subLabel={btn?.sub}
-							onPress ={btn?.callback}
-							leading={btn?.icon && (<FormIcon style={{ opacity: 1 }} source={getAssetIDByName(btn?.icon)} />)}
+							icon={btn?.icon && <ActionSheetRow.Icon source={getAssetIDByName(btn?.icon)}/>}
+							onPress={btn?.callback}
 						/>
 					</>)
 

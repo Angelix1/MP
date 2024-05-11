@@ -8,8 +8,9 @@ import VersionChange from "../../lib/components/versionChange";
 import NoShareSetting from "./pages/utils/NoShareSetting";
 import CAT from "./pages/utils/cat";
 import QuickIdSetting from "./pages/utils/quickIdSetting";
+import { findByName } from "@vendetta/metro";
 
-
+// const HelpMessage = findByName("HelpMessage");
 
 const { 
 	ScrollView, View, Text, TouchableOpacity, TextInput, Image, Animated, 
@@ -48,6 +49,7 @@ export default () => {
 				borderRadius: 10, 
 				backgroundColor: "rgba(0, 12, 46, 0.15)"
 			}}>
+			{/*<HelpMessage messageType={0}>"This Plugin development is moved to new Repository"</HelpMessage>*/}
 			<FormRow
 				label="Debug"
 				subLabel="enable console logging"

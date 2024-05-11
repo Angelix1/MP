@@ -32,12 +32,17 @@ const update = [
 			"[1.0.23] Fix Quick ID removing edit message button",
 		)
 	),
-	// createList(
-	// 	"1.0.3",
-	// 	ma(
-	// 		""
-	// 	)
-	// ),	
+	createList(
+		"1.0.3",
+		null,
+		ma(
+			"Update EML, QID buttons"
+		),
+		ma(
+			"Fixed EML button fails to append under Reply Button",
+			"Fixed QID buttons fails to append to a correct place",
+		)
+	),	
 ]
 
 
