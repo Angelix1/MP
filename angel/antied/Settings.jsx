@@ -1,10 +1,9 @@
-import { UIElements } from '../../lib/utility';
-
 import { constants, React, stylesheet } from "@vendetta/metro/common";
 import { findByName } from '@vendetta/metro';
 import { useProxy } from "@vendetta/storage";
 import { storage } from "@vendetta/plugin";
 import { semanticColors } from "@vendetta/ui";
+
 
 import PatchesComponent from './components/patches';
 import TextComponent from './components/texts';
@@ -13,6 +12,9 @@ import TimestampComponent from './components/timestamp';
 import ColorPickComponent from './components/colorpick';
 import IgnoreListComponent from './components/ignorelist';
 import CustomizationComponent from './components/customize';
+
+import { UIElements } from '../../lib/utility';
+import updates from "./update";
 
 const { FormSwitch, FormSection, FormRow, ScrollView, View, FormDivider, Animated } = UIElements;
 
