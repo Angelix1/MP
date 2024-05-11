@@ -15,6 +15,7 @@ import CustomizationComponent from './components/customize';
 
 import { UIElements } from '../../lib/utility';
 import updates from "./update";
+import VersionChange from "../../lib/components/versionChange";
 
 const { FormSwitch, FormSection, FormRow, ScrollView, View, FormDivider, Animated } = UIElements;
 
