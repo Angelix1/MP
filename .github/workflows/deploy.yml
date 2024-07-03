@@ -42,9 +42,7 @@ jobs:
               uses: peaceiris/actions-gh-pages@v3
               with:
                   github_token: ${{ secrets.GITHUB_TOKEN }}
-                  publish_dir: |
-                      ./dist
-                      ./debug
+                  publish_dir: ./dist
                   # Makes it so the md files in the previous step get processed by GitHub Pages
                   enable_jekyll: true
                   # This creates the CNAME file required to host GitHub Pages on a custom domain

@@ -109,7 +109,7 @@ async function buildPlugin(NOTE, path, distro, plugins, usesKeyword = "@vendetta
 
 // Build Plugin
 // Debug
-await buildPlugin("DEBUG", "angel", "./debug/angel", [...commonPlugins, nonMinifyPlugin], "@vendetta");
+await buildPlugin("DEBUG", "angel", "./dist/debug/angel", [...commonPlugins, nonMinifyPlugin], "@vendetta");
 console.log('\n')
 // Prod
 await buildPlugin("PRODUCTION", "angel", "./dist/angel", [...commonPlugins, minifyPlugin], "@vendetta");
