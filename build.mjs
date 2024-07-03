@@ -1,5 +1,4 @@
-import { readFile, writeFile, readdir } from "fs/promises";
-import { existsSync } from "fs";
+import { readFile, writeFile, readdir, mkdir } from "fs/promises";
 import { extname } from "path";
 import { createHash } from "crypto";
 
@@ -9,20 +8,15 @@ import commonjs from "@rollup/plugin-commonjs";
 import nodeResolve from "@rollup/plugin-node-resolve";
 import swc from "@swc/core";
 
-import os from "os"
-import express from "express"
+import os from "os";
+import express from "express";
 
-import { isProd } from "./config.js"
+import { isProd } from "./config.js";
 
 const extensions = [".js", ".jsx", ".mjs", ".ts", ".tsx", ".cts", ".mts"];
 const PORT = 8000;
 
-const venddyPath = "vendetta"
-const revengePath = "revenge"
-
-
-/** @type import("rollup").InputPluginOption */
-const plugins = [
+const commonPlugins = [
 	nodeResolve(),
 	commonjs(),
 	{
@@ -56,18 +50,20 @@ const plugins = [
 			return result.code;
 		},
 	},
-	esbuild({ minify: isProd ? true : false }),
 ];
 
+const minifyPlugin = esbuild({ minify: true });
+const nonMinifyPlugin = esbuild({ minify: false });
 
-async function buildPlugin(NOTE, path, doMinify = true, usesKeyword = "@vendetta") {
-
+async function buildPlugin(NOTE, path, distro, plugins, usesKeyword = "@vendetta") {
 	const files = await readdir(`./${path}`);
 	for (let plug of files) {
 		const manifest = JSON.parse(await readFile(`./${path}/${plug}/manifest.json`));
-		const distro = `./dist/${path}`
 		const outPath = `${distro}/${plug}/index.js`;
 
+		// await readdir("./debug").catch(() => mkdir("./debug"))
+		// await readdir("./dist").catch(() => mkdir("./dist"))
+		// console.log(manifest)
 		try {
 			const bundle = await rollup({
 				input: `./${path}/${plug}/${manifest.main}`,
@@ -104,30 +100,35 @@ async function buildPlugin(NOTE, path, doMinify = true, usesKeyword = "@vendetta
 		}
 	}
 	if(files?.length) {
-		console.log(NOTE + " | Done Building")
-	} else console.log(NOTE + " | ENDED WITHOUT ANY FILES")
+		console.log(NOTE + " | Done Building");
+	} else {
+		console.log(NOTE + " | ENDED WITHOUT ANY FILES");
+	}
 }
 
 
-await buildPlugin(
-	"ANGEL",
-	"angel",
-	false,
-	"@vendetta"
-)
+// Build Plugin
+// Debug
+await buildPlugin("DEBUG", "angel", "./debug/angel", [...commonPlugins, nonMinifyPlugin], "@vendetta");
+console.log('\n')
+// Prod
+await buildPlugin("PRODUCTION", "angel", "./dist/angel", [...commonPlugins, minifyPlugin], "@vendetta");
 
-if(!isProd) {
+
+// Serve if Local
+if (!isProd) {
 	const IPs = Object.values(os.networkInterfaces())
 		.flat()
 		.filter(({ family, internal }) => family === "IPv4" && !internal)
-		.map(({ address }) => address)
-	
+		.map(({ address }) => address);
+
 	const app = express();
 
-	app.use(express.static('dist'))
+	app.use(express.static('dist'));
+	app.use(express.static('debug'));
 
-	app.listen(PORT)	
-	console.log(`\nServed on ${IPs[0]}:${PORT}`)
+	app.listen(PORT);
+	console.log(`\nServed on ${IPs[0]}:${PORT}`);
 
-	app.get("*", (req, res) => console.log(req?.url))
+	app.get("*", (req, res) => console.log(req?.url));
 }

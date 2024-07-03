@@ -96,7 +96,7 @@ const styles = stylesheet.createThemedStyleSheet({
 	}
 });
 
-export default () => {  
+export default function SettingPage() {  
 	useProxy(storage);
 
 	const [animation] = React.useState(new Animated.Value(0));

@@ -1,14 +1,14 @@
 {
-    "name": "Rairof Loves Cats v1.2.4",
-    "description": "Keeps deleted messages and logs edited messages, until you restart/reloads the app",
-    "authors": [
-      {
-        "name": "Angelica",
-        "id": "692632336961110087"
-      }
-    ],
+    "name":"Rairof Loves Cats v1.2.4",
+    "description":"Keeps deleted messages and logs edited messages, until you restart/reloads the app",
     "main": "index.jsx",
+    "authors": [
+        {
+            "name": "Angelica",
+            "id": "692632336961110087"
+        }
+    ],
     "vendetta": {
-        "icon": "ic_edit_24px"
+    	"icon":"ic_edit_24px"
     }
 }

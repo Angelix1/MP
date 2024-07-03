@@ -1,5 +1,4 @@
 import { makeDefaults } from "../../lib/utility";
-import Settings from "./Settings";
 
 import fluxDispatchPatch from "./patches/flux_dispatch";
 import selfEditPatch from "./patches/self_edit";
@@ -8,12 +7,13 @@ import createMessageRecord from "./patches/createMessageRecord";
 import messageRecordDefault from "./patches/messageRecordDefault";
 import updateMessageRecord from "./patches/updateMessageRecord";
 
-import sillyPatch from "./stoel/patch";
+import { default as sillyPatch } from "./stoel/patch";
 
 import { FluxDispatcher } from "@vendetta/metro/common";
 import { storage } from "@vendetta/plugin";
 import { findByProps } from '@vendetta/metro';
 import actionsheet from "./patches/actionsheet";
+import SettingPage from "./Settings";
 
 const ChannelMessages = findByProps("_channelMessages");
 
@@ -104,5 +104,5 @@ export default {
 			}
 		}
 	},
-	settings: Settings
+	settings: SettingPage
 }
