@@ -16,6 +16,8 @@ import { isProd } from "./config.js";
 const extensions = [".js", ".jsx", ".mjs", ".ts", ".tsx", ".cts", ".mts"];
 const PORT = 8000;
 
+const stripVersions = (str) => str.replace(/\s?v\d+.\d+.\w+/, "");
+
 const commonPlugins = [
 	nodeResolve(),
 	commonjs(),
@@ -55,7 +57,7 @@ const commonPlugins = [
 const minifyPlugin = esbuild({ minify: true });
 const nonMinifyPlugin = esbuild({ minify: false });
 
-async function buildPlugin(NOTE, path, distro, plugins, usesKeyword = "@vendetta") {
+async function buildPlugin(isDebug = false, NOTE, path, distro, plugins, usesKeyword = "@vendetta") {
 	const files = await readdir(`./${path}`);
 	for (let plug of files) {
 		const manifest = JSON.parse(await readFile(`./${path}/${plug}/manifest.json`));
@@ -91,9 +93,13 @@ async function buildPlugin(NOTE, path, distro, plugins, usesKeyword = "@vendetta
 			manifest.hash = createHash("sha256").update(toHash).digest("hex");
 			manifest.main = "index.js";
 
+			if(isDebug) {
+				manifest.name = `[DEBUG] ${stripVersions(manifest.name)}`;
+			}
+
 			await writeFile(`${distro}/${plug}/manifest.json`, JSON.stringify(manifest));
 		
-			console.log(`[path: ${path}/${plug}] [${NOTE}] Successfully built ${manifest.name}!`);
+			console.log(`[${isDebug ? "debug/": ""}${path}/${plug}] [${NOTE}] Successfully built ${manifest.name}!`);
 		} catch (e) {
 			console.error("Failed to build plugin...", e);
 			process.exit(1);
@@ -109,10 +115,10 @@ async function buildPlugin(NOTE, path, distro, plugins, usesKeyword = "@vendetta
 
 // Build Plugin
 // Debug
-await buildPlugin("DEBUG", "angel", "./dist/debug/angel", [...commonPlugins, nonMinifyPlugin], "@vendetta");
+await buildPlugin(true, "DEBUG", "angel", "./dist/debug/angel", [...commonPlugins, nonMinifyPlugin], "@vendetta");
 console.log('\n')
 // Prod
-await buildPlugin("PRODUCTION", "angel", "./dist/angel", [...commonPlugins, minifyPlugin], "@vendetta");
+await buildPlugin(false, "PRODUCTION", "angel", "./dist/angel", [...commonPlugins, minifyPlugin], "@vendetta");
 
 
 // Serve if Local
