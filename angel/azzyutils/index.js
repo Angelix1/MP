@@ -61,7 +61,8 @@ makeDefaults(storage, {
 		customRoleIcon: {
 			name: "BlobCatSip",
 			source: 'https://cdn.discordapp.com/role-icons/1222207470714486825/bc3ef24c3f220155f90e55cc0cb0d0cf.png?size=512',
-			size: 18
+			size: 18,
+			showOthers: false,
 		},
 		customClan: {
 			icon: "",
