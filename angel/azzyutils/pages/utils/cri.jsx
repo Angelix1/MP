@@ -41,7 +41,7 @@ export default function CustomRoleIconPage() {
 			label="Icon Preview"
 			trailing={
 				<Image
-					source={{ uri: defaultImageURL }}
+					source={{ uri: SUCRI?.source || defaultImageURL }}
 					style={{ 
 						width: 128, 
 						height: 128,
