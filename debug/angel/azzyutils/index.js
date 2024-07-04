@@ -578,9 +578,9 @@ function settingPage() {
       totalIndex: updates.length
     });
   }))))));
-}const UserStore$2 = metro.findByStoreName("UserStore");
+}const UserStore$3 = metro.findByStoreName("UserStore");
 metro.findByProps("getMessage", "getMessages");
-const selfId = UserStore$2?.getCurrentUser?.()?.id;
+const selfId = UserStore$3?.getCurrentUser?.()?.id;
 function replyAlertPatch(event) {
   if (event.type == "MESSAGE_CREATE") {
     const check1 = event?.message?.referenced_message?.author?.id == selfId;
@@ -887,7 +887,7 @@ function actionSheet() {
       eml_Sheet(component, args, actionMessage, ActionSheet);
     }
   });
-}const UserStore$1 = metro.findByStoreName("UserStore");
+}const UserStore$2 = metro.findByStoreName("UserStore");
 function patchCustomUsernameColor(row) {
   if (row?.message) {
     let { hex, enableReply } = plugin.storage?.utils?.customUsernameColor;
@@ -900,24 +900,26 @@ function patchCustomUsernameColor(row) {
     };
     if (plugin.storage?.debug)
       console.log("[AZZYUTILS cuc.js]", row.message.authorId, row?.message?.referencedMessage?.message?.authorId);
-    if (UserStore$1?.getCurrentUser?.()?.id == row?.message?.authorId)
+    if (UserStore$2?.getCurrentUser?.()?.id == row?.message?.authorId)
       handleColor(row?.message);
-    if (enableReply && row?.message?.referencedMessage?.message && UserStore$1?.getCurrentUser?.()?.id == row?.message?.referencedMessage?.message?.authorId) {
+    if (enableReply && row?.message?.referencedMessage?.message && UserStore$2?.getCurrentUser?.()?.id == row?.message?.referencedMessage?.message?.authorId) {
       handleColor(row?.message?.referencedMessage?.message);
     }
     return row;
   }
-}metro.findByStoreName("UserStore");
+}const UserStore$1 = metro.findByStoreName("UserStore");
 function patchCustomRoleIcon(row) {
   if (row?.message) {
-    let CRI = plugin.storage?.utils?.customRoleIcon || {
-      name: "BlobCatSip",
-      source: "https://cdn.discordapp.com/role-icons/1222207470714486825/bc3ef24c3f220155f90e55cc0cb0d0cf.png?size=512",
-      alt: "Role icon, BlobCatSip",
-      size: 18
-    };
-    CRI.alt ?? (CRI.alt = `Role icon, ${CRI.name}`);
-    row.message.roleIcon = CRI;
+    if (UserStore$1?.getCurrentUser?.()?.id == row?.message?.authorId) {
+      let CRI = plugin.storage?.utils?.customRoleIcon || {
+        name: "BlobCatSip",
+        source: "https://cdn.discordapp.com/role-icons/1222207470714486825/bc3ef24c3f220155f90e55cc0cb0d0cf.png?size=512",
+        alt: "Role icon, BlobCatSip",
+        size: 18
+      };
+      CRI.alt ?? (CRI.alt = `Role icon, ${CRI.name}`);
+      row.message.roleIcon = CRI;
+    }
     return row;
   }
 }const { DCDChatManager } = common.ReactNative.NativeModules;
@@ -1069,7 +1071,8 @@ function sendMessage() {
     customRoleIcon: {
       name: "BlobCatSip",
       source: "https://cdn.discordapp.com/role-icons/1222207470714486825/bc3ef24c3f220155f90e55cc0cb0d0cf.png?size=512",
-      size: 18
+      size: 18,
+      showOthers: false
     },
     customClan: {
       icon: "",
