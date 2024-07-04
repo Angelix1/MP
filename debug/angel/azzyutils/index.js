@@ -1,4 +1,4 @@
-(function(exports,plugin,storage,metro,_vendetta,components,common,ui,assets,patcher$1,utils,toasts,plugins){'use strict';const { openLazy, hideActionSheet } = metro.findByProps("openLazy", "hideActionSheet");
+(function(exports,plugin,storage,metro,_vendetta,components,common,ui,assets,toasts,patcher$1,utils,plugins){'use strict';const { openLazy, hideActionSheet } = metro.findByProps("openLazy", "hideActionSheet");
 function makeDefaults(object, defaults) {
   if (object != void 0) {
     if (defaults != void 0) {
@@ -477,9 +477,15 @@ const textInput = [
 ];
 function CustomRoleIconPage() {
   const SUCRI = plugin.storage?.utils?.customRoleIcon;
+  const copyDefaultURL = function() {
+    common.clipboard.setString("https://cdn.discordapp.com/role-icons/1222207470714486825/bc3ef24c3f220155f90e55cc0cb0d0cf.png?size=512");
+    toasts.showToast("Copied placeholder URL", assets.getAssetIDByName("toast_copy_link"));
+  };
   return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(FormRow$2, {
     label: "Icon Preview",
-    trailing: /* @__PURE__ */ React.createElement(Image$1, {
+    trailing: /* @__PURE__ */ React.createElement(TouchableOpacity$1, {
+      onPress: copyDefaultURL
+    }, /* @__PURE__ */ React.createElement(Image$1, {
       source: {
         uri: SUCRI?.source || defaultImageURL
       },
@@ -488,7 +494,7 @@ function CustomRoleIconPage() {
         height: 128,
         borderRadius: 10
       }
-    })
+    }))
   }), /* @__PURE__ */ React.createElement(FormDivider$1, null), textInput?.map(function(obj, index) {
     return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(FormInput$1, {
       title: obj.label,
@@ -1125,4 +1131,4 @@ var index = {
     unLoadDatas();
   },
   settings: settingPage
-};exports.default=index;Object.defineProperty(exports,'__esModule',{value:true});return exports;})({},vendetta.plugin,vendetta.storage,vendetta.metro,vendetta,vendetta.ui.components,vendetta.metro.common,vendetta.ui,vendetta.ui.assets,vendetta.patcher,vendetta.utils,vendetta.ui.toasts,vendetta.plugins);
+};exports.default=index;Object.defineProperty(exports,'__esModule',{value:true});return exports;})({},vendetta.plugin,vendetta.storage,vendetta.metro,vendetta,vendetta.ui.components,vendetta.metro.common,vendetta.ui,vendetta.ui.assets,vendetta.ui.toasts,vendetta.patcher,vendetta.utils,vendetta.plugins);
