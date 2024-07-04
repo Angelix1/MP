@@ -1,4 +1,4 @@
-(function(exports,_vendetta,metro,components,patcher,assets,utils,common,plugin,ui,storage,toasts,alerts){'use strict';const { openLazy, hideActionSheet } = metro.findByProps("openLazy", "hideActionSheet");
+(function(exports,_vendetta,metro,components,patcher,Assets,utils,common,plugin,ui,storage,toasts,alerts){'use strict';function _interopNamespaceDefault(e){var n=Object.create(null);if(e){Object.keys(e).forEach(function(k){if(k!=='default'){var d=Object.getOwnPropertyDescriptor(e,k);Object.defineProperty(n,k,d.get?d:{enumerable:true,get:function(){return e[k]}});}})}n.default=e;return Object.freeze(n)}var Assets__namespace=/*#__PURE__*/_interopNamespaceDefault(Assets);const { openLazy, hideActionSheet } = metro.findByProps("openLazy", "hideActionSheet");
 function makeDefaults(object, defaults) {
   if (object != void 0) {
     if (defaults != void 0) {
@@ -98,6 +98,8 @@ function fluxDispatchPatch(deletedMessageArray) {
   return patcher.before("dispatch", common.FluxDispatcher, function(args) {
     const [event] = args;
     const type = event?.type;
+    if (plugin.storage.debug)
+      console.log(`[ANTIED fluxdispatcher]`, event);
     if (type == "MESSAGE_DELETE") {
       if (plugin.storage.switches.enableMD == false)
         return args;
@@ -124,20 +126,23 @@ function fluxDispatchPatch(deletedMessageArray) {
         return user?.id == originalMessage?.author?.id || user.username == originalMessage.author.username;
       }))
         return args;
+      const messageGuildId = ChannelStore$1?.getChannel(originalMessage?.channel_id)?.guild_id;
+      let messageObjectByAntied = {
+        ...originalMessage,
+        content: originalMessage?.content,
+        type: 0,
+        channel_id: originalMessage?.channel_id || event?.channelId,
+        guild_id: messageGuildId,
+        timestamp: `${(/* @__PURE__ */ new Date()).toJSON()}`,
+        state: "SENT",
+        was_deleted: true
+      };
+      if (plugin.storage?.switches?.useEphemeralForDeleted)
+        messageObjectByAntied.flags = 64;
       args[0] = {
         type: "MESSAGE_UPDATE",
         channelId: originalMessage?.channel_id || event?.channelId,
-        message: {
-          ...originalMessage,
-          content: originalMessage?.content,
-          type: 0,
-          flags: 64,
-          channel_id: originalMessage?.channel_id || event?.channelId,
-          guild_id: ChannelStore$1?.getChannel(originalMessage?.channel_id)?.guild_id,
-          timestamp: `${(/* @__PURE__ */ new Date()).toJSON()}`,
-          state: "SENT",
-          was_deleted: true
-        },
+        message: messageObjectByAntied,
         optimistic: false,
         sendMessageOptions: {},
         isPushNotification: false
@@ -158,7 +163,7 @@ function fluxDispatchPatch(deletedMessageArray) {
           content: originalMessage?.content,
           where: {
             channel: originalMessage?.channel_id || event?.channelId,
-            guild: ChannelStore$1?.getChannel(originalMessage?.channel_id)?.guild_id,
+            guild: messageGuildId,
             messageLink: originalMessage?.id
           }
         });
@@ -178,7 +183,9 @@ function fluxDispatchPatch(deletedMessageArray) {
       const OMCheck3 = !originalMessage?.content && originalMessage?.attachments?.length == 0 && originalMessage?.embeds?.length == 0;
       if (!originalMessage || !OMCheck1 || !OMCheck2 || OMCheck3)
         return args;
-      if (!event?.message?.content || !originalMessage?.content || event?.message?.content == originalMessage?.content)
+      if (!event?.message?.content || !originalMessage?.content)
+        return args;
+      if (event?.message?.content == originalMessage?.content)
         return args;
       if (plugin.storage?.inputs?.ignoredUserList?.length > 0 && plugin.storage?.inputs?.ignoredUserList?.some(function(user) {
         return user?.id == originalMessage?.author?.id || user?.username == originalMessage?.author?.username;
@@ -217,12 +224,13 @@ function fluxDispatchPatch(deletedMessageArray) {
       } else {
         newMessageContent += `  ${addNewLine(Edited)}${event?.message?.content ?? ""}`;
       }
+      const messageGuildId = ChannelStore$1.getChannel(event?.channelId || event?.message?.channel_id || originalMessage?.channel_id)?.guild_id;
       args[0] = {
         type: "MESSAGE_UPDATE",
         message: {
           ...newMsg,
           content: newMessageContent,
-          guild_id: ChannelStore$1.getChannel(event?.channelId || event?.message?.channel_id || originalMessage?.channel_id)?.guild_id,
+          guild_id: messageGuildId,
           edited_timestamp: "invalid_timestamp"
         }
       };
@@ -239,7 +247,7 @@ function fluxDispatchPatch(deletedMessageArray) {
           edited: event?.message?.content,
           where: {
             channel: event?.channelId || event?.message?.channel_id || originalMessage?.channel_id,
-            guild: ChannelStore$1?.getChannel(event?.channelId || event?.message?.channel_id || originalMessage?.channel_id)?.guild_id,
+            guild: messageGuildId,
             messageLink: event?.message?.id
           }
         });
@@ -357,6 +365,8 @@ function updateRowsPatch(deletedMessagesArray) {
       return object;
     }
     rows.forEach(function(row) {
+      if (plugin.storage.debug)
+        console.log(row);
       if (row?.type == 1) {
         if (deletedMessagesArray[row?.message?.id]) {
           if (deletedText?.length > 0 || deletedText != "") {
@@ -367,7 +377,7 @@ function updateRowsPatch(deletedMessagesArray) {
             const appliedColor = transformObject(row?.message?.content, characterColor);
             row.message.content = appliedColor;
           }
-          if (removeDismissButton) {
+          if (removeDismissButton && row?.message?.ephemeralIndication) {
             row.message.ephemeralIndication = updateEphemeralIndication(row.message.ephemeralIndication);
           }
           if (minimalistic == false && useBackgroundColor == true) {
@@ -628,7 +638,7 @@ function PatchesComponent(param) {
         style: {
           opacity: 1
         },
-        source: assets.getAssetIDByName(obj?.icon)
+        source: Assets.getAssetIDByName(obj?.icon)
       }),
       trailing: "id" in obj ? /* @__PURE__ */ React.createElement(FormSwitch$7, {
         value: plugin.storage?.switches[obj?.id] ?? obj?.default,
@@ -870,9 +880,9 @@ function Log() {
         paddingLeft: "2px"
       }
     }, type == "MessageUpdate" ? /* @__PURE__ */ common.React.createElement(FormRow$d.Icon, {
-      source: assets.getAssetIDByName("pencil")
+      source: Assets.getAssetIDByName("pencil")
     }) : /* @__PURE__ */ common.React.createElement(FormRow$d.Icon, {
-      source: assets.getAssetIDByName("ic_message_delete")
+      source: Assets.getAssetIDByName("ic_message_delete")
     })), /* @__PURE__ */ common.React.createElement(TouchableOpacity$5, {
       onPress: function() {
         if (type == "MessageUpdate" && data.where.guild && data.where.channel && data.where.messageLink) {
@@ -886,7 +896,7 @@ function Log() {
         paddingLeft: "2px"
       }
     }, /* @__PURE__ */ common.React.createElement(FormRow$d.Icon, {
-      source: assets.getAssetIDByName("ic_show_media")
+      source: Assets.getAssetIDByName("ic_show_media")
     }))))), /* @__PURE__ */ common.React.createElement(TouchableOpacity$5, {
       onPress: function() {
         let clip = author.username;
@@ -921,7 +931,7 @@ ${edited}`;
   })), log?.length > 0 ? /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(FormRow$d, {
     label: "Nuke logs",
     trailing: /* @__PURE__ */ common.React.createElement(FormRow$d.Icon, {
-      source: assets.getAssetIDByName("ic_trash_24px")
+      source: Assets.getAssetIDByName("ic_trash_24px")
     }),
     onPress: function() {
       dialog$1.show({
@@ -966,7 +976,7 @@ function LoggingComponent() {
   return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(FormRow$c, {
     label: "Anti Edit & Delete Logs",
     leading: /* @__PURE__ */ React.createElement(FormRow$c.Icon, {
-      source: assets.getAssetIDByName("ic_audit_log_24px")
+      source: Assets.getAssetIDByName("ic_audit_log_24px")
     }),
     trailing: FormRow$c.Arrow,
     onPress: function() {
@@ -980,7 +990,7 @@ function LoggingComponent() {
   }), plugin.storage?.log?.length > 0 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(FormRow$c, {
     label: "Clear Logs",
     leading: /* @__PURE__ */ React.createElement(FormRow$c.Icon, {
-      source: assets.getAssetIDByName("ic_trash_24px")
+      source: Assets.getAssetIDByName("ic_trash_24px")
     }),
     trailing: FormRow$c.Arrow,
     onPress: function() {
@@ -1160,7 +1170,7 @@ function ColorPickComponent(param) {
     label: "Semantic & Raw Colors",
     subLabel: "If you enabled [Use Semantic/Raw Color], you can pick the colors from here",
     leading: /* @__PURE__ */ common.React.createElement(FormRow$8.Icon, {
-      source: assets.getAssetIDByName("ic_audit_log_24px")
+      source: Assets.getAssetIDByName("ic_audit_log_24px")
     }),
     trailing: FormRow$8.Arrow,
     onPress: function() {
@@ -1274,17 +1284,17 @@ const useIsFocused$1 = metro.findByName("useIsFocused");
 metro.findByProps("BottomSheetScrollView");
 const UserStore = metro.findByStoreName("UserStore");
 const Profiles = metro.findByProps("showUserProfile");
-assets.getAssetIDByName("ic_add_24px");
-assets.getAssetIDByName("ic_arrow");
-assets.getAssetIDByName("ic_minus_circle_24px");
-assets.getAssetIDByName("Check");
-assets.getAssetIDByName("Small");
+Assets.getAssetIDByName("ic_add_24px");
+Assets.getAssetIDByName("ic_arrow");
+Assets.getAssetIDByName("ic_minus_circle_24px");
+Assets.getAssetIDByName("Check");
+Assets.getAssetIDByName("Small");
 function addIcon$2(i) {
   return /* @__PURE__ */ common.React.createElement(FormIcon$4, {
     style: {
       opacity: 1
     },
-    source: assets.getAssetIDByName(i)
+    source: Assets.getAssetIDByName(i)
   });
 }
 const styles$3 = common.stylesheet.createThemedStyleSheet({
@@ -1502,12 +1512,12 @@ function addIcon$1(i, dr) {
 const useIsFocused = metro.findByName("useIsFocused");
 metro.findByProps("BottomSheetScrollView");
 const { getUser } = metro.findByProps("getUser");
-const Add = assets.getAssetIDByName("ic_add_24px");
-assets.getAssetIDByName("ic_arrow");
-assets.getAssetIDByName("ic_minus_circle_24px");
-assets.getAssetIDByName("Check");
-assets.getAssetIDByName("Small");
-const Trash = assets.getAssetIDByName("ic_trash_24px");
+const Add = Assets.getAssetIDByName("ic_add_24px");
+Assets.getAssetIDByName("ic_arrow");
+Assets.getAssetIDByName("ic_minus_circle_24px");
+Assets.getAssetIDByName("Check");
+Assets.getAssetIDByName("Small");
+const Trash = Assets.getAssetIDByName("ic_trash_24px");
 const styles$2 = common.stylesheet.createThemedStyleSheet({
   basicPad: {
     paddingRight: 10,
@@ -1658,7 +1668,7 @@ function IgnoreListComponent() {
       style: {
         opacity: 1
       },
-      source: assets.getAssetIDByName("ic_members")
+      source: Assets.getAssetIDByName("ic_members")
     }),
     onPress: listIgnore,
     trailing: /* @__PURE__ */ React.createElement(TouchableOpacity$1, {
@@ -1667,7 +1677,7 @@ function IgnoreListComponent() {
       style: {
         opacity: 1
       },
-      source: assets.getAssetIDByName("ic_add_24px")
+      source: Assets.getAssetIDByName("ic_add_24px")
     }))
   }), /* @__PURE__ */ React.createElement(FormDivider$3, null));
 }const { View: View$2, FormRow: FormRow$4, FormIcon: FormIcon$1, FormSwitch: FormSwitch$2, FormDivider: FormDivider$2 } = UIElements;
@@ -1707,6 +1717,12 @@ const customizeableSwitches = [
     default: false,
     label: "Add Edit Timestamp",
     subLabel: "Add Timestamp for edited messages."
+  },
+  {
+    id: "useEphemeralForDeleted",
+    default: true,
+    label: "Use Ephemeral for Deleted",
+    subLabel: "When messages got deleted it'll use ephemeral instead of normal message (Enabled by Default)."
   }
 ];
 function CustomizationComponent(param) {
@@ -1724,7 +1740,7 @@ function CustomizationComponent(param) {
         style: {
           opacity: 1
         },
-        source: assets.getAssetIDByName(obj?.icon)
+        source: Assets.getAssetIDByName(obj?.icon)
       }),
       trailing: "id" in obj ? /* @__PURE__ */ React.createElement(FormSwitch$2, {
         value: plugin.storage?.switches[obj?.id] ?? obj?.default,
@@ -1747,17 +1763,18 @@ const update = [
   createList("1.2.1", null, ma("Redesign Setting Page")),
   createList("1.2.2", ma("Added Support for Semantic Colors", "Added Support for Raw Colors", "Added Support for Timestamp Format"), ma("Reworked how Message update appends separator")),
   createList("1.2.3", null, null, ma("Fixed Remove Edit button to not persist under Edit Message Button")),
-  createList("1.2.4", null, ma("Update Remove Edit button style"), ma("Fixed Message Parser Fails to parse edited message"))
+  createList("1.2.4", null, ma("Update Remove Edit button style"), ma("Fixed Message Parser Fails to parse edited message")),
+  createList("1.2.5", ma("Added option useEphemeralForDeleted modification in Customize Section", "Added new button on actionMessage if useEphemeralForDeleted disabled"))
 ];
 var updates = update.reverse();const { ScrollView: ScrollView$1, View: View$1, Text, TouchableOpacity, TextInput, Image, Animated: Animated$1 } = components.General;
 const { FormLabel, FormIcon, FormArrow, FormRow: FormRow$3, FormSwitch: FormSwitch$1, FormSwitchRow, FormSection: FormSection$1, FormDivider: FormDivider$1, FormInput } = components.Forms;
-const current = assets.getAssetIDByName("ic_radio_square_checked_24px");
-const older = assets.getAssetIDByName("ic_radio_square_24px");
-const info = assets.getAssetIDByName("ic_information_24px");
-assets.getAssetIDByName("ic_info");
-const newStuff = assets.getAssetIDByName("premium_sparkles");
-const updatedStuff = assets.getAssetIDByName("ic_sync_24px");
-const fixStuff = assets.getAssetIDByName("ic_progress_wrench_24px");
+const current = Assets.getAssetIDByName("ic_radio_square_checked_24px");
+const older = Assets.getAssetIDByName("ic_radio_square_24px");
+const info = Assets.getAssetIDByName("ic_information_24px");
+Assets.getAssetIDByName("ic_info");
+const newStuff = Assets.getAssetIDByName("premium_sparkles");
+const updatedStuff = Assets.getAssetIDByName("ic_sync_24px");
+const fixStuff = Assets.getAssetIDByName("ic_progress_wrench_24px");
 const styles$1 = common.stylesheet.createThemedStyleSheet({
   border: {
     borderRadius: 10
@@ -1943,7 +1960,7 @@ function SettingPage() {
     };
   };
   const ComponentChildren = [
-    createChild("patches", "Plugin Patcher", "Patches", "Toggle what the plugin patch", PatchesComponent, styles),
+    createChild("patches", "Plugin Patcher", "Show Patches", "Toggle what the plugin patch", PatchesComponent, styles),
     createChild("customize", "Customization", "Customize", null, CustomizationComponent, styles),
     createChild("logging", "Logging", "Toggle Logger", null, LoggingComponent, null),
     createChild("text", "Text Variables", "Customize Texts", null, TextComponent, styles),
@@ -2040,7 +2057,7 @@ function SettingsSection() {
   return /* @__PURE__ */ React.createElement(components.ErrorBoundary, null, /* @__PURE__ */ React.createElement(FormRow$1, {
     label: tits,
     leading: /* @__PURE__ */ React.createElement(FormRow$1.Icon, {
-      source: assets.getAssetIDByName("ic_edit_24px")
+      source: Assets.getAssetIDByName("ic_edit_24px")
     }),
     trailing: FormRow$1.Arrow,
     onPress: function() {
@@ -2060,7 +2077,7 @@ function LogSection() {
   return /* @__PURE__ */ React.createElement(components.ErrorBoundary, null, /* @__PURE__ */ React.createElement(FormRow, {
     label: tits,
     leading: /* @__PURE__ */ React.createElement(FormRow.Icon, {
-      source: assets.getAssetIDByName("ic_audit_log_24px")
+      source: Assets.getAssetIDByName("ic_audit_log_24px")
     }),
     trailing: FormRow.Arrow,
     onPress: function() {
@@ -2084,7 +2101,7 @@ function LogSection() {
     return /* @__PURE__ */ React.createElement(SettingsSection, null);
   }, {
     key: "antied_setting",
-    icon: assets.getAssetIDByName("ic_edit_24px"),
+    icon: Assets.getAssetIDByName("ic_edit_24px"),
     title: name_1,
     page: {
       title: name_1,
@@ -2096,7 +2113,7 @@ function LogSection() {
     return /* @__PURE__ */ React.createElement(LogSection, null);
   }, {
     key: "antied_logs",
-    icon: assets.getAssetIDByName("ic_message_delete"),
+    icon: Assets.getAssetIDByName("ic_message_delete"),
     title: name_2,
     page: {
       title: name_2,
@@ -2112,7 +2129,7 @@ function LogSection() {
 const MessageStore = metro.findByProps("getMessage", "getMessages");
 const ChannelStore = metro.findByProps("getChannel", "getDMFromUserId");
 const { ActionSheetRow } = metro.findByProps("ActionSheetRow");
-function actionsheet() {
+function actionsheet(deletedMessageArray) {
   return patcher.before("openLazy", ActionSheet, function(param) {
     let [component, args, actionMessage] = param;
     const message = actionMessage?.message;
@@ -2125,6 +2142,8 @@ function actionsheet() {
             unpatch();
           };
         }, []);
+        if (plugin.storage.debug)
+          console.log(`[ANTIED ActionSheet]`, message);
         const buttons = utils.findInReactTree(comp, function(c) {
           return c?.find?.(function(child) {
             return child?.props?.label == common.i18n?.Messages?.MESSAGE_ACTION_REPLY;
@@ -2145,7 +2164,7 @@ function actionsheet() {
             label: "Remove Edit History",
             subLabel: `Added by ${stripVersions(_vendetta.plugin?.manifest?.name) || "ANTIED"}`,
             icon: /* @__PURE__ */ common.React.createElement(ActionSheetRow.Icon, {
-              source: assets.getAssetIDByName("ic_edit_24px")
+              source: Assets.getAssetIDByName("ic_edit_24px")
             }),
             onPress: function() {
               let Edited = plugin.storage?.inputs?.editedMessageBuffer || "`[ EDITED ]`";
@@ -2193,7 +2212,33 @@ function actionsheet() {
               });
               ActionSheet.hideActionSheet();
               if (plugin.storage?.inputs?.historyToast?.length > 0 || plugin.storage?.inputs?.historyToast != "") {
-                toasts.showToast(`[ANTI ED] ${plugin.storage?.inputs?.historyToast}`, assets.getAssetIDByName("ic_edit_24px"));
+                toasts.showToast(`[ANTI ED] ${plugin.storage?.inputs?.historyToast}`, Assets.getAssetIDByName("ic_edit_24px"));
+              }
+            }
+          }));
+        }
+        if (plugin.storage.debug)
+          console.log(`[ANTIED ActionSheet]`, "useEphemeralForDeleted", !plugin.storage?.switches?.useEphemeralForDeleted, "msgExist?", Boolean(deletedMessageArray[message.id]));
+        if (!plugin.storage?.switches?.useEphemeralForDeleted && deletedMessageArray[message.id]) {
+          const targetPos = position || 1;
+          buttons.splice(targetPos, 0, /* @__PURE__ */ common.React.createElement(ActionSheetRow, {
+            label: "Remove Deleted Message",
+            subLabel: `Added by ${stripVersions(_vendetta.plugin?.manifest?.name) || "ANTIED"}`,
+            isDestructive: true,
+            icon: /* @__PURE__ */ common.React.createElement(ActionSheetRow.Icon, {
+              source: Assets.getAssetIDByName("ic_edit_24px")
+            }),
+            onPress: function() {
+              common.FluxDispatcher.dispatch({
+                type: "MESSAGE_DELETE",
+                guildId: ChannelStore.getChannel(originalMessage.channel_id).guild_id,
+                id: message?.id,
+                channelId: message?.channel_id,
+                otherPluginBypass: true
+              });
+              ActionSheet.hideActionSheet();
+              if (plugin.storage?.inputs?.historyToast?.length > 0 || plugin.storage?.inputs?.historyToast != "") {
+                toasts.showToast(`[ANTIED] Message Removed`, Assets.getAssetIDByName("ic_edit_24px"));
               }
             }
           }));
@@ -2208,6 +2253,9 @@ const regexEscaper = function(string) {
 const stripVersions = function(str) {
   return str.replace(/\s?v\d+.\d+.\w+/, "");
 };
+const vendettaUiAssets = Object.keys(Assets__namespace.all).map(function(x) {
+  return x?.name;
+});
 makeDefaults(plugin.storage, {
   setting: {
     colorpick: false,
@@ -2231,7 +2279,8 @@ makeDefaults(plugin.storage, {
     darkMode: true,
     removeDismissButton: false,
     addTimestampForEdits: false,
-    timestampStyle: "R"
+    timestampStyle: "R",
+    useEphemeralForDeleted: true
   },
   colors: {
     textColor: "#E40303",
@@ -2250,7 +2299,8 @@ makeDefaults(plugin.storage, {
     ignoredUserList: []
   },
   misc: {
-    timestampPos: "BEFORE"
+    timestampPos: "BEFORE",
+    editHistoryIcon: "ic_edit_24px"
   },
   log: [],
   logWarning: false,
@@ -2260,7 +2310,7 @@ let deletedMessageArray = {};
 const patches = [];
 var index = {
   onLoad: function() {
-    patches.push(sillyPatch(), fluxDispatchPatch(deletedMessageArray), updateRowsPatch(deletedMessageArray), selfEditPatch(), createMessageRecord(), messageRecordDefault(), updateMessageRecord(), actionsheet());
+    patches.push(sillyPatch(), fluxDispatchPatch(deletedMessageArray), updateRowsPatch(deletedMessageArray), selfEditPatch(), createMessageRecord(), messageRecordDefault(), updateMessageRecord(), actionsheet(deletedMessageArray));
   },
   onUnload: function() {
     for (const unpatch of patches) {
@@ -2280,4 +2330,4 @@ var index = {
     }
   },
   settings: SettingPage
-};exports.default=index;exports.regexEscaper=regexEscaper;exports.stripVersions=stripVersions;Object.defineProperty(exports,'__esModule',{value:true});return exports;})({},vendetta,vendetta.metro,vendetta.ui.components,vendetta.patcher,vendetta.ui.assets,vendetta.utils,vendetta.metro.common,vendetta.plugin,vendetta.ui,vendetta.storage,vendetta.ui.toasts,vendetta.ui.alerts);
+};exports.default=index;exports.regexEscaper=regexEscaper;exports.stripVersions=stripVersions;exports.vendettaUiAssets=vendettaUiAssets;Object.defineProperty(exports,'__esModule',{value:true});return exports;})({},vendetta,vendetta.metro,vendetta.ui.components,vendetta.patcher,vendetta.ui.assets,vendetta.utils,vendetta.metro.common,vendetta.plugin,vendetta.ui,vendetta.storage,vendetta.ui.toasts,vendetta.ui.alerts);

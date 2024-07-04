@@ -1,4 +1,4 @@
-(function(exports,plugin,storage,_vendetta,metro,components,common,ui,assets,patcher$1,utils,toasts,plugins){'use strict';const { openLazy, hideActionSheet } = metro.findByProps("openLazy", "hideActionSheet");
+(function(exports,plugin,storage,metro,_vendetta,components,common,ui,assets,patcher$1,utils,toasts,plugins){'use strict';const { openLazy, hideActionSheet } = metro.findByProps("openLazy", "hideActionSheet");
 function makeDefaults(object, defaults) {
   if (object != void 0) {
     if (defaults != void 0) {
@@ -94,181 +94,8 @@ const convert = {
 function withinChance(percentage) {
   const random = Math.random();
   return random < percentage / 100;
-}const { ScrollView: ScrollView$2, View: View$2, Text: Text$2, TouchableOpacity: TouchableOpacity$2, TextInput: TextInput$2, Image: Image$2, Animated: Animated$2, FormLabel: FormLabel$2, FormIcon: FormIcon$3, FormArrow: FormArrow$2, FormRow: FormRow$6, FormSwitch: FormSwitch$5, FormSwitchRow: FormSwitchRow$2, FormSection: FormSection$2, FormDivider: FormDivider$3, FormInput: FormInput$3, FormRadioRow: FormRadioRow$1, FormSliderRow } = UIElements;
-const CustomColorPickerActionSheet = metro.findByName("CustomColorPickerActionSheet");
-function ReplyAlertSetting() {
-  storage.useProxy(plugin.storage);
-  const reply = plugin.storage.utils.replyAlert;
-  const [CA, setCA] = common.React.useState(convert.toDecimal(convert.hexAlphaToPercent(reply.colorAlpha) || 100));
-  const [GA, setGA] = common.React.useState(convert.toDecimal(convert.hexAlphaToPercent(reply.gutterAlpha) || 100));
-  const colorSet = function() {
-    return openSheet(CustomColorPickerActionSheet, {
-      color: common.ReactNative.processColor(reply?.customColor) || 0,
-      onSelect: function(color) {
-        const hex = numToHex(color);
-        reply.customColor = hex;
-        if (plugin.storage?.debug)
-          _vendetta.logger.log("Reply Alert BG Color", "[Changed]", hex);
-      }
-    });
-  };
-  const gutterSet = function() {
-    return openSheet(CustomColorPickerActionSheet, {
-      color: common.ReactNative.processColor(reply?.customColor) || 0,
-      onSelect: function(color) {
-        const hex = numToHex(color);
-        reply.gutterColor = hex;
-        if (plugin.storage?.debug)
-          _vendetta.logger.log("Reply Alert Gutter Color", "[Changed]", hex);
-      }
-    });
-  };
-  return /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(FormRow$6, {
-    label: "Toggle Force Alert",
-    subLabel: "When someone replying to your message with mention disabled, this option will force ping you",
-    trailing: /* @__PURE__ */ common.React.createElement(FormSwitch$5, {
-      value: reply?.useReplyAlert || false,
-      onValueChange: function(value) {
-        reply.useReplyAlert = value;
-      }
-    })
-  }), /* @__PURE__ */ common.React.createElement(FormDivider$3, null), /* @__PURE__ */ common.React.createElement(FormRow$6, {
-    label: "Use Custom Color Mentions",
-    trailing: /* @__PURE__ */ common.React.createElement(FormSwitch$5, {
-      value: reply?.useCustomColor || false,
-      onValueChange: function(value) {
-        reply.useCustomColor = value;
-      }
-    })
-  }), /* @__PURE__ */ common.React.createElement(FormDivider$3, null), /* @__PURE__ */ common.React.createElement(FormRow$6, {
-    label: "Ignore self Reply",
-    subLabel: "When replying to own message, do not ping",
-    trailing: /* @__PURE__ */ common.React.createElement(FormSwitch$5, {
-      value: reply?.ignoreSelf || false,
-      onValueChange: function(value) {
-        reply.ignoreSelf = value;
-      }
-    })
-  }), /* @__PURE__ */ common.React.createElement(FormDivider$3, null), /* @__PURE__ */ common.React.createElement(FormRow$6, {
-    label: "Preview",
-    subLabel: "How it looks in then chat"
-  }), /* @__PURE__ */ common.React.createElement(View$2, {
-    style: [
-      {
-        flexDirection: "row",
-        height: 80,
-        width: "100%",
-        overflow: "hidden",
-        borderRadius: 12,
-        marginBottom: 20,
-        marginRight: 10,
-        marginLeft: 10
-      }
-    ]
-  }, /* @__PURE__ */ common.React.createElement(View$2, {
-    style: {
-      width: "2%",
-      backgroundColor: `${reply?.gutterColor}${convert.alphaToHex(convert.toPercentage(GA))}`
-    }
-  }), /* @__PURE__ */ common.React.createElement(View$2, {
-    style: {
-      flex: 1,
-      backgroundColor: `${reply?.customColor}${convert.alphaToHex(convert.toPercentage(CA))}`,
-      justifyContent: "center",
-      alignItems: "center"
-    }
-  }, /* @__PURE__ */ common.React.createElement(Text$2, {
-    style: {
-      fontSize: 20,
-      color: "#FFFFFF"
-    }
-  }, " Example White Text "), /* @__PURE__ */ common.React.createElement(Text$2, {
-    style: {
-      fontSize: 20,
-      color: "#000000"
-    }
-  }, " Example Black Text "))), /* @__PURE__ */ common.React.createElement(FormDivider$3, null), /* @__PURE__ */ common.React.createElement(FormRow$6, {
-    label: "Background Color",
-    subLabel: "Click to Update",
-    onPress: colorSet,
-    trailing: /* @__PURE__ */ common.React.createElement(TouchableOpacity$2, {
-      onPress: colorSet
-    }, /* @__PURE__ */ common.React.createElement(Image$2, {
-      source: {
-        uri: transparentBase64
-      },
-      style: {
-        width: 128,
-        height: 128,
-        borderRadius: 10,
-        backgroundColor: reply?.customColor || "#000"
-      }
-    }))
-  }), /* @__PURE__ */ common.React.createElement(FormDivider$3, null), /* @__PURE__ */ common.React.createElement(FormRow$6, {
-    label: "Gutter Color",
-    subLabel: "Click to Update",
-    onPress: gutterSet,
-    trailing: /* @__PURE__ */ common.React.createElement(TouchableOpacity$2, {
-      onPress: gutterSet
-    }, /* @__PURE__ */ common.React.createElement(Image$2, {
-      source: {
-        uri: transparentBase64
-      },
-      style: {
-        width: 128,
-        height: 128,
-        borderRadius: 10,
-        backgroundColor: reply?.gutterColor || "#000"
-      }
-    }))
-  }), /* @__PURE__ */ common.React.createElement(FormDivider$3, null), /* @__PURE__ */ common.React.createElement(FormSliderRow, {
-    label: `Background Color Alpha: ${convert.toPercentage(CA)}%`,
-    value: CA,
-    style: {
-      width: "90%"
-    },
-    onValueChange: function(v) {
-      setCA(Number(convert.formatDecimal(v)));
-      reply.colorAlpha = convert.alphaToHex(convert.toPercentage(v));
-    }
-  }), /* @__PURE__ */ common.React.createElement(FormDivider$3, null), /* @__PURE__ */ common.React.createElement(FormSliderRow, {
-    label: `Gutter Color Alpha: ${convert.toPercentage(GA)}%`,
-    value: GA,
-    style: {
-      width: "90%"
-    },
-    onValueChange: function(v) {
-      setGA(Number(convert.formatDecimal(v)));
-      reply.gutterAlpha = convert.alphaToHex(convert.toPercentage(v));
-    }
-  }));
-}const { FormRow: FormRow$5, FormSwitch: FormSwitch$4 } = UIElements;
-function EML() {
-  return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(FormRow$5, {
-    label: "Bypass Antied Logging",
-    trailing: /* @__PURE__ */ React.createElement(FormSwitch$4, {
-      value: plugin.storage?.utils?.eml?.logEdit || false,
-      onValueChange: function(value) {
-        plugin.storage.utils.eml.logEdit = value;
-      }
-    })
-  }));
-}function ma() {
-  for (var _len = arguments.length, a = new Array(_len), _key = 0; _key < _len; _key++) {
-    a[_key] = arguments[_key];
-  }
-  return [
-    ...a
-  ];
-}
-const update = [
-  createList("1.0.0", ma("Created the Plugin")),
-  createList("1.0.1", ma("Added Remove Decor", "Customization for reply alert", "Option to revert locally edited message (wipe on unload of the plugin)")),
-  createList("1.0.2", ma("[1.0.22] Setting for Quick Id", "[1.0.22] Option to toggle Force alert", "[1.0.22] Preview for ReplyAlert"), ma("[1.0.2] Remove Custom Timestamp", "[1.0.24] EML will wipe its log when onunload and revert every message its edit"), ma("[1.0.21] Fix Cactus", "[1.0.22] Fix No Share fails to find Share button", "[1.0.23] Fix Quick ID removing edit message button")),
-  createList("1.0.3", null, ma("Update EML, QID buttons"), ma("Fixed EML button fails to append under Reply Button", "Fixed QID buttons fails to append to a correct place"))
-];
-var updates = update.reverse();const { ScrollView: ScrollView$1, View: View$1, Text: Text$1, TouchableOpacity: TouchableOpacity$1, TextInput: TextInput$1, Image: Image$1, Animated: Animated$1 } = components.General;
-const { FormLabel: FormLabel$1, FormIcon: FormIcon$2, FormArrow: FormArrow$1, FormRow: FormRow$4, FormSwitch: FormSwitch$3, FormSwitchRow: FormSwitchRow$1, FormSection: FormSection$1, FormDivider: FormDivider$2, FormInput: FormInput$2 } = components.Forms;
+}const { ScrollView: ScrollView$2, View: View$2, Text: Text$2, TouchableOpacity: TouchableOpacity$4, TextInput: TextInput$2, Image: Image$4, Animated: Animated$2 } = components.General;
+const { FormLabel: FormLabel$2, FormIcon: FormIcon$5, FormArrow: FormArrow$2, FormRow: FormRow$8, FormSwitch: FormSwitch$7, FormSwitchRow: FormSwitchRow$2, FormSection: FormSection$2, FormDivider: FormDivider$5, FormInput: FormInput$4 } = components.Forms;
 const current = assets.getAssetIDByName("ic_radio_square_checked_24px");
 const older = assets.getAssetIDByName("ic_radio_square_24px");
 const info = assets.getAssetIDByName("ic_information_24px");
@@ -304,7 +131,7 @@ const styles = common.stylesheet.createThemedStyleSheet({
   }
 });
 function addIcon(icon) {
-  return /* @__PURE__ */ common.React.createElement(FormIcon$2, {
+  return /* @__PURE__ */ common.React.createElement(FormIcon$5, {
     style: {
       opacity: 1
     },
@@ -316,7 +143,7 @@ function VersionChange(param) {
   const [isOpen, setOpen] = common.React.useState(false);
   common.React.useState(false);
   function createSubRow(arr, label, subLabel, icon) {
-    return /* @__PURE__ */ common.React.createElement(View$1, null, /* @__PURE__ */ common.React.createElement(FormRow$4, {
+    return /* @__PURE__ */ common.React.createElement(View$2, null, /* @__PURE__ */ common.React.createElement(FormRow$8, {
       label: label || "No Section",
       subLabel: subLabel || null,
       leading: icon && addIcon(icon),
@@ -324,7 +151,7 @@ function VersionChange(param) {
         styles.textHeader
       ]
     }), arr.map(function(x, i) {
-      return /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(FormRow$4, {
+      return /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(FormRow$8, {
         label: x,
         style: [
           styles.textBody,
@@ -334,34 +161,203 @@ function VersionChange(param) {
       }));
     }));
   }
-  return /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(components.ErrorBoundary, null, /* @__PURE__ */ common.React.createElement(FormRow$4, {
+  return /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(components.ErrorBoundary, null, /* @__PURE__ */ common.React.createElement(FormRow$8, {
     label: change?.version,
     leading: index == 0 ? addIcon(current) : addIcon(older),
     trailing: addIcon(info),
     onPress: function() {
       setOpen(!isOpen);
     }
-  }), isOpen && /* @__PURE__ */ common.React.createElement(View$1, {
+  }), isOpen && /* @__PURE__ */ common.React.createElement(View$2, {
     style: [
       styles.versionBG,
       styles.border
     ]
-  }, change?.new?.length > 0 && createSubRow(change.new, "New", "New stuffies", newStuff), change?.updated?.length > 0 && createSubRow(change.updated, "Changes", "Update things", updatedStuff), change?.fix?.length > 0 && createSubRow(change.fix, "Fixes", "Me hate borken things", fixStuff)), index == totalIndex.length - 1 ? void 0 : /* @__PURE__ */ common.React.createElement(FormDivider$2, null)));
-}const { FormRow: FormRow$3, FormSwitch: FormSwitch$2 } = UIElements;
+  }, change?.new?.length > 0 && createSubRow(change.new, "New", "New stuffies", newStuff), change?.updated?.length > 0 && createSubRow(change.updated, "Changes", "Update things", updatedStuff), change?.fix?.length > 0 && createSubRow(change.fix, "Fixes", "Me hate borken things", fixStuff)), index == totalIndex.length - 1 ? void 0 : /* @__PURE__ */ common.React.createElement(FormDivider$5, null)));
+}function ma() {
+  for (var _len = arguments.length, a = new Array(_len), _key = 0; _key < _len; _key++) {
+    a[_key] = arguments[_key];
+  }
+  return [
+    ...a
+  ];
+}
+const update = [
+  createList("1.0.0", ma("Created the Plugin")),
+  createList("1.0.1 - 1.0.3", ma("[1.0.1] Added Remove Decor", "[1.0.1] Customization for reply alert", "[1.0.1] Option to revert locally edited message (wipe on unload of the plugin)", "[1.0.22] Setting for Quick Id", "[1.0.22] Option to toggle Force alert", "[1.0.22] Preview for ReplyAlert"), ma("[1.0.2] Remove Custom Timestamp", "[1.0.24] EML will wipe its log when onunload and revert every message its edit", "[1.0.3] Update EML, QID buttons"), ma("[1.0.21] Fix Cactus", "[1.0.22] Fix No Share fails to find Share button", "[1.0.23] Fix Quick ID removing edit message button", "[1.0.3] Fixed EML button fails to append under Reply Button", "[1.0.3] Fixed QID buttons fails to append to a correct place")),
+  createList("1.1.0", ma("[1.1.0] Added Custom Username Color", "[1.1.0] Added Custom Role Icon"), ma("[1.1.0] Separated reply alert and custom mention to be their own thing"))
+];
+var updates = update.reverse();const { ScrollView: ScrollView$1, View: View$1, Text: Text$1, TouchableOpacity: TouchableOpacity$3, TextInput: TextInput$1, Image: Image$3, Animated: Animated$1, FormLabel: FormLabel$1, FormIcon: FormIcon$4, FormArrow: FormArrow$1, FormRow: FormRow$7, FormSwitch: FormSwitch$6, FormSwitchRow: FormSwitchRow$1, FormSection: FormSection$1, FormDivider: FormDivider$4, FormInput: FormInput$3, FormRadioRow: FormRadioRow$1, FormSliderRow } = UIElements;
+const CustomColorPickerActionSheet$1 = metro.findByName("CustomColorPickerActionSheet");
+function ReplyAlertSetting() {
+  storage.useProxy(plugin.storage);
+  const reply = plugin.storage.utils.replyAlert;
+  return /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(FormRow$7, {
+    label: "Toggle Force Alert",
+    subLabel: "When someone replying to your message with mention disabled, this option will force ping you",
+    trailing: /* @__PURE__ */ common.React.createElement(FormSwitch$6, {
+      value: reply?.useReplyAlert || false,
+      onValueChange: function(value) {
+        reply.useReplyAlert = value;
+      }
+    })
+  }), /* @__PURE__ */ common.React.createElement(FormDivider$4, null), /* @__PURE__ */ common.React.createElement(FormRow$7, {
+    label: "Ignore self Reply",
+    subLabel: "When replying to own message, do not ping",
+    trailing: /* @__PURE__ */ common.React.createElement(FormSwitch$6, {
+      value: reply?.ignoreSelf || false,
+      onValueChange: function(value) {
+        reply.ignoreSelf = value;
+      }
+    })
+  }));
+}
+function CustomMentionsSetting() {
+  storage.useProxy(plugin.storage);
+  const reply = plugin.storage.utils.replyAlert;
+  const [CA, setCA] = common.React.useState(convert.toDecimal(convert.hexAlphaToPercent(reply.colorAlpha) || 100));
+  const [GA, setGA] = common.React.useState(convert.toDecimal(convert.hexAlphaToPercent(reply.gutterAlpha) || 100));
+  const colorSet = function() {
+    return openSheet(CustomColorPickerActionSheet$1, {
+      color: common.ReactNative.processColor(reply?.customColor) || 0,
+      onSelect: function(color) {
+        const hex = numToHex(color);
+        reply.customColor = hex;
+        if (plugin.storage?.debug)
+          _vendetta.logger.log("Reply Alert BG Color", "[Changed]", hex);
+      }
+    });
+  };
+  const gutterSet = function() {
+    return openSheet(CustomColorPickerActionSheet$1, {
+      color: common.ReactNative.processColor(reply?.customColor) || 0,
+      onSelect: function(color) {
+        const hex = numToHex(color);
+        reply.gutterColor = hex;
+        if (plugin.storage?.debug)
+          _vendetta.logger.log("Reply Alert Gutter Color", "[Changed]", hex);
+      }
+    });
+  };
+  return /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(FormRow$7, {
+    label: "Preview",
+    subLabel: "How it looks in the chat"
+  }), /* @__PURE__ */ common.React.createElement(View$1, {
+    style: [
+      {
+        flexDirection: "row",
+        height: 80,
+        width: "100%",
+        overflow: "hidden",
+        borderRadius: 12,
+        marginBottom: 20,
+        marginRight: 10,
+        marginLeft: 10
+      }
+    ]
+  }, /* @__PURE__ */ common.React.createElement(View$1, {
+    style: {
+      width: "2%",
+      backgroundColor: `${reply?.gutterColor}${convert.alphaToHex(convert.toPercentage(GA))}`
+    }
+  }), /* @__PURE__ */ common.React.createElement(View$1, {
+    style: {
+      flex: 1,
+      backgroundColor: `${reply?.customColor}${convert.alphaToHex(convert.toPercentage(CA))}`,
+      justifyContent: "center",
+      alignItems: "center"
+    }
+  }, /* @__PURE__ */ common.React.createElement(Text$1, {
+    style: {
+      fontSize: 20,
+      color: "#FFFFFF"
+    }
+  }, " Example White Text "), /* @__PURE__ */ common.React.createElement(Text$1, {
+    style: {
+      fontSize: 20,
+      color: "#000000"
+    }
+  }, " Example Black Text "))), /* @__PURE__ */ common.React.createElement(FormDivider$4, null), /* @__PURE__ */ common.React.createElement(FormRow$7, {
+    label: "Background Color",
+    subLabel: "Click to Update",
+    onPress: colorSet,
+    trailing: /* @__PURE__ */ common.React.createElement(TouchableOpacity$3, {
+      onPress: colorSet
+    }, /* @__PURE__ */ common.React.createElement(Image$3, {
+      source: {
+        uri: transparentBase64
+      },
+      style: {
+        width: 128,
+        height: 128,
+        borderRadius: 10,
+        backgroundColor: reply?.customColor || "#000"
+      }
+    }))
+  }), /* @__PURE__ */ common.React.createElement(FormDivider$4, null), /* @__PURE__ */ common.React.createElement(FormRow$7, {
+    label: "Gutter Color",
+    subLabel: "Click to Update",
+    onPress: gutterSet,
+    trailing: /* @__PURE__ */ common.React.createElement(TouchableOpacity$3, {
+      onPress: gutterSet
+    }, /* @__PURE__ */ common.React.createElement(Image$3, {
+      source: {
+        uri: transparentBase64
+      },
+      style: {
+        width: 128,
+        height: 128,
+        borderRadius: 10,
+        backgroundColor: reply?.gutterColor || "#000"
+      }
+    }))
+  }), /* @__PURE__ */ common.React.createElement(FormDivider$4, null), /* @__PURE__ */ common.React.createElement(FormSliderRow, {
+    label: `Background Color Alpha: ${convert.toPercentage(CA)}%`,
+    value: CA,
+    style: {
+      width: "90%"
+    },
+    onValueChange: function(v) {
+      setCA(Number(convert.formatDecimal(v)));
+      reply.colorAlpha = convert.alphaToHex(convert.toPercentage(v));
+    }
+  }), /* @__PURE__ */ common.React.createElement(FormDivider$4, null), /* @__PURE__ */ common.React.createElement(FormSliderRow, {
+    label: `Gutter Color Alpha: ${convert.toPercentage(GA)}%`,
+    value: GA,
+    style: {
+      width: "90%"
+    },
+    onValueChange: function(v) {
+      setGA(Number(convert.formatDecimal(v)));
+      reply.gutterAlpha = convert.alphaToHex(convert.toPercentage(v));
+    }
+  }));
+}const { FormRow: FormRow$6, FormSwitch: FormSwitch$5 } = UIElements;
+function EML() {
+  return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(FormRow$6, {
+    label: "Bypass Antied Logging",
+    trailing: /* @__PURE__ */ React.createElement(FormSwitch$5, {
+      value: plugin.storage?.utils?.eml?.logEdit || false,
+      onValueChange: function(value) {
+        plugin.storage.utils.eml.logEdit = value;
+      }
+    })
+  }));
+}const { FormRow: FormRow$5, FormSwitch: FormSwitch$4 } = UIElements;
 function NoShareSetting() {
-  return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(FormRow$3, {
+  return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(FormRow$5, {
     label: "Add Save Image Button to Image ActionSheet",
     subLabel: "if Built-in Save Image gone",
-    trailing: /* @__PURE__ */ React.createElement(FormSwitch$2, {
+    trailing: /* @__PURE__ */ React.createElement(FormSwitch$4, {
       value: plugin.storage?.utils?.noshare?.addSaveImage || false,
       onValueChange: function(value) {
         plugin.storage.utils.noshare.addSaveImage = value;
       }
     })
   }));
-}const { FormInput: FormInput$1 } = UIElements;
+}const { FormInput: FormInput$2 } = UIElements;
 function CAT() {
-  return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(FormInput$1, {
+  return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(FormInput$2, {
     title: "Name",
     keyboardType: "default",
     placeholder: "Angel",
@@ -370,7 +366,7 @@ function CAT() {
       return plugin.storage.utils.cactus.name = val.toString();
     }
   }));
-}const { FormRow: FormRow$2, FormSwitch: FormSwitch$1, FormDivider: FormDivider$1 } = UIElements;
+}const { FormRow: FormRow$4, FormSwitch: FormSwitch$3, FormDivider: FormDivider$3 } = UIElements;
 function QuickIdSetting() {
   storage.useProxy(plugin.storage);
   const cl = function(label, subLabel, key) {
@@ -386,17 +382,124 @@ function QuickIdSetting() {
     cl("Id and Mention", "add Copy User Id & Mention", "addCombine")
   ];
   return /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, lists.map(function(el, i) {
-    return /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(FormRow$2, {
+    return /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(FormRow$4, {
       label: el?.label || "Missing Label",
       subLabel: el?.subLabel,
-      trailing: /* @__PURE__ */ common.React.createElement(FormSwitch$1, {
+      trailing: /* @__PURE__ */ common.React.createElement(FormSwitch$3, {
         value: plugin.storage?.utils?.quickid?.[el?.key] || false,
         onValueChange: function(value) {
           plugin.storage.utils.quickid[el.key] = value;
         }
       })
-    }), i !== lists?.length - 1 && /* @__PURE__ */ common.React.createElement(FormDivider$1, null));
-  }), /* @__PURE__ */ common.React.createElement(FormDivider$1, null));
+    }), i !== lists?.length - 1 && /* @__PURE__ */ common.React.createElement(FormDivider$3, null));
+  }), /* @__PURE__ */ common.React.createElement(FormDivider$3, null));
+}const CustomColorPickerActionSheet = metro.findByName("CustomColorPickerActionSheet");
+const { FormRow: FormRow$3, FormSwitch: FormSwitch$2, TouchableOpacity: TouchableOpacity$2, Image: Image$2, FormDivider: FormDivider$2, FormIcon: FormIcon$3 } = UIElements;
+const switches = [
+  {
+    id: "enableReply",
+    label: "Patch reply",
+    subLabel: "also replace username color in mentioned referenced message",
+    icon: null,
+    def: false
+  }
+];
+function CustomUsernameColorPage() {
+  const SUCUC = plugin.storage?.utils?.customUsernameColor;
+  const whenPressed = function() {
+    return openSheet(CustomColorPickerActionSheet, {
+      color: common.ReactNative.processColor(SUCUC?.hex) || 0,
+      onSelect: function(color) {
+        const hex = numToHex(color);
+        SUCUC.hex = hex;
+      }
+    });
+  };
+  return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(FormRow$3, {
+    label: "Color",
+    subLabel: "Click to Update",
+    onPress: whenPressed,
+    trailing: /* @__PURE__ */ React.createElement(TouchableOpacity$2, {
+      onPress: whenPressed
+    }, /* @__PURE__ */ React.createElement(Image$2, {
+      source: {
+        uri: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mJsrQAAAgwBAJ9P6qYAAAAASUVORK5CYII="
+      },
+      style: {
+        width: 128,
+        height: 128,
+        borderRadius: 10,
+        backgroundColor: SUCUC?.hex || "#000000"
+      }
+    }))
+  }), /* @__PURE__ */ React.createElement(FormDivider$2, null), switches?.map(function(obj, index) {
+    return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(FormRow$3, {
+      label: obj?.label,
+      subLabel: obj?.subLabel,
+      leading: obj?.icon && /* @__PURE__ */ React.createElement(FormIcon$3, {
+        style: {
+          opacity: 1
+        },
+        source: assets.getAssetIDByName(obj?.icon)
+      }),
+      trailing: "id" in obj ? /* @__PURE__ */ React.createElement(FormSwitch$2, {
+        value: plugin.storage?.utils?.customUsernameColor[obj?.id] ?? obj?.def,
+        onValueChange: function(value) {
+          return plugin.storage.utils.customUsernameColor[obj?.id] = value;
+        }
+      }) : void 0
+    }), index !== switches?.length - 1 && /* @__PURE__ */ React.createElement(FormDivider$2, null));
+  }));
+}const defaultImageURL = "https://cdn.discordapp.com/role-icons/1222207470714486825/bc3ef24c3f220155f90e55cc0cb0d0cf.png?size=512";
+const { FormRow: FormRow$2, FormSwitch: FormSwitch$1, TouchableOpacity: TouchableOpacity$1, Image: Image$1, FormDivider: FormDivider$1, FormIcon: FormIcon$2, FormInput: FormInput$1 } = UIElements;
+const textInput = [
+  {
+    id: "name",
+    label: "Role Icon Name",
+    keyType: "default",
+    placeholder: "BlobCatSip",
+    def: "BlobCatSip"
+  },
+  {
+    id: "source",
+    label: "Role Icon Image Url",
+    keyType: "default",
+    placeholder: "https://cdn.discordapp.com/role-icons/1222207470714486825/bc3ef24c3f220155f90e55cc0cb0d0cf.png?size=512",
+    def: defaultImageURL
+  },
+  {
+    id: "size",
+    label: "Size of the Image",
+    keyType: "number",
+    placeholder: "18",
+    def: 18
+  }
+];
+function CustomRoleIconPage() {
+  const SUCRI = plugin.storage?.utils?.customRoleIcon;
+  return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(FormRow$2, {
+    label: "Icon Preview",
+    trailing: /* @__PURE__ */ React.createElement(Image$1, {
+      source: {
+        uri: defaultImageURL
+      },
+      style: {
+        width: 128,
+        height: 128,
+        borderRadius: 10
+      }
+    })
+  }), /* @__PURE__ */ React.createElement(FormDivider$1, null), textInput?.map(function(obj, index) {
+    return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(FormInput$1, {
+      title: obj.label,
+      keyboardType: obj?.keyType,
+      placeholder: obj?.placeholder,
+      value: SUCRI[obj?.id] ?? obj?.def,
+      onChange: function(val) {
+        return SUCRI[obj?.id] = val.toString();
+      }
+    }), index !== textInput?.length - 1 && /* @__PURE__ */ React.createElement(FormDivider$1, null));
+  }));
 }const { ScrollView, View, Text, TouchableOpacity, TextInput, Image, Animated, FormLabel, FormIcon: FormIcon$1, FormArrow, FormRow: FormRow$1, FormSwitch, FormSwitchRow, FormSection, FormDivider, FormInput, FormRadioRow, Component } = UIElements;
 function settingPage() {
   storage.useProxy(plugin.storage);
@@ -415,12 +518,14 @@ function settingPage() {
     createList("notype", "No Type", "Toggle No Typings", null, null),
     createList("quickid", "QID", "Toggle Quick ID Setting", null, QuickIdSetting),
     createList("noshare", "No Share", "Toggle No Share", null, NoShareSetting),
-    createList("ralert", "Reply Alert & Custom Mentions", "Toggle Reply Alert & Custom Mentions Settings", null, ReplyAlertSetting),
+    createList("customUsernameColor", "CUC", "Toggle Custom Username Color", null, CustomUsernameColorPage),
+    createList("customRoleIcon", "CRI", "Toggle Custom Role Icon", null, CustomRoleIconPage),
+    createList("ralert", "Reply Alert", "Toggle Settings", null, ReplyAlertSetting),
+    createList("customMention", "Custom Mentions", "Toggle Custom Mentions Settings", null, CustomMentionsSetting),
     createList("removeDecor", "I HATE AVATAR DECORATIONS", "Toggle Remove Avatar Decoration", null, null)
   ];
   return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(ScrollView, null, /* @__PURE__ */ React.createElement(View, {
     style: {
-      paddingBottom: 36,
       borderRadius: 10,
       backgroundColor: "rgba(0, 12, 46, 0.15)"
     }
@@ -453,7 +558,11 @@ function settingPage() {
         backgroundColor: "rgba(0, 0, 0, 0.15)"
       }
     }, /* @__PURE__ */ React.createElement(element.props, null))));
-  })), /* @__PURE__ */ React.createElement(FormDivider, null), updates && /* @__PURE__ */ React.createElement(FormSection, {
+  })), /* @__PURE__ */ React.createElement(FormDivider, null), updates && /* @__PURE__ */ React.createElement(View, {
+    style: {
+      paddingBottom: 36
+    }
+  }, /* @__PURE__ */ React.createElement(FormSection, {
     title: "Updates"
   }, /* @__PURE__ */ React.createElement(View, {
     style: {
@@ -468,10 +577,10 @@ function settingPage() {
       index,
       totalIndex: updates.length
     });
-  })))));
-}const UserStore$1 = metro.findByStoreName("UserStore");
+  }))))));
+}const UserStore$2 = metro.findByStoreName("UserStore");
 metro.findByProps("getMessage", "getMessages");
-const selfId = UserStore$1?.getCurrentUser?.()?.id;
+const selfId = UserStore$2?.getCurrentUser?.()?.id;
 function replyAlertPatch(event) {
   if (event.type == "MESSAGE_CREATE") {
     const check1 = event?.message?.referenced_message?.author?.id == selfId;
@@ -495,9 +604,9 @@ function replyAlertPatch(event) {
     }
   }
 }
-function updateRowReplyAlertPatch(row) {
-  const { gutterColor, customColor, gutterAlpha, colorAlpha, useCustomColor } = plugin.storage?.utils?.replyAlert;
-  if (useCustomColor && row?.message?.mentioned) {
+function updateRowCustomMentionPatch(row) {
+  const { gutterColor, customColor, gutterAlpha, colorAlpha } = plugin.storage?.utils?.replyAlert;
+  if (plugin.storage?.toggle?.customMention && row?.message?.mentioned) {
     row.backgroundHighlight ?? (row.backgroundHighlight = {});
     const backgroundRow = validateHex(customColor, "#DAFFFF");
     const gutterColorColor = validateHex(gutterColor, "#121212");
@@ -778,14 +887,57 @@ function actionSheet() {
       eml_Sheet(component, args, actionMessage, ActionSheet);
     }
   });
+}const UserStore$1 = metro.findByStoreName("UserStore");
+function patchCustomUsernameColor(row) {
+  if (row?.message) {
+    let { hex, enableReply } = plugin.storage?.utils?.customUsernameColor;
+    hex ?? (hex = "#000");
+    enableReply ?? (enableReply = false);
+    const handleColor = function(mes) {
+      if (hex)
+        mes.usernameColor = common.ReactNative.processColor(hex);
+      return mes;
+    };
+    if (plugin.storage?.debug)
+      console.log("[AZZYUTILS cuc.js]", row.message.authorId, row?.message?.referencedMessage?.message?.authorId);
+    if (UserStore$1?.getCurrentUser?.()?.id == row?.message?.authorId)
+      handleColor(row?.message);
+    if (enableReply && row?.message?.referencedMessage?.message && UserStore$1?.getCurrentUser?.()?.id == row?.message?.referencedMessage?.message?.authorId) {
+      handleColor(row?.message?.referencedMessage?.message);
+    }
+    return row;
+  }
+}metro.findByStoreName("UserStore");
+function patchCustomRoleIcon(row) {
+  if (row?.message) {
+    let CRI = plugin.storage?.utils?.customRoleIcon || {
+      name: "BlobCatSip",
+      source: "https://cdn.discordapp.com/role-icons/1222207470714486825/bc3ef24c3f220155f90e55cc0cb0d0cf.png?size=512",
+      alt: "Role icon, BlobCatSip",
+      size: 18
+    };
+    CRI.alt ?? (CRI.alt = `Role icon, ${CRI.name}`);
+    row.message.roleIcon = CRI;
+    return row;
+  }
 }const { DCDChatManager } = common.ReactNative.NativeModules;
 const patchUpdateRowBefore = function() {
   return patcher$1.before("updateRows", DCDChatManager, function(r) {
     if (exports.isEnabled) {
       let rows = JSON.parse(r[1]);
+      if (plugin.storage?.debug)
+        console.log("[AZZYUTILS update_rows.js] ========== updateRows rows ==========");
       rows.forEach(function(row) {
-        updateRowReplyAlertPatch(row);
+        if (plugin.storage?.debug)
+          console.log(row);
+        updateRowCustomMentionPatch(row);
+        if (plugin.storage?.toggle?.customUsernameColor)
+          patchCustomUsernameColor(row);
+        if (plugin.storage?.toggle?.customRoleIcon)
+          patchCustomRoleIcon(row);
       });
+      if (plugin.storage?.debug)
+        console.log("=====================================");
       r[1] = JSON.stringify(rows);
       return r[1];
     }
@@ -796,7 +948,7 @@ const patchUpdateRowAfter = function() {
     if (exports.isEnabled) {
       let rows = JSON.parse(r[1]);
       rows.forEach(function(row) {
-        updateRowReplyAlertPatch(row);
+        updateRowCustomMentionPatch(row);
       });
       r[1] = JSON.stringify(rows);
       return r[1];
@@ -873,12 +1025,16 @@ function sendMessage() {
   toggle: {
     ctime: false,
     ralert: false,
+    customMention: false,
     notype: false,
     quickid: false,
     eml: false,
     noshare: false,
     removeDecor: false,
-    cactus: false
+    cactus: false,
+    customUsernameColor: false,
+    customRoleIcon: false,
+    customClan: false
   },
   utils: {
     cactus: {
@@ -905,6 +1061,19 @@ function sendMessage() {
     noshare: {
       addSaveImage: false,
       addCopyImage: false
+    },
+    customUsernameColor: {
+      hex: "#FFFFFF",
+      enableReply: false
+    },
+    customRoleIcon: {
+      name: "BlobCatSip",
+      source: "https://cdn.discordapp.com/role-icons/1222207470714486825/bc3ef24c3f220155f90e55cc0cb0d0cf.png?size=512",
+      size: 18
+    },
+    customClan: {
+      icon: "",
+      tag: ""
     }
   },
   debug: false
@@ -945,4 +1114,4 @@ var index = {
     unLoadDatas();
   },
   settings: settingPage
-};exports.default=index;Object.defineProperty(exports,'__esModule',{value:true});return exports;})({},vendetta.plugin,vendetta.storage,vendetta,vendetta.metro,vendetta.ui.components,vendetta.metro.common,vendetta.ui,vendetta.ui.assets,vendetta.patcher,vendetta.utils,vendetta.ui.toasts,vendetta.plugins);
+};exports.default=index;Object.defineProperty(exports,'__esModule',{value:true});return exports;})({},vendetta.plugin,vendetta.storage,vendetta.metro,vendetta,vendetta.ui.components,vendetta.metro.common,vendetta.ui,vendetta.ui.assets,vendetta.patcher,vendetta.utils,vendetta.ui.toasts,vendetta.plugins);
