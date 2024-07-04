@@ -132,7 +132,7 @@ export default function SettingPage() {
 	}
 
 	const ComponentChildren = [
-		createChild("patches", "Plugin Patcher", "Patches", "Toggle what the plugin patch", PatchesComponent, styles),
+		createChild("patches", "Plugin Patcher", "Show Patches", "Toggle what the plugin patch", PatchesComponent, styles),
 		createChild("customize", "Customization", "Customize", null, CustomizationComponent, styles),
 		createChild("logging", "Logging", "Toggle Logger", null, LoggingComponent, null),
 		createChild("text", "Text Variables", "Customize Texts", null, TextComponent, styles),

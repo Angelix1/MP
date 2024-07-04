@@ -42,6 +42,12 @@ const customizeableSwitches = [
 		default: false,
 		label: "Add Edit Timestamp",
 		subLabel: "Add Timestamp for edited messages.",
+	},
+	{
+		id: "useEphemeralForDeleted",
+		default: true,
+		label: "Use Ephemeral for Deleted",
+		subLabel: "When messages got deleted it'll use ephemeral instead of normal message (Enabled by Default).",
 	}
 ]
 

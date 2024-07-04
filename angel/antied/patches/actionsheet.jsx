@@ -14,7 +14,7 @@ const MessageStore = findByProps("getMessage", "getMessages");
 const ChannelStore = findByProps("getChannel", "getDMFromUserId");
 const { ActionSheetRow } = findByProps("ActionSheetRow");
 
-export default () => before("openLazy", ActionSheet, ([component, args, actionMessage]) => {
+export default (deletedMessageArray) => before("openLazy", ActionSheet, ([component, args, actionMessage]) => {
 	const message = actionMessage?.message;
 
 	if (args !== "MessageLongPressActionSheet" || !message) return;
@@ -22,6 +22,9 @@ export default () => before("openLazy", ActionSheet, ([component, args, actionMe
 	component.then((instance) => {
 		const unpatch = after("default", instance, (_, comp) => {
 			React.useEffect(() => () => { unpatch() }, []);
+
+			// if(storage.debug) console.log(deletedMessageArray);
+			if(storage.debug) console.log(`[ANTIED ActionSheet]`, message)
 
 			const buttons = findInReactTree(comp, c => c?.find?.(child => child?.props?.label == i18n?.Messages?.MESSAGE_ACTION_REPLY))
 			if (!buttons) return comp;
@@ -118,7 +121,39 @@ export default () => before("openLazy", ActionSheet, ([component, args, actionMe
 					}/>
 				))
 			}
-			
+
+			if(storage.debug) console.log(
+				`[ANTIED ActionSheet]`, 
+				"useEphemeralForDeleted", !storage?.switches?.useEphemeralForDeleted, 
+				"msgExist?", Boolean(deletedMessageArray[message.id])
+			);
+
+			if(!storage?.switches?.useEphemeralForDeleted && deletedMessageArray[message.id]) {
+				const targetPos = position || 1;
+				
+				buttons.splice(targetPos, 0, (
+					<ActionSheetRow
+						label="Remove Deleted Message"
+						subLabel={`Added by ${stripVersions(plugin?.manifest?.name) || "ANTIED"}`}
+						isDestructive={true}
+						icon={<ActionSheetRow.Icon source={getAssetIDByName("ic_edit_24px")}/>}
+						onPress={() => {
+							FluxDispatcher.dispatch({ 
+								type: 'MESSAGE_DELETE',
+								guildId: ChannelStore.getChannel(originalMessage.channel_id).guild_id,
+								id: message?.id,
+								channelId: message?.channel_id,
+								otherPluginBypass: true
+							})
+
+							ActionSheet.hideActionSheet()
+							if(storage?.inputs?.historyToast?.length > 0 || storage?.inputs?.historyToast != "") {
+								showToast(`[ANTIED] Message Removed`, getAssetIDByName("ic_edit_24px"))
+							}
+						}
+					}/>
+				))
+			}			
 		})
 	})
 })

@@ -14,8 +14,40 @@ const {
 
 const CustomColorPickerActionSheet = findByName("CustomColorPickerActionSheet");
 
+export function ReplyAlertSetting() {
+	useProxy(storage)
+	const reply = storage.utils.replyAlert;
 
-export default function ReplyAlertSetting() {
+	return (<>
+		<FormRow
+			label="Toggle Force Alert"
+			subLabel="When someone replying to your message with mention disabled, this option will force ping you"
+			trailing={
+				<FormSwitch
+					value={reply?.useReplyAlert || false}
+					onValueChange={(value) => {
+						reply.useReplyAlert = value
+					}}
+				/>
+			}
+		/>
+		<FormDivider />		
+		<FormRow
+			label="Ignore self Reply"
+			subLabel="When replying to own message, do not ping"
+			trailing={
+				<FormSwitch
+					value={reply?.ignoreSelf || false}
+					onValueChange={(value) => {
+						reply.ignoreSelf = value
+					}}
+				/>
+			}
+		/>
+	</>)
+}
+
+export function CustomMentionsSetting() {
 	useProxy(storage)
 	const reply = storage.utils.replyAlert;
 
@@ -56,47 +88,9 @@ export default function ReplyAlertSetting() {
 	);
 
 	return (<>
-		<FormRow
-			label="Toggle Force Alert"
-			subLabel="When someone replying to your message with mention disabled, this option will force ping you"
-			trailing={
-				<FormSwitch
-					value={reply?.useReplyAlert || false}
-					onValueChange={(value) => {
-						reply.useReplyAlert = value
-					}}
-				/>
-			}
-		/>
-		<FormDivider />
-		<FormRow
-			label="Use Custom Color Mentions"
-			trailing={
-				<FormSwitch
-					value={reply?.useCustomColor || false}
-					onValueChange={(value) => {
-						reply.useCustomColor = value
-					}}
-				/>
-			}
-		/>
-		<FormDivider />
-		<FormRow
-			label="Ignore self Reply"
-			subLabel="When replying to own message, do not ping"
-			trailing={
-				<FormSwitch
-					value={reply?.ignoreSelf || false}
-					onValueChange={(value) => {
-						reply.ignoreSelf = value
-					}}
-				/>
-			}
-		/>
-		<FormDivider />
 		<FormRow 
 			label="Preview"
-			subLabel="How it looks in then chat"
+			subLabel="How it looks in the chat"
 		/>
 		<View style={[{
 			flexDirection: "row", 
@@ -182,4 +176,5 @@ export default function ReplyAlertSetting() {
 			}}
 		/>
 	</>)
+
 }

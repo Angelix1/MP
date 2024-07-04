@@ -35,6 +35,13 @@ const update = [
 		ma("Update Remove Edit button style"),
 		ma("Fixed Message Parser Fails to parse edited message")
 	),
+	createList(
+		"1.2.5",
+		ma(
+			"Added option useEphemeralForDeleted modification in Customize Section",
+			"Added new button on actionMessage if useEphemeralForDeleted disabled"
+		),
+	),
 
 	// createList(
 	// 	"1.",

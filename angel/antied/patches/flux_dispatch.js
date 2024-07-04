@@ -11,10 +11,19 @@ const ChannelStore = findByProps("getChannel", "getDMFromUserId");
 const ChannelMessages = findByProps("_channelMessages");
 const MessageStore = findByProps('getMessage', 'getMessages');
 
+
+/*
+This forsaken File, ohhh maa gaaawd
+
+
+- Angelica
+*/
+
 export default (deletedMessageArray) => before("dispatch", FluxDispatcher, (args) => {
 	const [event] = args;
 	const type = event?.type;
 
+	if(storage.debug) console.log(`[ANTIED fluxdispatcher]`, event)
 	// Message Delete Patch
 	if( type == "MESSAGE_DELETE" ) {
 		if(storage.switches.enableMD == false) return args;
@@ -50,20 +59,26 @@ export default (deletedMessageArray) => before("dispatch", FluxDispatcher, (args
 			)
 		) return args;
 
+
+		const messageGuildId = ChannelStore?.getChannel(originalMessage?.channel_id)?.guild_id;
+
+		let messageObjectByAntied = { 
+			...originalMessage,
+			content: originalMessage?.content,
+			type: 0,			
+			channel_id: originalMessage?.channel_id || event?.channelId,
+			guild_id: messageGuildId,
+			timestamp: `${new Date().toJSON()}`,
+			state: "SENT",
+			was_deleted: true
+		};
+
+		if(storage?.switches?.useEphemeralForDeleted) messageObjectByAntied.flags = 64;
+
 		args[0] = {
 			type: "MESSAGE_UPDATE",
 			channelId: originalMessage?.channel_id || event?.channelId,
-			message: { 
-				...originalMessage,
-				content: originalMessage?.content,
-				type: 0,
-				flags: 64,
-				channel_id: originalMessage?.channel_id || event?.channelId,
-				guild_id: ChannelStore?.getChannel(originalMessage?.channel_id)?.guild_id,
-				timestamp: `${new Date().toJSON()}`,
-				state: "SENT",
-				was_deleted: true
-			}, 
+			message: messageObjectByAntied, 
 			optimistic: false, 
 			sendMessageOptions: {}, 
 			isPushNotification: false,
@@ -90,7 +105,7 @@ export default (deletedMessageArray) => before("dispatch", FluxDispatcher, (args
 				content: originalMessage?.content,
 				where: {
 					channel: originalMessage?.channel_id || event?.channelId,
-					guild: ChannelStore?.getChannel(originalMessage?.channel_id)?.guild_id,
+					guild: messageGuildId,
 					messageLink: originalMessage?.id
 				}
 			})			
@@ -118,10 +133,9 @@ export default (deletedMessageArray) => before("dispatch", FluxDispatcher, (args
 		
 		if(!originalMessage || !OMCheck1 || !OMCheck2 || OMCheck3) return args;
 		
-		if(
-			(!event?.message?.content || !originalMessage?.content) ||
-			(event?.message?.content == originalMessage?.content) 
-		) return args;
+		if(!event?.message?.content || !originalMessage?.content) return args;
+		
+		if(event?.message?.content == originalMessage?.content) return args;		
 
 		if(
 			(storage?.inputs?.ignoredUserList?.length > 0) &&
@@ -159,12 +173,14 @@ export default (deletedMessageArray) => before("dispatch", FluxDispatcher, (args
 			newMessageContent += `  ${addNewLine(Edited)}${event?.message?.content ?? ""}`;
 		}
 
+		const messageGuildId = ChannelStore.getChannel(event?.channelId || event?.message?.channel_id || originalMessage?.channel_id)?.guild_id
+
 		args[0] = {
 			type: "MESSAGE_UPDATE",  
 			message: {
 				...newMsg,
 				content: newMessageContent,
-				guild_id: ChannelStore.getChannel(event?.channelId || event?.message?.channel_id || originalMessage?.channel_id)?.guild_id,
+				guild_id: messageGuildId,
 				edited_timestamp: "invalid_timestamp",
 			},
 		};
@@ -186,7 +202,7 @@ export default (deletedMessageArray) => before("dispatch", FluxDispatcher, (args
 				edited: event?.message?.content,
 				where: {
 					channel: event?.channelId || event?.message?.channel_id || originalMessage?.channel_id,
-					guild: ChannelStore?.getChannel(event?.channelId || event?.message?.channel_id || originalMessage?.channel_id)?.guild_id,
+					guild: messageGuildId,
 					messageLink: event?.message?.id
 				}
 			})

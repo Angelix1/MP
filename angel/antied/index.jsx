@@ -12,6 +12,8 @@ import { default as sillyPatch } from "./stoel/patch";
 import { FluxDispatcher } from "@vendetta/metro/common";
 import { storage } from "@vendetta/plugin";
 import { findByProps } from '@vendetta/metro';
+import * as Assets from "@vendetta/ui/assets";
+
 import actionsheet from "./patches/actionsheet";
 import SettingPage from "./Settings";
 
@@ -19,6 +21,8 @@ const ChannelMessages = findByProps("_channelMessages");
 
 export const regexEscaper = string => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 export const stripVersions = (str) => str.replace(/\s?v\d+.\d+.\w+/, "");
+export const vendettaUiAssets = Object.keys(Assets.all).map(x => x?.name)
+
 
 makeDefaults(storage, {
 	setting: {
@@ -43,7 +47,8 @@ makeDefaults(storage, {
 		darkMode: true,
 		removeDismissButton: false,
 		addTimestampForEdits: false,
-		timestampStyle: 'R',		
+		timestampStyle: 'R',
+		useEphemeralForDeleted: true		
 	},
 	colors: {
 		textColor: "#E40303",
@@ -63,6 +68,7 @@ makeDefaults(storage, {
 	},
 	misc: {
 		timestampPos: "BEFORE", // BEFORE|AFTER
+		editHistoryIcon: "ic_edit_24px"
 	},
 	log: [],
 	logWarning: false,
@@ -82,7 +88,7 @@ export default {
 			createMessageRecord(),
 			messageRecordDefault(),
 			updateMessageRecord(),
-			actionsheet()	
+			actionsheet(deletedMessageArray)	
 		)
 	},
 	onUnload: () => {

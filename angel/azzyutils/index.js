@@ -17,12 +17,16 @@ makeDefaults(storage, {
 	toggle: {
 		ctime: false,
 		ralert: false,
+		customMention: false,
 		notype: false,
 		quickid: false,
 		eml: false,
 		noshare: false,
 		removeDecor: false,
 		cactus: false,
+		customUsernameColor: false,
+		customRoleIcon: false,
+		customClan: false,		
 	},
 	utils: {
 		cactus: {
@@ -49,6 +53,19 @@ makeDefaults(storage, {
 		noshare: {
 			addSaveImage: false,
 			addCopyImage: false
+		},
+		customUsernameColor: {
+			hex: "#FFFFFF",
+			enableReply: false,
+		},
+		customRoleIcon: {
+			name: "BlobCatSip",
+			source: 'https://cdn.discordapp.com/role-icons/1222207470714486825/bc3ef24c3f220155f90e55cc0cb0d0cf.png?size=512',
+			size: 18
+		},
+		customClan: {
+			icon: "",
+			tag: ""
 		}
 	},
 	debug: false

@@ -1,14 +1,17 @@
 import { storage } from "@vendetta/plugin"
 import { useProxy } from "@vendetta/storage"
+import { findByName } from "@vendetta/metro";
 import { UIElements } from "../../lib/utility";
-import ReplyAlertSetting from "./pages/utils/replyAlertSetting";
-import EML from "./pages/utils/eml";
-import updates from "./update";
 import VersionChange from "../../lib/components/versionChange";
+import updates from "./update";
+
+import { CustomMentionsSetting, ReplyAlertSetting } from "./pages/utils/replyAlertSetting";
+import EML from "./pages/utils/eml";
 import NoShareSetting from "./pages/utils/NoShareSetting";
 import CAT from "./pages/utils/cat";
 import QuickIdSetting from "./pages/utils/quickIdSetting";
-import { findByName } from "@vendetta/metro";
+import CustomUsernameColorPage from "./pages/utils/cuc";
+import CustomRoleIconPage from "./pages/utils/cri";
 
 // const HelpMessage = findByName("HelpMessage");
 
@@ -37,15 +40,17 @@ export default () => {
 		createList("eml", "EML", "Toggle Edit Message Locally", null, EML),
 		createList("notype", "No Type", "Toggle No Typings", null, null),
 		createList("quickid", "QID", "Toggle Quick ID Setting", null, QuickIdSetting),
-		createList("noshare", "No Share", "Toggle No Share", null, NoShareSetting),	
-		createList("ralert", "Reply Alert & Custom Mentions", "Toggle Reply Alert & Custom Mentions Settings", null, ReplyAlertSetting),
+		createList("noshare", "No Share", "Toggle No Share", null, NoShareSetting),
+		createList("customUsernameColor", "CUC", "Toggle Custom Username Color", null, CustomUsernameColorPage),
+		createList("customRoleIcon", "CRI", "Toggle Custom Role Icon", null, CustomRoleIconPage),
+		createList("ralert", "Reply Alert", "Toggle Settings", null, ReplyAlertSetting),
+		createList("customMention", "Custom Mentions", "Toggle Custom Mentions Settings", null, CustomMentionsSetting),
 		createList("removeDecor", "I HATE AVATAR DECORATIONS", "Toggle Remove Avatar Decoration", null, null),
 	]
 
 	return (<>
 		<ScrollView>
-			<View style={{
-				paddingBottom: 36,
+			<View style={{				
 				borderRadius: 10, 
 				backgroundColor: "rgba(0, 12, 46, 0.15)"
 			}}>
@@ -100,20 +105,24 @@ export default () => {
 			<FormDivider />
 			{
 				updates && (
-					<FormSection title="Updates">
-						<View style={{ 
-							margin: 5, 
-							padding: 5,
-							borderRadius: 10,
-							backgroundColor: "rgba(59, 30, 55, 0.15)"
-						}}>
-							{
-								updates.map((data, index) => {
-									return <VersionChange change={data} index={index} totalIndex={updates.length}/>
-								})
-							}
-						</View>
-					</FormSection>
+					<View style={{
+						paddingBottom: 36
+					}}>
+						<FormSection title="Updates">
+							<View style={{ 
+								margin: 5, 
+								padding: 5,
+								borderRadius: 10,
+								backgroundColor: "rgba(59, 30, 55, 0.15)"
+							}}>
+								{
+									updates.map((data, index) => {
+										return <VersionChange change={data} index={index} totalIndex={updates.length}/>
+									})
+								}
+							</View>
+						</FormSection>
+					</View>
 				)
 			}
 		</ScrollView>

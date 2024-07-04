@@ -36,15 +36,11 @@ export function replyAlertPatch(event) {
 	}
 }
 
-export function updateRowReplyAlertPatch(row) {
+export function updateRowCustomMentionPatch(row) {
 
-	const { gutterColor, customColor, gutterAlpha, colorAlpha, useCustomColor } = storage?.utils?.replyAlert;
-	/*
-		const origin = MessageStore.getMessage(row?.message?.channelId, row?.message?.id);
+	const { gutterColor, customColor, gutterAlpha, colorAlpha } = storage?.utils?.replyAlert;
 
-		if(useCustomColor && origin.mentions?.some(e => e?.id === selfId )) 
-	*/
-	if(useCustomColor && row?.message?.mentioned) {
+	if(storage?.toggle?.customMention && row?.message?.mentioned) {
 		row.backgroundHighlight ??= {};
 
 		const backgroundRow = validateHex(customColor, "#DAFFFF");

@@ -42,7 +42,7 @@ export default (deletedMessagesArray) => before("updateRows", DCDChatManager, (r
 			"strong",
 			"list",
 			"blockQuote"
-			];
+		];
 
 		if (Array.isArray(obj)) {
 			return obj.map(data => transformObject(data, charColor));
@@ -149,6 +149,7 @@ export default (deletedMessagesArray) => before("updateRows", DCDChatManager, (r
 	}
 
 	rows.forEach((row) => {
+		if(storage.debug) console.log(row);
 		if(row?.type == 1) {
 			if( deletedMessagesArray[row?.message?.id] ) {
 				if(deletedText?.length > 0 || deletedText != "") {
@@ -161,7 +162,7 @@ export default (deletedMessagesArray) => before("updateRows", DCDChatManager, (r
 					row.message.content = appliedColor;
 				}
 				
-				if(removeDismissButton) {
+				if(removeDismissButton && row?.message?.ephemeralIndication) {
 					row.message.ephemeralIndication = updateEphemeralIndication(
 						row.message.ephemeralIndication,
 						undefined,

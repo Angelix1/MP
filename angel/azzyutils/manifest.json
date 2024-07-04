@@ -1,14 +1,14 @@
 {
-    "name": "Azzy Utils v1.0.3",
-    "description": "This is may utility plwugins, dawnt stael it",
+    "name":"Azzy Utils v1.1.1",
+    "description":"This is may utility plwugins, dawnt stael it",
+    "main": "index.js",
     "authors": [
         {
             "name": "Angelica",
             "id": "692632336961110087"
         }
     ],
-    "main": "index.js",
     "vendetta": {
-        "icon": "ic_progress_wrench_24px"
+    	"icon":"ic_progress_wrench_24px"
     }
 }
