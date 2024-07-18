@@ -95,7 +95,7 @@ function withinChance(percentage) {
   const random = Math.random();
   return random < percentage / 100;
 }const { ScrollView: ScrollView$2, View: View$2, Text: Text$2, TouchableOpacity: TouchableOpacity$4, TextInput: TextInput$2, Image: Image$4, Animated: Animated$2 } = components.General;
-const { FormLabel: FormLabel$2, FormIcon: FormIcon$5, FormArrow: FormArrow$2, FormRow: FormRow$8, FormSwitch: FormSwitch$7, FormSwitchRow: FormSwitchRow$2, FormSection: FormSection$2, FormDivider: FormDivider$5, FormInput: FormInput$4 } = components.Forms;
+const { FormLabel: FormLabel$2, FormIcon: FormIcon$5, FormArrow: FormArrow$2, FormRow: FormRow$7, FormSwitch: FormSwitch$6, FormSwitchRow: FormSwitchRow$2, FormSection: FormSection$2, FormDivider: FormDivider$5, FormInput: FormInput$4 } = components.Forms;
 const current = assets.getAssetIDByName("ic_radio_square_checked_24px");
 const older = assets.getAssetIDByName("ic_radio_square_24px");
 const info = assets.getAssetIDByName("ic_information_24px");
@@ -143,7 +143,7 @@ function VersionChange(param) {
   const [isOpen, setOpen] = common.React.useState(false);
   common.React.useState(false);
   function createSubRow(arr, label, subLabel, icon) {
-    return /* @__PURE__ */ common.React.createElement(View$2, null, /* @__PURE__ */ common.React.createElement(FormRow$8, {
+    return /* @__PURE__ */ common.React.createElement(View$2, null, /* @__PURE__ */ common.React.createElement(FormRow$7, {
       label: label || "No Section",
       subLabel: subLabel || null,
       leading: icon && addIcon(icon),
@@ -151,7 +151,7 @@ function VersionChange(param) {
         styles.textHeader
       ]
     }), arr.map(function(x, i) {
-      return /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(FormRow$8, {
+      return /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(FormRow$7, {
         label: x,
         style: [
           styles.textBody,
@@ -161,7 +161,7 @@ function VersionChange(param) {
       }));
     }));
   }
-  return /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(components.ErrorBoundary, null, /* @__PURE__ */ common.React.createElement(FormRow$8, {
+  return /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(components.ErrorBoundary, null, /* @__PURE__ */ common.React.createElement(FormRow$7, {
     label: change?.version,
     leading: index == 0 ? addIcon(current) : addIcon(older),
     trailing: addIcon(info),
@@ -185,26 +185,27 @@ function VersionChange(param) {
 const update = [
   createList("1.0.0", ma("Created the Plugin")),
   createList("1.0.1 - 1.0.3", ma("[1.0.1] Added Remove Decor", "[1.0.1] Customization for reply alert", "[1.0.1] Option to revert locally edited message (wipe on unload of the plugin)", "[1.0.22] Setting for Quick Id", "[1.0.22] Option to toggle Force alert", "[1.0.22] Preview for ReplyAlert"), ma("[1.0.2] Remove Custom Timestamp", "[1.0.24] EML will wipe its log when onunload and revert every message its edit", "[1.0.3] Update EML, QID buttons"), ma("[1.0.21] Fix Cactus", "[1.0.22] Fix No Share fails to find Share button", "[1.0.23] Fix Quick ID removing edit message button", "[1.0.3] Fixed EML button fails to append under Reply Button", "[1.0.3] Fixed QID buttons fails to append to a correct place")),
-  createList("1.1.0", ma("[1.1.0] Added Custom Username Color", "[1.1.0] Added Custom Role Icon"), ma("[1.1.0] Separated reply alert and custom mention to be their own thing"))
+  createList("1.1", ma("[1.1.0] Added Custom Username Color", "[1.1.0] Added Custom Role Icon"), ma("[1.1.0] Separated reply alert and custom mention to be their own thing")),
+  createList("1.2", null, ma("[1.2] Removed EML due possibly harmful use case"))
 ];
-var updates = update.reverse();const { ScrollView: ScrollView$1, View: View$1, Text: Text$1, TouchableOpacity: TouchableOpacity$3, TextInput: TextInput$1, Image: Image$3, Animated: Animated$1, FormLabel: FormLabel$1, FormIcon: FormIcon$4, FormArrow: FormArrow$1, FormRow: FormRow$7, FormSwitch: FormSwitch$6, FormSwitchRow: FormSwitchRow$1, FormSection: FormSection$1, FormDivider: FormDivider$4, FormInput: FormInput$3, FormRadioRow: FormRadioRow$1, FormSliderRow } = UIElements;
+var updates = update.reverse();const { ScrollView: ScrollView$1, View: View$1, Text: Text$1, TouchableOpacity: TouchableOpacity$3, TextInput: TextInput$1, Image: Image$3, Animated: Animated$1, FormLabel: FormLabel$1, FormIcon: FormIcon$4, FormArrow: FormArrow$1, FormRow: FormRow$6, FormSwitch: FormSwitch$5, FormSwitchRow: FormSwitchRow$1, FormSection: FormSection$1, FormDivider: FormDivider$4, FormInput: FormInput$3, FormRadioRow: FormRadioRow$1, FormSliderRow } = UIElements;
 const CustomColorPickerActionSheet$1 = metro.findByName("CustomColorPickerActionSheet");
 function ReplyAlertSetting() {
   storage.useProxy(plugin.storage);
   const reply = plugin.storage.utils.replyAlert;
-  return /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(FormRow$7, {
+  return /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(FormRow$6, {
     label: "Toggle Force Alert",
     subLabel: "When someone replying to your message with mention disabled, this option will force ping you",
-    trailing: /* @__PURE__ */ common.React.createElement(FormSwitch$6, {
+    trailing: /* @__PURE__ */ common.React.createElement(FormSwitch$5, {
       value: reply?.useReplyAlert || false,
       onValueChange: function(value) {
         reply.useReplyAlert = value;
       }
     })
-  }), /* @__PURE__ */ common.React.createElement(FormDivider$4, null), /* @__PURE__ */ common.React.createElement(FormRow$7, {
+  }), /* @__PURE__ */ common.React.createElement(FormDivider$4, null), /* @__PURE__ */ common.React.createElement(FormRow$6, {
     label: "Ignore self Reply",
     subLabel: "When replying to own message, do not ping",
-    trailing: /* @__PURE__ */ common.React.createElement(FormSwitch$6, {
+    trailing: /* @__PURE__ */ common.React.createElement(FormSwitch$5, {
       value: reply?.ignoreSelf || false,
       onValueChange: function(value) {
         reply.ignoreSelf = value;
@@ -239,7 +240,7 @@ function CustomMentionsSetting() {
       }
     });
   };
-  return /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(FormRow$7, {
+  return /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(FormRow$6, {
     label: "Preview",
     subLabel: "How it looks in the chat"
   }), /* @__PURE__ */ common.React.createElement(View$1, {
@@ -277,7 +278,7 @@ function CustomMentionsSetting() {
       fontSize: 20,
       color: "#000000"
     }
-  }, " Example Black Text "))), /* @__PURE__ */ common.React.createElement(FormDivider$4, null), /* @__PURE__ */ common.React.createElement(FormRow$7, {
+  }, " Example Black Text "))), /* @__PURE__ */ common.React.createElement(FormDivider$4, null), /* @__PURE__ */ common.React.createElement(FormRow$6, {
     label: "Background Color",
     subLabel: "Click to Update",
     onPress: colorSet,
@@ -294,7 +295,7 @@ function CustomMentionsSetting() {
         backgroundColor: reply?.customColor || "#000"
       }
     }))
-  }), /* @__PURE__ */ common.React.createElement(FormDivider$4, null), /* @__PURE__ */ common.React.createElement(FormRow$7, {
+  }), /* @__PURE__ */ common.React.createElement(FormDivider$4, null), /* @__PURE__ */ common.React.createElement(FormRow$6, {
     label: "Gutter Color",
     subLabel: "Click to Update",
     onPress: gutterSet,
@@ -331,17 +332,6 @@ function CustomMentionsSetting() {
       setGA(Number(convert.formatDecimal(v)));
       reply.gutterAlpha = convert.alphaToHex(convert.toPercentage(v));
     }
-  }));
-}const { FormRow: FormRow$6, FormSwitch: FormSwitch$5 } = UIElements;
-function EML() {
-  return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(FormRow$6, {
-    label: "Bypass Antied Logging",
-    trailing: /* @__PURE__ */ React.createElement(FormSwitch$5, {
-      value: plugin.storage?.utils?.eml?.logEdit || false,
-      onValueChange: function(value) {
-        plugin.storage.utils.eml.logEdit = value;
-      }
-    })
   }));
 }const { FormRow: FormRow$5, FormSwitch: FormSwitch$4 } = UIElements;
 function NoShareSetting() {
@@ -520,7 +510,6 @@ function settingPage() {
   };
   const PageChildren = [
     createList("cactus", "Cactus", "Toggle uhhh.. something", null, CAT),
-    createList("eml", "EML", "Toggle Edit Message Locally", null, EML),
     createList("notype", "No Type", "Toggle No Typings", null, null),
     createList("quickid", "QID", "Toggle Quick ID Setting", null, QuickIdSetting),
     createList("noshare", "No Share", "Toggle No Share", null, NoShareSetting),
@@ -629,111 +618,6 @@ function updateRowCustomMentionPatch(row) {
       replyAlertPatch(event);
     }
   });
-}const MessageStore = metro.findByProps("getMessage", "getMessages");
-const ChannelStore = metro.findByProps("getChannel", "getDMFromUserId");
-const Messages$2 = metro.findByProps("startEditMessage");
-const { ActionSheetRow: ActionSheetRow$1 } = metro.findByProps("ActionSheetRow");
-let AZZYEML = false;
-function eml_Sheet(component, args, actionMessage, ActionSheet) {
-  if (args == "MessageLongPressActionSheet" && plugin.storage?.toggle?.eml) {
-    const message = actionMessage?.message;
-    if (!message)
-      return;
-    component.then(function(instance) {
-      const unpatch = patcher$1.after("default", instance, function(_, comp) {
-        common.React.useEffect(function() {
-          return function() {
-            unpatch();
-          };
-        }, []);
-        const buttons = utils.findInReactTree(comp, function(c) {
-          return c?.find?.(function(child) {
-            return child?.props?.label == common.i18n?.Messages?.MESSAGE_ACTION_REPLY;
-          });
-        });
-        if (!buttons)
-          return comp;
-        const position = Math.max(buttons.findIndex(function(x) {
-          return x?.props?.label == common.i18n?.Messages?.MESSAGE_ACTION_REPLY;
-        }), buttons.length - 1);
-        const savedMsg = plugin.storage?.utils?.eml?.editedMsg?.find(function(m) {
-          return m.id == message?.id;
-        });
-        if (savedMsg) {
-          buttons.splice(position, 0, /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(ActionSheetRow$1, {
-            label: "Revert Locally Edited Message",
-            subLabel: "Added by Azzy Util",
-            icon: /* @__PURE__ */ common.React.createElement(ActionSheetRow$1.Icon, {
-              source: assets.getAssetIDByName("ic_edit_24px")
-            }),
-            onPress: function() {
-              const origin = MessageStore.getMessage(message.channel_id, message.id);
-              common.FluxDispatcher.dispatch({
-                type: "MESSAGE_UPDATE",
-                message: {
-                  ...origin,
-                  ...message,
-                  content: savedMsg.content,
-                  edited_timestamp: origin.editedTimestamp,
-                  mention_roles: origin.mentionRoles,
-                  mention_everyone: origin.mentionEveryone,
-                  guild_id: ChannelStore.getChannel(origin.channel_id || message.channel_id)?.guild_id
-                },
-                otherPluginBypass: true
-              });
-              plugin.storage.utils.eml.editedMsg = plugin.storage?.utils?.eml?.editedMsg?.filter(function(x) {
-                return x.id != message.id;
-              });
-              ActionSheet.hideActionSheet();
-            }
-          })));
-        } else {
-          buttons.splice(position, 0, /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(ActionSheetRow$1, {
-            label: "Edit Message Locally",
-            subLabel: "Added by Azzy Util",
-            icon: /* @__PURE__ */ common.React.createElement(ActionSheetRow$1.Icon, {
-              source: assets.getAssetIDByName("ic_edit_24px")
-            }),
-            onPress: function() {
-              Messages$2.startEditMessage(`AZZYEML-${message.channel_id}`, message.id, message.content);
-              ActionSheet.hideActionSheet();
-            }
-          })));
-        }
-      });
-    });
-  }
-}
-function eml_startEditMessage(args) {
-  if (args[0]?.startsWith("AZZYEML-")) {
-    args[0] = args[0].replaceAll("AZZYEML-", "");
-    AZZYEML = true;
-    return args;
-  } else {
-    AZZYEML = false;
-    return args;
-  }
-}
-function eml_editMessage(args) {
-  if (AZZYEML) {
-    let [channelId, messageId, msg] = args;
-    const origin = MessageStore.getMessage(channelId, messageId);
-    plugin.storage?.utils?.eml?.editedMsg.push(origin);
-    common.FluxDispatcher.dispatch({
-      type: "MESSAGE_UPDATE",
-      message: {
-        ...origin,
-        ...msg,
-        edited_timestamp: origin.editedTimestamp,
-        mention_roles: origin.mentionRoles,
-        mention_everyone: origin.mentionEveryone,
-        member: origin.author,
-        guild_id: ChannelStore.getChannel(origin.channel_id || channelId)?.guild_id
-      },
-      otherPluginBypass: plugin.storage?.utils?.eml?.logEdit
-    });
-    toasts.showToast("Message Edited", assets.getAssetIDByName("ic_edit_24px"));
-  }
 }const { ActionSheetRow } = metro.findByProps("ActionSheetRow");
 function quickCopyID(component, args, actionMessage, ActionSheet) {
   if (args == "MessageLongPressActionSheet" && plugin.storage?.toggle?.quickid) {
@@ -890,7 +774,6 @@ function actionSheet() {
     if (exports.isEnabled) {
       quickCopyID(component, args, actionMessage, ActionSheet);
       noShare(component, args, actionMessage, ActionSheet);
-      eml_Sheet(component, args, actionMessage, ActionSheet);
     }
   });
 }const UserStore$2 = metro.findByStoreName("UserStore");
@@ -981,16 +864,10 @@ const stopTyping = function() {
 };const Messages$1 = metro.findByProps("startEditMessage");
 const beforeStartEdit = function() {
   return patcher$1.before("startEditMessage", Messages$1, function(args) {
-    if (exports.isEnabled) {
-      eml_startEditMessage(args);
-    }
   });
 };
 const beforeEdit = function() {
   return patcher$1.before("editMessage", Messages$1, function(args) {
-    if (exports.isEnabled) {
-      eml_editMessage(args);
-    }
   });
 };function removeDecorGetUser(user) {
   if (user?.avatarDecorationData && plugin.storage?.toggle?.removeDecor) {
