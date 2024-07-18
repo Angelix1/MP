@@ -18,18 +18,6 @@ const togglePatch = [
 		label: "Toggle Message Update",
 		subLabel: "Logs edited message",
 	},
-	{
-		id: "enableLogging",
-		default: false,
-		label: "Toggle Antied Logging",
-		subLabel: "Save Logs to plugin's storage",
-	},
-	{
-		id: "logWarning",
-		default: false,
-		label: "Toggle Exceeding Log Limit Warning",
-		subLabel: "Warn if log limit exceed",
-	}
 ]
 
 export default function PatchesComponent({ styles }) {

@@ -2,7 +2,6 @@ import { before, after } from "@vendetta/patcher";
 import { findByProps } from "@vendetta/metro";
 
 
-import eml_Sheet from "../utils/eml";
 import quickCopyID from "../utils/quickId";
 import noShare from "../utils/noShare";
 import { isEnabled } from "..";
@@ -15,6 +14,5 @@ export default () => before("openLazy", ActionSheet, ([component, args, actionMe
 		// console.log(component, args, actionMessage)
 		quickCopyID(component, args, actionMessage, ActionSheet) // Quick ID
 		noShare(component, args, actionMessage, ActionSheet) // No Share
-		eml_Sheet(component, args, actionMessage, ActionSheet) // Edit Message Locally
 	}
 })

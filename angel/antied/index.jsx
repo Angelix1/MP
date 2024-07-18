@@ -7,10 +7,9 @@ import createMessageRecord from "./patches/createMessageRecord";
 import messageRecordDefault from "./patches/messageRecordDefault";
 import updateMessageRecord from "./patches/updateMessageRecord";
 
-import { default as sillyPatch } from "./stoel/patch";
-
 import { FluxDispatcher } from "@vendetta/metro/common";
 import { storage } from "@vendetta/plugin";
+import { plugin } from "@vendetta";
 import { findByProps } from '@vendetta/metro';
 import * as Assets from "@vendetta/ui/assets";
 
@@ -29,7 +28,6 @@ makeDefaults(storage, {
 		colorpick: false,
 		customize: false,
 		ingorelist: false,
-		logging: false,
 		patches: false,
 		text: false,
 		timestamp: false,
@@ -38,7 +36,6 @@ makeDefaults(storage, {
 		customizeable: false,
 		enableMD: true,
 		enableMU: true,
-		enableLogging: false,
 		useBackgroundColor: false,
 		useSemRawColors: false,
 		ignoreBots: false,
@@ -61,17 +58,14 @@ makeDefaults(storage, {
 	inputs: {
 		deletedMessageBuffer: "This message is deleted",
 		editedMessageBuffer: "`[ EDITED ]`",
-		historyToast: "History Removed",
-		logLength: 60,
-		logCount: 100,
-		ignoredUserList: []
+		historyToast: "[ANTI ED] History Removed",
+		ignoredUserList: [],
+		customPluginName: (plugin?.manifest?.name || "ANTIED")
 	},
 	misc: {
 		timestampPos: "BEFORE", // BEFORE|AFTER
 		editHistoryIcon: "ic_edit_24px"
 	},
-	log: [],
-	logWarning: false,
 	debug: false
 })
 
@@ -81,7 +75,6 @@ const patches = []
 export default {
 	onLoad: () => {
 		patches.push(
-			sillyPatch(),
 			fluxDispatchPatch(deletedMessageArray),
 			updateRowsPatch(deletedMessageArray),
 			selfEditPatch(),
@@ -90,12 +83,20 @@ export default {
 			updateMessageRecord(),
 			actionsheet(deletedMessageArray)	
 		)
+		
+		if(plugin?.manifest?.name != storage?.inputs?.customPluginName) {
+			plugin.manifest.name = storage?.inputs?.customPluginName
+		}
 	},
 	onUnload: () => {
         
         for (const unpatch of patches) {
             unpatch();
         }
+
+		if(plugin?.manifest?.name != storage?.inputs?.customPluginName) {
+			plugin.manifest.name = storage?.inputs?.customPluginName
+		}
 
 		for (const channelId in ChannelMessages._channelMessages) {
 			for (const message of ChannelMessages._channelMessages[channelId]._array) {

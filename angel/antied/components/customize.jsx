@@ -3,8 +3,10 @@ import { getAssetIDByName } from "@vendetta/ui/assets"
 import { useProxy } from "@vendetta/storage"
 
 import { UIElements } from "../../../lib/utility"
+import { findByName } from "@vendetta/metro"
 
 const { View, FormRow, FormIcon, FormSwitch, FormDivider } = UIElements
+const HelpMessage = findByName("HelpMessage");
 
 const customizeableSwitches = [
 	{
@@ -55,7 +57,13 @@ export default function CustomizationComponent({ styles }) {
 	useProxy(storage)
 	
 	return (<>
-		<View style={[styles.subText]}>{
+		<View style={[styles.subText]}>		
+		{
+			storage?.switches.minimalistic && (
+				<HelpMessage messageType={0}>To use styling, disable "Minimalistic" option</HelpMessage>
+			)
+		}
+		{
 			customizeableSwitches?.map((obj, index) => {
 				return (<>
 					<FormRow 

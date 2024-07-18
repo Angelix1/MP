@@ -89,28 +89,6 @@ export default (deletedMessageArray) => before("dispatch", FluxDispatcher, (args
 			stage: 1
 		}
 
-		if(storage?.switches?.enableLogging) {
-			storage.log.push({
-				type: "MessageDelete",
-				author: {
-					id: originalMessage?.author?.id,
-					username: `${
-						(originalMessage?.author?.discriminator == "0") ? 
-							`@${originalMessage?.author?.username}` :
-							`${originalMessage?.author?.username}#${originalMessage?.author?.discriminator}`
-					}`,
-					avatar: originalMessage?.author?.avatar,
-					bot: originalMessage?.author?.bot
-				},
-				content: originalMessage?.content,
-				where: {
-					channel: originalMessage?.channel_id || event?.channelId,
-					guild: messageGuildId,
-					messageLink: originalMessage?.id
-				}
-			})			
-		}
-
 		return args;
 	}
 
@@ -184,29 +162,6 @@ export default (deletedMessageArray) => before("dispatch", FluxDispatcher, (args
 				edited_timestamp: "invalid_timestamp",
 			},
 		};
-
-		if(storage?.switches?.enableLogging) {
-			storage.log.push({
-				type: "MessageUpdate",
-				author: {
-					id: event?.message?.author?.id,
-					username: `${
-						(event?.message?.author?.discriminator == "0") ? 
-							`@${event?.message?.author?.username}` :
-							`${event?.message?.author?.username}#${event?.message?.author?.discriminator}`
-					}`,
-					avatar: event?.message?.author?.avatar,
-					bot: event?.message?.author?.bot
-				},
-				content: originalMessage?.content,
-				edited: event?.message?.content,
-				where: {
-					channel: event?.channelId || event?.message?.channel_id || originalMessage?.channel_id,
-					guild: messageGuildId,
-					messageLink: event?.message?.id
-				}
-			})
-		}
 
 		return args;
 	}

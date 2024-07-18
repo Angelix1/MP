@@ -115,7 +115,7 @@ export default (deletedMessageArray) => before("openLazy", ActionSheet, ([compon
 
 							ActionSheet.hideActionSheet()
 							if(storage?.inputs?.historyToast?.length > 0 || storage?.inputs?.historyToast != "") {
-								showToast(`[ANTI ED] ${storage?.inputs?.historyToast}`, getAssetIDByName("ic_edit_24px"))
+								showToast(storage?.inputs?.historyToast?.toString?.(), getAssetIDByName(storage?.misc?.editHistoryIcon || "ic_edit_24px"))
 							}
 						}
 					}/>

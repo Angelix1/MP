@@ -1,8 +1,10 @@
 import { storage } from "@vendetta/plugin"
 import { useProxy } from "@vendetta/storage"
 import { UIElements } from "../../../lib/utility"
+import { plugin } from "@vendetta"
+import { getAssetIDByName } from "@vendetta/ui/assets"
 
-const { View, FormInput, FormDivider } = UIElements
+const { FormRow, FormIcon, View, FormInput, FormDivider } = UIElements
 
 const customizedableTexts = [
 	{
@@ -22,18 +24,6 @@ const customizedableTexts = [
 		title: "Customize Remove History Toast Message",
 		type: "default",
 		placeholder: "History Removed",
-	},
-	{
-		id: "logLength",
-		title: "Customize Log message length",
-		type: "numeric",
-		placeholder: "60",
-	},
-	{
-		id: "logCount",
-		title: "Customize Log Limit",
-		type: "numeric",
-		placeholder: "1000",
 	}
 ]
 
@@ -41,7 +31,8 @@ export default function TextComponent({ styles }) {
 	useProxy(storage)
 	
 	return (<>
-		<View style={[styles.subText]}>{
+		<View style={[styles.subText]}>
+		{
 			customizedableTexts?.map((obj, index) => {
 				return (<>
 					<FormInput
@@ -55,6 +46,30 @@ export default function TextComponent({ styles }) {
 				</>)
 			})
 		}
+		<FormInput
+			title="Customize Plugin Name"
+			keyboardType="default"
+			placeholder={storage?.inputs?.customPluginName || plugin?.manifest?.name || "ANTIED"}
+			value={storage?.inputs?.customPluginName}
+			onChange={(val) => {
+				storage.inputs.customPluginName = val.toString()
+				plugin.manifest.name = val.toString()
+			}}
+		/>
+		<FormDivider/>
+		<FormRow
+			label={`Current Used Icon - ${storage?.misc?.editHistoryIcon || "ic_edit_24px"}`}
+			subLabel="Icon for Message History Removed toast"
+			trailing={<FormIcon style={{ opacity: 1 }} source={getAssetIDByName(storage?.misc?.editHistoryIcon)} />}
+		/>
+		<FormDivider/>
+		<FormInput
+			title="Icon Name"
+			keyboardType="default"
+			placeholder="ic_edit_24px"
+			value={storage?.misc?.editHistoryIcon || "ic_edit_24px"}
+			onChange={(val) => (storage.misc.editHistoryIcon = val.toString())}
+		/>
 		</View>
 	</>)
 }

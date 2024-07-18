@@ -31,7 +31,7 @@ const update = [
 		)
 	),
 	createList(
-		"1.1.0",
+		"1.1",
 		ma(
 			"[1.1.0] Added Custom Username Color",
 			"[1.1.0] Added Custom Role Icon",
@@ -39,6 +39,11 @@ const update = [
 		ma(
 			"[1.1.0] Separated reply alert and custom mention to be their own thing",
 		)
+	),
+	createList(
+		"1.2",
+		null,
+		ma("[1.2] Removed EML due possibly harmful use case")
 	)
 ]
 

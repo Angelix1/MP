@@ -6,8 +6,6 @@ import { replyAlertPatch } from "../utils/replyAlert"
 import { isEnabled } from ".."
 
 
-
-
 export default () => before("dispatch", FluxDispatcher, ([event]) => {
 	if(isEnabled) {
 		replyAlertPatch(event); // ReplyAlert		

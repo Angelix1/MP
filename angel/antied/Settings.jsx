@@ -1,4 +1,4 @@
-import { constants, React, stylesheet } from "@vendetta/metro/common";
+import { constants, React, ReactNative, stylesheet } from "@vendetta/metro/common";
 import { findByName } from '@vendetta/metro';
 import { useProxy } from "@vendetta/storage";
 import { storage } from "@vendetta/plugin";
@@ -7,7 +7,6 @@ import { semanticColors } from "@vendetta/ui";
 
 import PatchesComponent from './components/patches';
 import TextComponent from './components/texts';
-import LoggingComponent from './components/logging';
 import TimestampComponent from './components/timestamp';
 import ColorPickComponent from './components/colorpick';
 import IgnoreListComponent from './components/ignorelist';
@@ -19,9 +18,7 @@ import VersionChange from "../../lib/components/versionChange";
 
 const { FormSwitch, FormSection, FormRow, ScrollView, View, FormDivider, Animated } = UIElements;
 
-
 const LinearGradient = findByName("LinearGradient");
-
 const styles = stylesheet.createThemedStyleSheet({
 	text: {
 		color: semanticColors.HEADER_SECONDARY,
@@ -134,90 +131,101 @@ export default function SettingPage() {
 	const ComponentChildren = [
 		createChild("patches", "Plugin Patcher", "Show Patches", "Toggle what the plugin patch", PatchesComponent, styles),
 		createChild("customize", "Customization", "Customize", null, CustomizationComponent, styles),
-		createChild("logging", "Logging", "Toggle Logger", null, LoggingComponent, null),
 		createChild("text", "Text Variables", "Customize Texts", null, TextComponent, styles),
 		createChild("timestamp", "Timestamp", "Timestamp Styles", null, TimestampComponent, styles),
 		createChild("colorpick", "Colors", "Customize Colors", null, ColorPickComponent, styles),
 		createChild("ingorelist", "Ignore List", "Show IngoreList", null, IgnoreListComponent, null),
 	]
 
+	const currentOS = ReactNative?.Platform?.OS || null;
+
+	const entireUIList = (<>
+		<View style={[ styles.lnBorder, bgStyle, styles.darkMask ]}>
+			{
+				ComponentChildren.map((element) => {				
+					return (<>
+						<FormSection title={element?.title}>
+							<FormRow
+								label={element?.label}
+								subLabel={element?.subLabel}
+								trailing={
+									<FormSwitch
+										value={storage.setting[element?.id]}
+										onValueChange={(value) => {
+											storage.setting[element?.id] = value
+										}}
+									/>
+								}
+							/>
+							{
+								storage.setting[element.id] && 
+								element.props && (
+									<View style={{ 
+										margin: 5, 
+										padding: 10, 
+										borderRadius: 10, 
+										backgroundColor: "rgba(0, 0, 0, 0.15)"
+									}}>
+										{React.createElement(element.props, { styles: element.propsData })}
+									</View>
+								)
+							}
+						</FormSection>
+					</>)
+				})
+			}
+			<FormDivider />
+			<FormRow
+				label="Debug"
+				subLabel="Enable console logging"
+				style={[styles.padBot]}
+				trailing={
+					<FormSwitch
+						value={storage.debug}
+						onValueChange={(value) => {
+							storage.debug = value
+						}}
+					/>
+				}
+			/>
+			<FormDivider />
+			{
+				updates && (
+					<FormSection title="Updates">
+						<View style={{ 
+							margin: 5, 
+							padding: 5,
+							borderRadius: 10,
+							backgroundColor: "rgba(59, 30, 55, 0.15)"
+						}}>
+							{
+								updates.map((data, index) => {
+									return <VersionChange change={data} index={index} totalIndex={updates.length}/>
+								})
+							}
+						</View>
+					</FormSection>
+				)
+			}
+		</View>
+	</>)
+
 	return (<>
 		<ScrollView>
-			<LinearGradient 
-				start={{x: 0.8, y: 0}}
-				end={{x: 0, y: 0.8}}
-				colors={[ "#b8ff34", "#4bff61", "#44f6ff", "#4dafff", "#413dff", "#d63efd" ]}
-				style={[ styles.lnBorder, styles.shadowTemplate, styles.lnShadow, styles.padBot ]}
-			>
-				<View style={[ styles.lnBorder, bgStyle, styles.darkMask ]}>
-					{
-						ComponentChildren.map((element) => {				
-							return (<>
-								<FormSection title={element?.title}>
-									<FormRow
-										label={element?.label}
-										subLabel={element?.subLabel}
-										trailing={
-											<FormSwitch
-												value={storage.setting[element?.id]}
-												onValueChange={(value) => {
-													storage.setting[element?.id] = value
-												}}
-											/>
-										}
-									/>
-									{
-										storage.setting[element.id] && 
-										element.props && (
-											<View style={{ 
-												margin: 5, 
-												padding: 10, 
-												borderRadius: 10, 
-												backgroundColor: "rgba(0, 0, 0, 0.15)"
-											}}>
-												{React.createElement(element.props, { styles: element.propsData })}
-											</View>
-										)
-									}
-								</FormSection>
-							</>)
-						})
-					}
-					<FormDivider />
-					<FormRow
-						label="Debug"
-						subLabel="Enable console logging"
-						style={[styles.padBot]}
-						trailing={
-							<FormSwitch
-								value={storage.debug}
-								onValueChange={(value) => {
-									storage.debug = value
-								}}
-							/>
-						}
-					/>
-					<FormDivider />
-					{
-						updates && (
-							<FormSection title="Updates">
-								<View style={{ 
-									margin: 5, 
-									padding: 5,
-									borderRadius: 10,
-									backgroundColor: "rgba(59, 30, 55, 0.15)"
-								}}>
-									{
-										updates.map((data, index) => {
-											return <VersionChange change={data} index={index} totalIndex={updates.length}/>
-										})
-									}
-								</View>
-							</FormSection>
-						)
-					}
-				</View>
-			</LinearGradient>
+			{
+				(currentOS == "android") ? 
+					(<>					
+						<LinearGradient 
+							start={{x: 0.8, y: 0}}
+							end={{x: 0, y: 0.8}}
+							colors={[ "#b8ff34", "#4bff61", "#44f6ff", "#4dafff", "#413dff", "#d63efd" ]}
+							style={[ styles.lnBorder, styles.shadowTemplate, styles.lnShadow, styles.padBot ]}
+						>
+							{entireUIList}	
+						</LinearGradient>
+					</>) :
+					(entireUIList)
+			}
 		</ScrollView>
 	</>)
 }

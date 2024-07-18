@@ -6,7 +6,6 @@ import VersionChange from "../../lib/components/versionChange";
 import updates from "./update";
 
 import { CustomMentionsSetting, ReplyAlertSetting } from "./pages/utils/replyAlertSetting";
-import EML from "./pages/utils/eml";
 import NoShareSetting from "./pages/utils/NoShareSetting";
 import CAT from "./pages/utils/cat";
 import QuickIdSetting from "./pages/utils/quickIdSetting";
@@ -37,7 +36,6 @@ export default () => {
 
 	const PageChildren = [
 		createList("cactus", "Cactus", "Toggle uhhh.. something", null, CAT),
-		createList("eml", "EML", "Toggle Edit Message Locally", null, EML),
 		createList("notype", "No Type", "Toggle No Typings", null, null),
 		createList("quickid", "QID", "Toggle Quick ID Setting", null, QuickIdSetting),
 		createList("noshare", "No Share", "Toggle No Share", null, NoShareSetting),
