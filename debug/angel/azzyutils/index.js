@@ -1,4 +1,84 @@
-(function(exports,plugin,storage,metro,_vendetta,components,common,ui,assets,toasts,patcher$1,utils,plugins){'use strict';const { openLazy, hideActionSheet } = metro.findByProps("openLazy", "hideActionSheet");
+(function(exports,plugin,storage,metro,common,ui,assets,components,_vendetta,toasts,patcher$1,utils,plugins){'use strict';const { ScrollView: ScrollView$4, View: View$4, Text: Text$4, TouchableOpacity: TouchableOpacity$4, TextInput: TextInput$4, Image: Image$4, Animated: Animated$4 } = components.General;
+const { FormLabel: FormLabel$4, FormIcon: FormIcon$5, FormArrow: FormArrow$4, FormRow: FormRow$7, FormSwitch: FormSwitch$6, FormSwitchRow: FormSwitchRow$4, FormSection: FormSection$4, FormDivider: FormDivider$5, FormInput: FormInput$5 } = components.Forms;
+const current = assets.getAssetIDByName("ic_radio_square_checked_24px");
+const older = assets.getAssetIDByName("ic_radio_square_24px");
+const info = assets.getAssetIDByName("ic_information_24px");
+assets.getAssetIDByName("ic_info");
+const newStuff = assets.getAssetIDByName("premium_sparkles");
+const updatedStuff = assets.getAssetIDByName("ic_sync_24px");
+const fixStuff = assets.getAssetIDByName("ic_progress_wrench_24px");
+const styles = common.stylesheet.createThemedStyleSheet({
+  border: {
+    borderRadius: 10
+  },
+  textBody: {
+    color: ui.semanticColors.TEXT_NORMAL,
+    fontFamily: common.constants.Fonts.PRIMARY_MEDIUM,
+    letterSpacing: 0.25,
+    fontSize: 22
+  },
+  textBody: {
+    color: ui.semanticColors.INPUT_PLACEHOLDER_TEXT,
+    fontFamily: common.constants.Fonts.DISPLAY_NORMAL,
+    letterSpacing: 0.25,
+    fontSize: 16
+  },
+  versionBG: {
+    margin: 10,
+    padding: 15,
+    backgroundColor: "rgba(55, 149, 225, 0.3)"
+  },
+  rowLabel: {
+    margin: 10,
+    padding: 15,
+    backgroundColor: "rgba(33, 219, 222, 0.34)"
+  }
+});
+function addIcon(icon) {
+  return /* @__PURE__ */ common.React.createElement(FormIcon$5, {
+    style: {
+      opacity: 1
+    },
+    source: icon
+  });
+}
+function VersionChange(param) {
+  let { change, index, totalIndex } = param;
+  const [isOpen, setOpen] = common.React.useState(false);
+  common.React.useState(false);
+  function createSubRow(arr, label, subLabel, icon) {
+    return /* @__PURE__ */ common.React.createElement(View$4, null, /* @__PURE__ */ common.React.createElement(FormRow$7, {
+      label: label || "No Section",
+      subLabel: subLabel || null,
+      leading: icon && addIcon(icon),
+      style: [
+        styles.textHeader
+      ]
+    }), arr.map(function(x, i) {
+      return /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(FormRow$7, {
+        label: x,
+        style: [
+          styles.textBody,
+          styles.rowLabel,
+          styles.border
+        ]
+      }));
+    }));
+  }
+  return /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(components.ErrorBoundary, null, /* @__PURE__ */ common.React.createElement(FormRow$7, {
+    label: change?.version,
+    leading: index == 0 ? addIcon(current) : addIcon(older),
+    trailing: addIcon(info),
+    onPress: function() {
+      setOpen(!isOpen);
+    }
+  }), isOpen && /* @__PURE__ */ common.React.createElement(View$4, {
+    style: [
+      styles.versionBG,
+      styles.border
+    ]
+  }, change?.new?.length > 0 && createSubRow(change.new, "New", "New stuffies", newStuff), change?.updated?.length > 0 && createSubRow(change.updated, "Changes", "Update things", updatedStuff), change?.fix?.length > 0 && createSubRow(change.fix, "Fixes", "Me hate borken things", fixStuff)), index == totalIndex.length - 1 ? void 0 : /* @__PURE__ */ common.React.createElement(FormDivider$5, null)));
+}const { openLazy, hideActionSheet } = metro.findByProps("openLazy", "hideActionSheet");
 function makeDefaults(object, defaults) {
   if (object != void 0) {
     if (defaults != void 0) {
@@ -41,10 +121,6 @@ function createList(version) {
     fix: f
   };
 }
-const UIElements = {
-  ...components.General,
-  ...components.Forms
-};
 const transparentBase64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mJsrQAAAgwBAJ9P6qYAAAAASUVORK5CYII=";
 function validateHex(input) {
   let defaultColor = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : "#000";
@@ -94,86 +170,6 @@ const convert = {
 function withinChance(percentage) {
   const random = Math.random();
   return random < percentage / 100;
-}const { ScrollView: ScrollView$2, View: View$2, Text: Text$2, TouchableOpacity: TouchableOpacity$4, TextInput: TextInput$2, Image: Image$4, Animated: Animated$2 } = components.General;
-const { FormLabel: FormLabel$2, FormIcon: FormIcon$5, FormArrow: FormArrow$2, FormRow: FormRow$7, FormSwitch: FormSwitch$6, FormSwitchRow: FormSwitchRow$2, FormSection: FormSection$2, FormDivider: FormDivider$5, FormInput: FormInput$4 } = components.Forms;
-const current = assets.getAssetIDByName("ic_radio_square_checked_24px");
-const older = assets.getAssetIDByName("ic_radio_square_24px");
-const info = assets.getAssetIDByName("ic_information_24px");
-assets.getAssetIDByName("ic_info");
-const newStuff = assets.getAssetIDByName("premium_sparkles");
-const updatedStuff = assets.getAssetIDByName("ic_sync_24px");
-const fixStuff = assets.getAssetIDByName("ic_progress_wrench_24px");
-const styles = common.stylesheet.createThemedStyleSheet({
-  border: {
-    borderRadius: 10
-  },
-  textBody: {
-    color: ui.semanticColors.TEXT_NORMAL,
-    fontFamily: common.constants.Fonts.PRIMARY_MEDIUM,
-    letterSpacing: 0.25,
-    fontSize: 22
-  },
-  textBody: {
-    color: ui.semanticColors.INPUT_PLACEHOLDER_TEXT,
-    fontFamily: common.constants.Fonts.DISPLAY_NORMAL,
-    letterSpacing: 0.25,
-    fontSize: 16
-  },
-  versionBG: {
-    margin: 10,
-    padding: 15,
-    backgroundColor: "rgba(55, 149, 225, 0.3)"
-  },
-  rowLabel: {
-    margin: 10,
-    padding: 15,
-    backgroundColor: "rgba(33, 219, 222, 0.34)"
-  }
-});
-function addIcon(icon) {
-  return /* @__PURE__ */ common.React.createElement(FormIcon$5, {
-    style: {
-      opacity: 1
-    },
-    source: icon
-  });
-}
-function VersionChange(param) {
-  let { change, index, totalIndex } = param;
-  const [isOpen, setOpen] = common.React.useState(false);
-  common.React.useState(false);
-  function createSubRow(arr, label, subLabel, icon) {
-    return /* @__PURE__ */ common.React.createElement(View$2, null, /* @__PURE__ */ common.React.createElement(FormRow$7, {
-      label: label || "No Section",
-      subLabel: subLabel || null,
-      leading: icon && addIcon(icon),
-      style: [
-        styles.textHeader
-      ]
-    }), arr.map(function(x, i) {
-      return /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(FormRow$7, {
-        label: x,
-        style: [
-          styles.textBody,
-          styles.rowLabel,
-          styles.border
-        ]
-      }));
-    }));
-  }
-  return /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(components.ErrorBoundary, null, /* @__PURE__ */ common.React.createElement(FormRow$7, {
-    label: change?.version,
-    leading: index == 0 ? addIcon(current) : addIcon(older),
-    trailing: addIcon(info),
-    onPress: function() {
-      setOpen(!isOpen);
-    }
-  }), isOpen && /* @__PURE__ */ common.React.createElement(View$2, {
-    style: [
-      styles.versionBG,
-      styles.border
-    ]
-  }, change?.new?.length > 0 && createSubRow(change.new, "New", "New stuffies", newStuff), change?.updated?.length > 0 && createSubRow(change.updated, "Changes", "Update things", updatedStuff), change?.fix?.length > 0 && createSubRow(change.fix, "Fixes", "Me hate borken things", fixStuff)), index == totalIndex.length - 1 ? void 0 : /* @__PURE__ */ common.React.createElement(FormDivider$5, null)));
 }function ma() {
   for (var _len = arguments.length, a = new Array(_len), _key = 0; _key < _len; _key++) {
     a[_key] = arguments[_key];
@@ -188,7 +184,8 @@ const update = [
   createList("1.1", ma("[1.1.0] Added Custom Username Color", "[1.1.0] Added Custom Role Icon"), ma("[1.1.0] Separated reply alert and custom mention to be their own thing")),
   createList("1.2", null, ma("[1.2] Removed EML due possibly harmful use case"))
 ];
-var updates = update.reverse();const { ScrollView: ScrollView$1, View: View$1, Text: Text$1, TouchableOpacity: TouchableOpacity$3, TextInput: TextInput$1, Image: Image$3, Animated: Animated$1, FormLabel: FormLabel$1, FormIcon: FormIcon$4, FormArrow: FormArrow$1, FormRow: FormRow$6, FormSwitch: FormSwitch$5, FormSwitchRow: FormSwitchRow$1, FormSection: FormSection$1, FormDivider: FormDivider$4, FormInput: FormInput$3, FormRadioRow: FormRadioRow$1, FormSliderRow } = UIElements;
+var updates = update.reverse();const { ScrollView: ScrollView$3, View: View$3, Text: Text$3, TouchableOpacity: TouchableOpacity$3, TextInput: TextInput$3, Pressable: Pressable$3, Image: Image$3, Animated: Animated$3, Component: Component$3 } = components.General;
+const { FormLabel: FormLabel$3, FormIcon: FormIcon$4, FormArrow: FormArrow$3, FormRow: FormRow$6, FormSwitch: FormSwitch$5, FormSwitchRow: FormSwitchRow$3, FormSection: FormSection$3, FormDivider: FormDivider$4, FormInput: FormInput$4, FormRadioRow: FormRadioRow$3, FormSliderRow } = components.Forms;
 const CustomColorPickerActionSheet$1 = metro.findByName("CustomColorPickerActionSheet");
 function ReplyAlertSetting() {
   storage.useProxy(plugin.storage);
@@ -243,7 +240,7 @@ function CustomMentionsSetting() {
   return /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(FormRow$6, {
     label: "Preview",
     subLabel: "How it looks in the chat"
-  }), /* @__PURE__ */ common.React.createElement(View$1, {
+  }), /* @__PURE__ */ common.React.createElement(View$3, {
     style: [
       {
         flexDirection: "row",
@@ -256,24 +253,24 @@ function CustomMentionsSetting() {
         marginLeft: 10
       }
     ]
-  }, /* @__PURE__ */ common.React.createElement(View$1, {
+  }, /* @__PURE__ */ common.React.createElement(View$3, {
     style: {
       width: "2%",
       backgroundColor: `${reply?.gutterColor}${convert.alphaToHex(convert.toPercentage(GA))}`
     }
-  }), /* @__PURE__ */ common.React.createElement(View$1, {
+  }), /* @__PURE__ */ common.React.createElement(View$3, {
     style: {
       flex: 1,
       backgroundColor: `${reply?.customColor}${convert.alphaToHex(convert.toPercentage(CA))}`,
       justifyContent: "center",
       alignItems: "center"
     }
-  }, /* @__PURE__ */ common.React.createElement(Text$1, {
+  }, /* @__PURE__ */ common.React.createElement(Text$3, {
     style: {
       fontSize: 20,
       color: "#FFFFFF"
     }
-  }, " Example White Text "), /* @__PURE__ */ common.React.createElement(Text$1, {
+  }, " Example White Text "), /* @__PURE__ */ common.React.createElement(Text$3, {
     style: {
       fontSize: 20,
       color: "#000000"
@@ -333,7 +330,7 @@ function CustomMentionsSetting() {
       reply.gutterAlpha = convert.alphaToHex(convert.toPercentage(v));
     }
   }));
-}const { FormRow: FormRow$5, FormSwitch: FormSwitch$4 } = UIElements;
+}const { FormRow: FormRow$5, FormSwitch: FormSwitch$4 } = components.Forms;
 function NoShareSetting() {
   return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(FormRow$5, {
     label: "Add Save Image Button to Image ActionSheet",
@@ -345,9 +342,9 @@ function NoShareSetting() {
       }
     })
   }));
-}const { FormInput: FormInput$2 } = UIElements;
+}const { FormInput: FormInput$3 } = components.Forms;
 function CAT() {
-  return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(FormInput$2, {
+  return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(FormInput$3, {
     title: "Name",
     keyboardType: "default",
     placeholder: "Angel",
@@ -356,7 +353,7 @@ function CAT() {
       return plugin.storage.utils.cactus.name = val.toString();
     }
   }));
-}const { FormRow: FormRow$4, FormSwitch: FormSwitch$3, FormDivider: FormDivider$3 } = UIElements;
+}const { FormRow: FormRow$4, FormSwitch: FormSwitch$3, FormDivider: FormDivider$3 } = components.Forms;
 function QuickIdSetting() {
   storage.useProxy(plugin.storage);
   const cl = function(label, subLabel, key) {
@@ -384,7 +381,8 @@ function QuickIdSetting() {
     }), i !== lists?.length - 1 && /* @__PURE__ */ common.React.createElement(FormDivider$3, null));
   }), /* @__PURE__ */ common.React.createElement(FormDivider$3, null));
 }const CustomColorPickerActionSheet = metro.findByName("CustomColorPickerActionSheet");
-const { FormRow: FormRow$3, FormSwitch: FormSwitch$2, TouchableOpacity: TouchableOpacity$2, Image: Image$2, FormDivider: FormDivider$2, FormIcon: FormIcon$3 } = UIElements;
+const { ScrollView: ScrollView$2, View: View$2, Text: Text$2, TouchableOpacity: TouchableOpacity$2, TextInput: TextInput$2, Pressable: Pressable$2, Image: Image$2, Animated: Animated$2, Component: Component$2 } = components.General;
+const { FormLabel: FormLabel$2, FormIcon: FormIcon$3, FormArrow: FormArrow$2, FormRow: FormRow$3, FormSwitch: FormSwitch$2, FormSwitchRow: FormSwitchRow$2, FormSection: FormSection$2, FormDivider: FormDivider$2, FormInput: FormInput$2, FormRadioRow: FormRadioRow$2 } = components.Forms;
 const switches = [
   {
     id: "enableReply",
@@ -441,7 +439,8 @@ function CustomUsernameColorPage() {
     }), index !== switches?.length - 1 && /* @__PURE__ */ React.createElement(FormDivider$2, null));
   }));
 }const defaultImageURL = "https://cdn.discordapp.com/role-icons/1222207470714486825/bc3ef24c3f220155f90e55cc0cb0d0cf.png?size=512";
-const { FormRow: FormRow$2, FormSwitch: FormSwitch$1, TouchableOpacity: TouchableOpacity$1, Image: Image$1, FormDivider: FormDivider$1, FormIcon: FormIcon$2, FormInput: FormInput$1 } = UIElements;
+const { ScrollView: ScrollView$1, View: View$1, Text: Text$1, TouchableOpacity: TouchableOpacity$1, TextInput: TextInput$1, Pressable: Pressable$1, Image: Image$1, Animated: Animated$1, Component: Component$1 } = components.General;
+const { FormLabel: FormLabel$1, FormIcon: FormIcon$2, FormArrow: FormArrow$1, FormRow: FormRow$2, FormSwitch: FormSwitch$1, FormSwitchRow: FormSwitchRow$1, FormSection: FormSection$1, FormDivider: FormDivider$1, FormInput: FormInput$1, FormRadioRow: FormRadioRow$1 } = components.Forms;
 const textInput = [
   {
     id: "name",
@@ -496,7 +495,8 @@ function CustomRoleIconPage() {
       }
     }), index !== textInput?.length - 1 && /* @__PURE__ */ React.createElement(FormDivider$1, null));
   }));
-}const { ScrollView, View, Text, TouchableOpacity, TextInput, Image, Animated, FormLabel, FormIcon: FormIcon$1, FormArrow, FormRow: FormRow$1, FormSwitch, FormSwitchRow, FormSection, FormDivider, FormInput, FormRadioRow, Component } = UIElements;
+}const { ScrollView, View, Text, TouchableOpacity, TextInput, Pressable, Image, Animated, Component } = components.General;
+const { FormLabel, FormIcon: FormIcon$1, FormArrow, FormRow: FormRow$1, FormSwitch, FormSwitchRow, FormSection, FormDivider, FormInput, FormRadioRow } = components.Forms;
 function settingPage() {
   storage.useProxy(plugin.storage);
   const createList = function(id, title, label, subLabel, props) {
@@ -699,7 +699,7 @@ function quickCopyID(component, args, actionMessage, ActionSheet) {
     });
   }
 }const { downloadMediaAsset } = metro.findByProps("downloadMediaAsset");
-const { FormRow, FormIcon } = UIElements;
+const { FormRow, FormIcon } = components.Forms;
 function noShare(component, args, actionMessage, ActionSheet) {
   if (plugin.storage?.toggle?.noshare) {
     if (args == "MediaShareActionSheet") {
@@ -1008,4 +1008,4 @@ var index = {
     unLoadDatas();
   },
   settings: settingPage
-};exports.default=index;Object.defineProperty(exports,'__esModule',{value:true});return exports;})({},vendetta.plugin,vendetta.storage,vendetta.metro,vendetta,vendetta.ui.components,vendetta.metro.common,vendetta.ui,vendetta.ui.assets,vendetta.ui.toasts,vendetta.patcher,vendetta.utils,vendetta.plugins);
+};exports.default=index;Object.defineProperty(exports,'__esModule',{value:true});return exports;})({},vendetta.plugin,vendetta.storage,vendetta.metro,vendetta.metro.common,vendetta.ui,vendetta.ui.assets,vendetta.ui.components,vendetta,vendetta.ui.toasts,vendetta.patcher,vendetta.utils,vendetta.plugins);

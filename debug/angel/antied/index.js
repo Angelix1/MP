@@ -58,10 +58,6 @@ function createList(version) {
     fix: f
   };
 }
-const UIElements = {
-  ...components.General,
-  ...components.Forms
-};
 const transparentBase64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mJsrQAAAgwBAJ9P6qYAAAAASUVORK5CYII=";
 const convert = {
   toPercentage: function(decimalValue) {
@@ -505,7 +501,8 @@ function actionsheet(deletedMessageArray) {
       });
     });
   });
-}const { View: View$7, FormRow: FormRow$b, FormIcon: FormIcon$6, FormSwitch: FormSwitch$6, FormDivider: FormDivider$a } = UIElements;
+}const { ScrollView: ScrollView$9, View: View$8, Text: Text$8, TouchableOpacity: TouchableOpacity$8, TextInput: TextInput$8, Pressable: Pressable$5, Image: Image$7, Animated: Animated$7 } = components.General;
+const { FormLabel: FormLabel$7, FormIcon: FormIcon$8, FormArrow: FormArrow$7, FormRow: FormRow$b, FormSwitch: FormSwitch$8, FormSwitchRow: FormSwitchRow$7, FormSection: FormSection$7, FormDivider: FormDivider$a, FormInput: FormInput$7, FormSliderRow: FormSliderRow$4 } = components.Forms;
 const togglePatch = [
   {
     id: "enableMD",
@@ -523,7 +520,7 @@ const togglePatch = [
 function PatchesComponent(param) {
   let { styles } = param;
   storage.useProxy(plugin.storage);
-  return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(View$7, {
+  return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(View$8, {
     style: [
       styles.subText
     ]
@@ -531,13 +528,13 @@ function PatchesComponent(param) {
     return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(FormRow$b, {
       label: obj?.label,
       subLabel: obj?.subLabel,
-      leading: obj?.icon && /* @__PURE__ */ React.createElement(FormIcon$6, {
+      leading: obj?.icon && /* @__PURE__ */ React.createElement(FormIcon$8, {
         style: {
           opacity: 1
         },
         source: Assets.getAssetIDByName(obj?.icon)
       }),
-      trailing: "id" in obj ? /* @__PURE__ */ React.createElement(FormSwitch$6, {
+      trailing: "id" in obj ? /* @__PURE__ */ React.createElement(FormSwitch$8, {
         value: plugin.storage?.switches[obj?.id] ?? obj?.default,
         onValueChange: function(value) {
           return plugin.storage.switches[obj?.id] = value;
@@ -545,7 +542,8 @@ function PatchesComponent(param) {
       }) : void 0
     }), index !== togglePatch?.length - 1 && /* @__PURE__ */ React.createElement(FormDivider$a, null));
   })));
-}const { FormRow: FormRow$a, FormIcon: FormIcon$5, View: View$6, FormInput: FormInput$3, FormDivider: FormDivider$9 } = UIElements;
+}const { ScrollView: ScrollView$8, View: View$7, Text: Text$7, TouchableOpacity: TouchableOpacity$7, TextInput: TextInput$7, Pressable: Pressable$4, Image: Image$6, Animated: Animated$6 } = components.General;
+const { FormLabel: FormLabel$6, FormIcon: FormIcon$7, FormArrow: FormArrow$6, FormRow: FormRow$a, FormSwitch: FormSwitch$7, FormSwitchRow: FormSwitchRow$6, FormSection: FormSection$6, FormDivider: FormDivider$9, FormInput: FormInput$6, FormSliderRow: FormSliderRow$3 } = components.Forms;
 const customizedableTexts = [
   {
     id: "deletedMessageBuffer",
@@ -569,12 +567,12 @@ const customizedableTexts = [
 function TextComponent(param) {
   let { styles } = param;
   storage.useProxy(plugin.storage);
-  return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(View$6, {
+  return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(View$7, {
     style: [
       styles.subText
     ]
   }, customizedableTexts?.map(function(obj, index) {
-    return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(FormInput$3, {
+    return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(FormInput$6, {
       title: obj?.title,
       keyboardType: obj?.type,
       placeholder: obj?.placeholder?.toString(),
@@ -583,7 +581,7 @@ function TextComponent(param) {
         return plugin.storage.inputs[obj.id] = val.toString();
       }
     }), index !== customizedableTexts.length - 1 && /* @__PURE__ */ React.createElement(FormDivider$9, null));
-  }), /* @__PURE__ */ React.createElement(FormInput$3, {
+  }), /* @__PURE__ */ React.createElement(FormInput$6, {
     title: "Customize Plugin Name",
     keyboardType: "default",
     placeholder: plugin.storage?.inputs?.customPluginName || _vendetta.plugin?.manifest?.name || "ANTIED",
@@ -595,13 +593,13 @@ function TextComponent(param) {
   }), /* @__PURE__ */ React.createElement(FormDivider$9, null), /* @__PURE__ */ React.createElement(FormRow$a, {
     label: `Current Used Icon - ${plugin.storage?.misc?.editHistoryIcon || "ic_edit_24px"}`,
     subLabel: "Icon for Message History Removed toast",
-    trailing: /* @__PURE__ */ React.createElement(FormIcon$5, {
+    trailing: /* @__PURE__ */ React.createElement(FormIcon$7, {
       style: {
         opacity: 1
       },
       source: Assets.getAssetIDByName(plugin.storage?.misc?.editHistoryIcon)
     })
-  }), /* @__PURE__ */ React.createElement(FormDivider$9, null), /* @__PURE__ */ React.createElement(FormInput$3, {
+  }), /* @__PURE__ */ React.createElement(FormDivider$9, null), /* @__PURE__ */ React.createElement(FormInput$6, {
     title: "Icon Name",
     keyboardType: "default",
     placeholder: "ic_edit_24px",
@@ -610,7 +608,7 @@ function TextComponent(param) {
       return plugin.storage.misc.editHistoryIcon = val.toString();
     }
   })));
-}const { FormRow: FormRow$9 } = UIElements;
+}const { FormRow: FormRow$9 } = components.Forms;
 const RowCheckmark = metro.findByName("RowCheckmark");
 function SelectRow(param) {
   let { label, subLabel, selected, onPress } = param;
@@ -671,7 +669,7 @@ const timestampsPosition = [
     key: "AFTER"
   }
 ];
-const { FormRow: FormRow$8, FormDivider: FormDivider$8 } = UIElements;
+const { FormRow: FormRow$8, FormDivider: FormDivider$8 } = components.Forms;
 function TimestampComponent() {
   storage.useProxy(plugin.storage);
   return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(FormRow$8, {
@@ -709,10 +707,10 @@ const semRaw = [
   ...SC,
   ...RC
 ];
-const { FormRow: FormRow$7, FormDivider: FormDivider$7, ScrollView: ScrollView$4 } = UIElements;
+const { FormRow: FormRow$7, FormDivider: FormDivider$7, ScrollView: ScrollView$7 } = components.Forms;
 function SemRawComponent() {
   storage.useProxy(plugin.storage);
-  return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(ScrollView$4, null, /* @__PURE__ */ React.createElement(FormRow$7, {
+  return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(ScrollView$7, null, /* @__PURE__ */ React.createElement(FormRow$7, {
     label: "Choose Color"
   }), semRaw.map(function(NAME, i) {
     return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(SelectRow, {
@@ -725,7 +723,8 @@ function SemRawComponent() {
   })));
 }const CustomColorPickerActionSheet = metro.findByName("CustomColorPickerActionSheet");
 const { alphaToHex, hexAlphaToPercent, toPercentage, toDecimal, formatDecimal } = convert;
-const { View: View$5, FormRow: FormRow$6, FormSwitch: FormSwitch$5, FormSliderRow, FormDivider: FormDivider$6, Text: Text$3, TouchableOpacity: TouchableOpacity$4, Image: Image$2 } = UIElements;
+const { ScrollView: ScrollView$6, View: View$6, Text: Text$6, TouchableOpacity: TouchableOpacity$6, TextInput: TextInput$6, Pressable: Pressable$3, Image: Image$5, Animated: Animated$5 } = components.General;
+const { FormLabel: FormLabel$5, FormIcon: FormIcon$6, FormArrow: FormArrow$5, FormRow: FormRow$6, FormSwitch: FormSwitch$6, FormSwitchRow: FormSwitchRow$5, FormSection: FormSection$5, FormDivider: FormDivider$6, FormInput: FormInput$5, FormSliderRow: FormSliderRow$2 } = components.Forms;
 const customizeableColors = [
   {
     id: "textColor",
@@ -765,7 +764,7 @@ function ColorPickComponent(param) {
       return ui.rawColors[col];
     }
   };
-  return /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(View$5, {
+  return /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(View$6, {
     style: [
       styles.subText
     ]
@@ -798,9 +797,9 @@ function ColorPickComponent(param) {
       label: obj?.label,
       subLabel: obj?.subLabel || "Click to Update",
       onPress: whenPressed,
-      trailing: /* @__PURE__ */ common.React.createElement(TouchableOpacity$4, {
+      trailing: /* @__PURE__ */ common.React.createElement(TouchableOpacity$6, {
         onPress: whenPressed
-      }, /* @__PURE__ */ common.React.createElement(Image$2, {
+      }, /* @__PURE__ */ common.React.createElement(Image$5, {
         source: {
           uri: transparentBase64
         },
@@ -814,7 +813,7 @@ function ColorPickComponent(param) {
         }
       }))
     }));
-  }), /* @__PURE__ */ common.React.createElement(View$5, {
+  }), /* @__PURE__ */ common.React.createElement(View$6, {
     style: styles.container
   }, /* @__PURE__ */ common.React.createElement(FormRow$6, {
     style: {
@@ -823,13 +822,13 @@ function ColorPickComponent(param) {
     },
     label: `Preview Style: ${plugin.storage?.switches?.darkMode ? "Dark" : "Light"} Mode`,
     subLabel: `Click to Switch Mode`,
-    trailing: /* @__PURE__ */ common.React.createElement(FormSwitch$5, {
+    trailing: /* @__PURE__ */ common.React.createElement(FormSwitch$6, {
       value: plugin.storage?.switches?.darkMode ?? true,
       onValueChange: function(value) {
         return plugin.storage.switches.darkMode = value;
       }
     })
-  }), /* @__PURE__ */ common.React.createElement(View$5, {
+  }), /* @__PURE__ */ common.React.createElement(View$6, {
     style: [
       styles.row,
       styles.border,
@@ -838,29 +837,29 @@ function ColorPickComponent(param) {
         marginRight: 10
       }
     ]
-  }, /* @__PURE__ */ common.React.createElement(View$5, {
+  }, /* @__PURE__ */ common.React.createElement(View$6, {
     style: {
       width: "2%",
       backgroundColor: `${plugin.storage.colors.gutterColor}${parseColorPercentage(gutterAlpha)}`
     }
-  }), /* @__PURE__ */ common.React.createElement(View$5, {
+  }), /* @__PURE__ */ common.React.createElement(View$6, {
     style: {
       flex: 1,
       backgroundColor: `${plugin.storage.switches.useSemRawColors ? handleSemRaw(plugin.storage?.colors?.semRawColorPrefix) || plugin.storage.colors.backgroundColor : plugin.storage.colors.backgroundColor}${parseColorPercentage(BGAlpha)}`,
       justifyContent: "center",
       alignItems: "center"
     }
-  }, /* @__PURE__ */ common.React.createElement(Text$3, {
+  }, /* @__PURE__ */ common.React.createElement(Text$6, {
     style: {
       fontSize: 20,
       color: plugin.storage?.switches?.darkMode ? "white" : "black"
     }
-  }, " Low Effort Normal Example Message "), /* @__PURE__ */ common.React.createElement(Text$3, {
+  }, " Low Effort Normal Example Message "), /* @__PURE__ */ common.React.createElement(Text$6, {
     style: {
       fontSize: 20,
       color: plugin.storage.colors.textColor || "#000000"
     }
-  }, " Low Effort Deleted Example Message "))), /* @__PURE__ */ common.React.createElement(FormSliderRow, {
+  }, " Low Effort Deleted Example Message "))), /* @__PURE__ */ common.React.createElement(FormSliderRow$2, {
     label: `Background Color Alpha: ${toPercentage(BGAlpha)}%`,
     value: BGAlpha,
     style: {
@@ -870,7 +869,7 @@ function ColorPickComponent(param) {
       setBGAlpha(Number(formatDecimal(v)));
       plugin.storage.colors.backgroundColorAlpha = alphaToHex(toPercentage(v));
     }
-  }), /* @__PURE__ */ common.React.createElement(FormDivider$6, null), /* @__PURE__ */ common.React.createElement(FormSliderRow, {
+  }), /* @__PURE__ */ common.React.createElement(FormDivider$6, null), /* @__PURE__ */ common.React.createElement(FormSliderRow$2, {
     label: `Background Gutter Alpha: ${toPercentage(gutterAlpha)}%`,
     value: gutterAlpha,
     style: {
@@ -881,8 +880,8 @@ function ColorPickComponent(param) {
       plugin.storage.colors.gutterColorAlpha = alphaToHex(toPercentage(v));
     }
   }))));
-}const { ScrollView: ScrollView$3, View: View$4, Text: Text$2, TouchableOpacity: TouchableOpacity$3, TextInput: TextInput$2, Image: Image$1, Animated: Animated$2 } = components.General;
-const { FormLabel: FormLabel$2, FormIcon: FormIcon$4, FormArrow: FormArrow$2, FormRow: FormRow$5, FormSwitch: FormSwitch$4, FormSwitchRow: FormSwitchRow$2, FormSection: FormSection$3, FormDivider: FormDivider$5, FormInput: FormInput$2 } = components.Forms;
+}const { ScrollView: ScrollView$5, View: View$5, Text: Text$5, TouchableOpacity: TouchableOpacity$5, TextInput: TextInput$5, Image: Image$4, Animated: Animated$4 } = components.General;
+const { FormLabel: FormLabel$4, FormIcon: FormIcon$5, FormArrow: FormArrow$4, FormRow: FormRow$5, FormSwitch: FormSwitch$5, FormSwitchRow: FormSwitchRow$4, FormSection: FormSection$4, FormDivider: FormDivider$5, FormInput: FormInput$4 } = components.Forms;
 const useIsFocused$1 = metro.findByName("useIsFocused");
 metro.findByProps("BottomSheetScrollView");
 const UserStore = metro.findByStoreName("UserStore");
@@ -893,7 +892,7 @@ Assets.getAssetIDByName("ic_minus_circle_24px");
 Assets.getAssetIDByName("Check");
 Assets.getAssetIDByName("Small");
 function addIcon$2(i) {
-  return /* @__PURE__ */ common.React.createElement(FormIcon$4, {
+  return /* @__PURE__ */ common.React.createElement(FormIcon$5, {
     style: {
       opacity: 1
     },
@@ -971,16 +970,16 @@ function AddUser(param) {
   let { index } = param;
   storage.useProxy(plugin.storage);
   let object = plugin.storage?.inputs?.ignoredUserList[index];
-  const animatedButtonScale = common.React.useRef(new Animated$2.Value(1)).current;
+  const animatedButtonScale = common.React.useRef(new Animated$4.Value(1)).current;
   const onPressIn = function() {
-    return Animated$2.spring(animatedButtonScale, {
+    return Animated$4.spring(animatedButtonScale, {
       toValue: 1.1,
       duration: 10,
       useNativeDriver: true
     }).start();
   };
   const onPressOut = function() {
-    return Animated$2.spring(animatedButtonScale, {
+    return Animated$4.spring(animatedButtonScale, {
       toValue: 1,
       duration: 250,
       useNativeDriver: true
@@ -1005,12 +1004,12 @@ function AddUser(param) {
     });
   const navigation = common.NavigationNative.useNavigation();
   useIsFocused$1();
-  return /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(ScrollView$3, null, /* @__PURE__ */ common.React.createElement(View$4, {
+  return /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(ScrollView$5, null, /* @__PURE__ */ common.React.createElement(View$5, {
     style: [
       styles$3.basicPad,
       styles$3.sub
     ]
-  }, /* @__PURE__ */ common.React.createElement(FormSection$3, {
+  }, /* @__PURE__ */ common.React.createElement(FormSection$4, {
     title: "User Setting",
     style: [
       styles$3.header
@@ -1027,14 +1026,14 @@ function AddUser(param) {
         toasts.showToast("Cannot find User Id/Username.");
       }
     }
-  }), /* @__PURE__ */ common.React.createElement(FormInput$2, {
+  }), /* @__PURE__ */ common.React.createElement(FormInput$4, {
     title: "User Username | Case Sensitive",
     placeholder: "Missing No",
     value: object?.username,
     onChange: function(v) {
       return object.username = v;
     }
-  }), /* @__PURE__ */ common.React.createElement(FormInput$2, {
+  }), /* @__PURE__ */ common.React.createElement(FormInput$4, {
     title: "User Id",
     placeholder: "Missing No",
     value: object?.id,
@@ -1045,20 +1044,20 @@ function AddUser(param) {
     label: "User is webhook?",
     subLabel: "User is webhook or system, and not BOT or Normal User.",
     leading: addIcon$2("ic_webhook_24px"),
-    trailing: /* @__PURE__ */ common.React.createElement(FormSwitch$4, {
+    trailing: /* @__PURE__ */ common.React.createElement(FormSwitch$5, {
       value: object?.isWebhook || false,
       onValueChange: function(value) {
         return object.isWebhook = value;
       }
     })
-  })), user && /* @__PURE__ */ common.React.createElement(View$4, {
+  })), user && /* @__PURE__ */ common.React.createElement(View$5, {
     style: [
       styles$3.container,
       {
         paddingBottom: 10
       }
     ]
-  }, /* @__PURE__ */ common.React.createElement(TouchableOpacity$3, {
+  }, /* @__PURE__ */ common.React.createElement(TouchableOpacity$5, {
     onPress: function() {
       return Profiles.showUserProfile?.({
         userId: user?.id
@@ -1066,9 +1065,9 @@ function AddUser(param) {
     },
     onPressIn,
     onPressOut
-  }, /* @__PURE__ */ common.React.createElement(Animated$2.View, {
+  }, /* @__PURE__ */ common.React.createElement(Animated$4.View, {
     style: animatedScaleStyle
-  }, /* @__PURE__ */ common.React.createElement(Image$1, {
+  }, /* @__PURE__ */ common.React.createElement(Image$4, {
     source: {
       uri: user?.getAvatarURL?.()?.replace?.("webp", "png") || "https://cdn.discordapp.com/embed/avatars/2.png"
     },
@@ -1077,21 +1076,21 @@ function AddUser(param) {
       height: 128,
       borderRadius: 10
     }
-  }))), /* @__PURE__ */ common.React.createElement(View$4, {
+  }))), /* @__PURE__ */ common.React.createElement(View$5, {
     style: styles$3.textContainer
-  }, /* @__PURE__ */ common.React.createElement(TouchableOpacity$3, {
+  }, /* @__PURE__ */ common.React.createElement(TouchableOpacity$5, {
     onPress: function() {
       return Profiles.showUserProfile({
         userId: user?.id
       });
     }
-  }, /* @__PURE__ */ common.React.createElement(Text$2, {
+  }, /* @__PURE__ */ common.React.createElement(Text$5, {
     style: [
       styles$3.mainText,
       styles$3.header
     ]
   }, user?.username || object?.username || "No Name"))), /* @__PURE__ */ common.React.createElement(FormDivider$5, null)), /* @__PURE__ */ common.React.createElement(FormRow$5, {
-    label: /* @__PURE__ */ common.React.createElement(FormLabel$2, {
+    label: /* @__PURE__ */ common.React.createElement(FormLabel$4, {
       text: "Remove User from Ignore List",
       style: {
         color: ui.rawColors.RED_400
@@ -1102,10 +1101,10 @@ function AddUser(param) {
       plugin.storage?.inputs?.ignoredUserList?.splice(index, 1);
     }
   }))));
-}const { ScrollView: ScrollView$2, View: View$3, Text: Text$1, TouchableOpacity: TouchableOpacity$2, TextInput: TextInput$1 } = components.General;
-const { FormLabel: FormLabel$1, FormIcon: FormIcon$3, FormArrow: FormArrow$1, FormRow: FormRow$4, FormSwitch: FormSwitch$3, FormSwitchRow: FormSwitchRow$1, FormSection: FormSection$2, FormDivider: FormDivider$4, FormInput: FormInput$1 } = components.Forms;
+}const { ScrollView: ScrollView$4, View: View$4, Text: Text$4, TouchableOpacity: TouchableOpacity$4, TextInput: TextInput$4 } = components.General;
+const { FormLabel: FormLabel$3, FormIcon: FormIcon$4, FormArrow: FormArrow$3, FormRow: FormRow$4, FormSwitch: FormSwitch$4, FormSwitchRow: FormSwitchRow$3, FormSection: FormSection$3, FormDivider: FormDivider$4, FormInput: FormInput$3 } = components.Forms;
 function addIcon$1(i, dr) {
-  return /* @__PURE__ */ common.React.createElement(FormIcon$3, {
+  return /* @__PURE__ */ common.React.createElement(FormIcon$4, {
     style: {
       opacity: 1
     },
@@ -1191,16 +1190,16 @@ function ListUsers() {
       });
     }
   };
-  return /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(ScrollView$2, {
+  return /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(ScrollView$4, {
     style: {
       flex: 1
     }
-  }, /* @__PURE__ */ common.React.createElement(FormSection$2, {
+  }, /* @__PURE__ */ common.React.createElement(FormSection$3, {
     style: [
       styles$2.header,
       styles$2.basicPad
     ]
-  }, /* @__PURE__ */ common.React.createElement(View$3, {
+  }, /* @__PURE__ */ common.React.createElement(View$4, {
     style: [
       styles$2.header,
       styles$2.sub
@@ -1225,7 +1224,7 @@ function ListUsers() {
   }), users?.map(function(comp, i) {
     return /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(FormRow$4, {
       label: comp?.username || comp?.id || "No Data",
-      trailing: /* @__PURE__ */ common.React.createElement(FormArrow$1, null),
+      trailing: /* @__PURE__ */ common.React.createElement(FormArrow$3, null),
       onPress: function() {
         return navigation.push("VendettaCustomPage", {
           title: "Editing User",
@@ -1238,7 +1237,7 @@ function ListUsers() {
       }
     }), i !== users?.length - 1 && /* @__PURE__ */ common.React.createElement(FormDivider$4, null));
   }), /* @__PURE__ */ common.React.createElement(FormRow$4, {
-    label: /* @__PURE__ */ common.React.createElement(TextInput$1, {
+    label: /* @__PURE__ */ common.React.createElement(TextInput$4, {
       value: newUser,
       onChangeText: setNewUser,
       placeholder: "User ID or Username",
@@ -1248,11 +1247,12 @@ function ListUsers() {
       returnKeyType: "done",
       style: styles$2.input
     }),
-    trailing: /* @__PURE__ */ common.React.createElement(TouchableOpacity$2, {
+    trailing: /* @__PURE__ */ common.React.createElement(TouchableOpacity$4, {
       onPress: addNewUser
     }, addIcon$1(Add))
   })))));
-}const { FormRow: FormRow$3, FormDivider: FormDivider$3, FormIcon: FormIcon$2, TouchableOpacity: TouchableOpacity$1 } = UIElements;
+}const { ScrollView: ScrollView$3, View: View$3, Text: Text$3, TouchableOpacity: TouchableOpacity$3, TextInput: TextInput$3, Pressable: Pressable$2, Image: Image$3, Animated: Animated$3 } = components.General;
+const { FormLabel: FormLabel$2, FormIcon: FormIcon$3, FormArrow: FormArrow$2, FormRow: FormRow$3, FormSwitch: FormSwitch$3, FormSwitchRow: FormSwitchRow$2, FormSection: FormSection$2, FormDivider: FormDivider$3, FormInput: FormInput$2, FormSliderRow: FormSliderRow$1 } = components.Forms;
 function IgnoreListComponent() {
   storage.useProxy(plugin.storage);
   const navigation = common.NavigationNative.useNavigation();
@@ -1267,23 +1267,24 @@ function IgnoreListComponent() {
   return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(FormRow$3, {
     label: "Add User to List",
     subLabel: "List of ignored users for the plugin",
-    leading: /* @__PURE__ */ React.createElement(FormIcon$2, {
+    leading: /* @__PURE__ */ React.createElement(FormIcon$3, {
       style: {
         opacity: 1
       },
       source: Assets.getAssetIDByName("ic_members")
     }),
     onPress: listIgnore,
-    trailing: /* @__PURE__ */ React.createElement(TouchableOpacity$1, {
+    trailing: /* @__PURE__ */ React.createElement(TouchableOpacity$3, {
       onPress: listIgnore
-    }, /* @__PURE__ */ React.createElement(FormIcon$2, {
+    }, /* @__PURE__ */ React.createElement(FormIcon$3, {
       style: {
         opacity: 1
       },
       source: Assets.getAssetIDByName("ic_add_24px")
     }))
   }), /* @__PURE__ */ React.createElement(FormDivider$3, null));
-}const { View: View$2, FormRow: FormRow$2, FormIcon: FormIcon$1, FormSwitch: FormSwitch$2, FormDivider: FormDivider$2 } = UIElements;
+}const { ScrollView: ScrollView$2, View: View$2, Text: Text$2, TouchableOpacity: TouchableOpacity$2, TextInput: TextInput$2, Pressable: Pressable$1, Image: Image$2, Animated: Animated$2 } = components.General;
+const { FormRow: FormRow$2, FormIcon: FormIcon$2, FormSwitch: FormSwitch$2, FormDivider: FormDivider$2 } = components.Forms;
 const HelpMessage = metro.findByName("HelpMessage");
 const customizeableSwitches = [
   {
@@ -1342,7 +1343,7 @@ function CustomizationComponent(param) {
     return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(FormRow$2, {
       label: obj?.label,
       subLabel: obj?.subLabel,
-      leading: obj?.icon && /* @__PURE__ */ React.createElement(FormIcon$1, {
+      leading: obj?.icon && /* @__PURE__ */ React.createElement(FormIcon$2, {
         style: {
           opacity: 1
         },
@@ -1368,8 +1369,8 @@ const update = [
   createList("1.2.0 - 1.2.5", ma("[1.2.0] Added Update Section", "[1.2.2] Added Support for Semantic Colors", "[1.2.2] Added Support for Raw Colors", "[1.2.2] Added Support for Timestamp Format", "[1.2.5] Added option useEphemeralForDeleted modification in Customize Section", "[1.2.5] Added new button on actionMessage if useEphemeralForDeleted disabled"), ma("[1.2.1] Redesign Setting Page", "[1.2.2] Reworked how Message update appends separator", "[1.2.4] Update Remove Edit button style"), ma("[1.2.3] Fixed Remove Edit button to not persist under Edit Message Button", "[1.2.4] Fixed Message Parser Fails to parse edited message")),
   createList("1.3", ma("[1.3] Option to custom name the plugin", "[1.3] Option to replace icon toast for edited history toast"), ma("[1.3] Removes Logging system due crashes and inefficient code", "[1.3] Removes patch to user setting to avoid crashes again"), ma("[1.3] Hopefully fixed the issue with IOS crash on setting"))
 ];
-var updates = update.reverse();const { ScrollView: ScrollView$1, View: View$1, Text, TouchableOpacity, TextInput, Image, Animated: Animated$1 } = components.General;
-const { FormLabel, FormIcon, FormArrow, FormRow: FormRow$1, FormSwitch: FormSwitch$1, FormSwitchRow, FormSection: FormSection$1, FormDivider: FormDivider$1, FormInput } = components.Forms;
+var updates = update.reverse();const { ScrollView: ScrollView$1, View: View$1, Text: Text$1, TouchableOpacity: TouchableOpacity$1, TextInput: TextInput$1, Image: Image$1, Animated: Animated$1 } = components.General;
+const { FormLabel: FormLabel$1, FormIcon: FormIcon$1, FormArrow: FormArrow$1, FormRow: FormRow$1, FormSwitch: FormSwitch$1, FormSwitchRow: FormSwitchRow$1, FormSection: FormSection$1, FormDivider: FormDivider$1, FormInput: FormInput$1 } = components.Forms;
 const current = Assets.getAssetIDByName("ic_radio_square_checked_24px");
 const older = Assets.getAssetIDByName("ic_radio_square_24px");
 const info = Assets.getAssetIDByName("ic_information_24px");
@@ -1405,7 +1406,7 @@ const styles$1 = common.stylesheet.createThemedStyleSheet({
   }
 });
 function addIcon(icon) {
-  return /* @__PURE__ */ common.React.createElement(FormIcon, {
+  return /* @__PURE__ */ common.React.createElement(FormIcon$1, {
     style: {
       opacity: 1
     },
@@ -1448,7 +1449,8 @@ function VersionChange(param) {
       styles$1.border
     ]
   }, change?.new?.length > 0 && createSubRow(change.new, "New", "New stuffies", newStuff), change?.updated?.length > 0 && createSubRow(change.updated, "Changes", "Update things", updatedStuff), change?.fix?.length > 0 && createSubRow(change.fix, "Fixes", "Me hate borken things", fixStuff)), index == totalIndex.length - 1 ? void 0 : /* @__PURE__ */ common.React.createElement(FormDivider$1, null)));
-}const { FormSwitch, FormSection, FormRow, ScrollView, View, FormDivider, Animated } = UIElements;
+}const { ScrollView, View, Text, TouchableOpacity, TextInput, Pressable, Image, Animated } = components.General;
+const { FormLabel, FormIcon, FormArrow, FormRow, FormSwitch, FormSwitchRow, FormSection, FormDivider, FormInput, FormSliderRow } = components.Forms;
 const LinearGradient = metro.findByName("LinearGradient");
 const styles = common.stylesheet.createThemedStyleSheet({
   text: {
