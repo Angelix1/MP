@@ -1,9 +1,10 @@
 import { storage } from "@vendetta/plugin"
 import { getAssetIDByName } from "@vendetta/ui/assets"
 import { useProxy } from "@vendetta/storage"
-import { UIElements } from "../../../lib/utility"
 
-const { View, FormRow, FormIcon, FormSwitch, FormDivider } = UIElements
+import { Forms, General } from "@vendetta/ui/components";
+const { ScrollView, View, Text, TouchableOpacity, TextInput, Pressable, Image, Animated } = General;
+const { FormLabel, FormIcon, FormArrow, FormRow, FormSwitch, FormSwitchRow, FormSection, FormDivider, FormInput, FormSliderRow } = Forms;
 
 const togglePatch = [
 	{

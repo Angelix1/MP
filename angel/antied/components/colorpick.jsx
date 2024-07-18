@@ -4,14 +4,17 @@ import { NavigationNative, React } from "@vendetta/metro/common"
 import { findByName } from "@vendetta/metro"
 import { rawColors, semanticColors } from "@vendetta/ui"
 import { getAssetIDByName } from "@vendetta/ui/assets"
+import { Forms, General } from "@vendetta/ui/components";
 
 import SemRawComponent from "./semRaw"
-import { UIElements, colorConverter, convert, openSheet, transparentBase64 } from "../../../lib/utility"
+import { colorConverter, convert, openSheet, transparentBase64 } from "../../../lib/utility"
 
 const CustomColorPickerActionSheet = findByName("CustomColorPickerActionSheet");
 
 const { alphaToHex, hexAlphaToPercent, toPercentage, toDecimal, formatDecimal } = convert;
-const { View, FormRow, FormSwitch, FormSliderRow, FormDivider, Text, TouchableOpacity, Image } = UIElements
+
+const { ScrollView, View, Text, TouchableOpacity, TextInput, Pressable, Image, Animated } = General;
+const { FormLabel, FormIcon, FormArrow, FormRow, FormSwitch, FormSwitchRow, FormSection, FormDivider, FormInput, FormSliderRow } = Forms;
 
 const customizeableColors = [
 	{

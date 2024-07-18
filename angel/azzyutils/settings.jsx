@@ -1,7 +1,7 @@
 import { storage } from "@vendetta/plugin"
 import { useProxy } from "@vendetta/storage"
 import { findByName } from "@vendetta/metro";
-import { UIElements } from "../../lib/utility";
+
 import VersionChange from "../../lib/components/versionChange";
 import updates from "./update";
 
@@ -11,14 +11,12 @@ import CAT from "./pages/utils/cat";
 import QuickIdSetting from "./pages/utils/quickIdSetting";
 import CustomUsernameColorPage from "./pages/utils/cuc";
 import CustomRoleIconPage from "./pages/utils/cri";
+import { Forms, General } from "@vendetta/ui/components";
 
 // const HelpMessage = findByName("HelpMessage");
 
-const { 
-	ScrollView, View, Text, TouchableOpacity, TextInput, Image, Animated, 
-	FormLabel, FormIcon, FormArrow, FormRow, FormSwitch, FormSwitchRow, 
-	FormSection, FormDivider, FormInput, FormRadioRow, Component
-} = UIElements;
+const { ScrollView, View, Text, TouchableOpacity, TextInput, Pressable, Image, Animated, Component } = General;
+const { FormLabel, FormIcon, FormArrow, FormRow, FormSwitch, FormSwitchRow, FormSection, FormDivider, FormInput, FormRadioRow } = Forms;
 
 export default () => {
 	useProxy(storage)

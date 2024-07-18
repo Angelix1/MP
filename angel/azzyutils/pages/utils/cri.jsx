@@ -1,12 +1,15 @@
 import { storage } from "@vendetta/plugin"
-import { numToHex, openSheet, UIElements } from "../../../../lib/utility"
+import { numToHex, openSheet } from "../../../../lib/utility"
 import { clipboard, ReactNative } from "@vendetta/metro/common"
 import { findByName } from "@vendetta/metro";
 import { getAssetIDByName } from "@vendetta/ui/assets";
 import { showToast } from "@vendetta/ui/toasts";
+import { Forms, General } from "@vendetta/ui/components";
 
 const defaultImageURL = 'https://cdn.discordapp.com/role-icons/1222207470714486825/bc3ef24c3f220155f90e55cc0cb0d0cf.png?size=512'
-const { FormRow, FormSwitch, TouchableOpacity, Image, FormDivider, FormIcon, FormInput } = UIElements
+
+const { ScrollView, View, Text, TouchableOpacity, TextInput, Pressable, Image, Animated, Component } = General;
+const { FormLabel, FormIcon, FormArrow, FormRow, FormSwitch, FormSwitchRow, FormSection, FormDivider, FormInput, FormRadioRow } = Forms;
 
 const textInput = [
 	{

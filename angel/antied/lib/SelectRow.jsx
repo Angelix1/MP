@@ -1,8 +1,8 @@
 import { findByName } from "@vendetta/metro";
-import { UIElements } from "../../../lib/utility";
+import { Forms } from "@vendetta/ui/components";
 
 
-const { FormRow } = UIElements;
+const { FormRow } = Forms
 const RowCheckmark = findByName("RowCheckmark");
 
 export function SelectRow({ label, subLabel, selected, onPress }) {

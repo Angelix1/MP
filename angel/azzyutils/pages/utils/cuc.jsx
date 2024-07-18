@@ -1,12 +1,14 @@
 import { storage } from "@vendetta/plugin"
-import { numToHex, openSheet, UIElements } from "../../../../lib/utility"
+import { numToHex, openSheet } from "../../../../lib/utility"
 import { ReactNative } from "@vendetta/metro/common"
 import { findByName } from "@vendetta/metro";
 import { getAssetIDByName } from "@vendetta/ui/assets";
-
+import { Forms, General } from "@vendetta/ui/components";
 
 const CustomColorPickerActionSheet = findByName("CustomColorPickerActionSheet");
-const { FormRow, FormSwitch, TouchableOpacity, Image, FormDivider, FormIcon } = UIElements
+
+const { ScrollView, View, Text, TouchableOpacity, TextInput, Pressable, Image, Animated, Component } = General;
+const { FormLabel, FormIcon, FormArrow, FormRow, FormSwitch, FormSwitchRow, FormSection, FormDivider, FormInput, FormRadioRow } = Forms;
 
 const switches = [
 	{

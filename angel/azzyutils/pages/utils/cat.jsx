@@ -1,8 +1,8 @@
 import { storage } from "@vendetta/plugin"
-import { UIElements } from "../../../../lib/utility"
+import { Forms } from "@vendetta/ui/components"
 
 
-const { FormInput } = UIElements
+const { FormInput } = Forms
 
 export default function CAT() {
 	

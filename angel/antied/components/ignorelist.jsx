@@ -3,12 +3,11 @@ import { useProxy } from "@vendetta/storage"
 import { getAssetIDByName } from "@vendetta/ui/assets"
 import { NavigationNative } from "@vendetta/metro/common"
 
-import { UIElements } from "../../../lib/utility"
 import ListUsers from "../pages/listUsers"
 
-
-const { FormRow, FormDivider, FormIcon, TouchableOpacity } = UIElements
-
+import { Forms, General } from "@vendetta/ui/components";
+const { ScrollView, View, Text, TouchableOpacity, TextInput, Pressable, Image, Animated } = General;
+const { FormLabel, FormIcon, FormArrow, FormRow, FormSwitch, FormSwitchRow, FormSection, FormDivider, FormInput, FormSliderRow } = Forms;
 
 export default function IgnoreListComponent() {
 	useProxy(storage)

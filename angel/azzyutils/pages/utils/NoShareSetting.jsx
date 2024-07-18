@@ -1,8 +1,8 @@
 import { storage } from "@vendetta/plugin"
-import { UIElements } from "../../../../lib/utility"
+import { Forms } from "@vendetta/ui/components"
 
 
-const { FormRow, FormSwitch } = UIElements
+const { FormRow, FormSwitch } = Forms
 
 export default function NoShareSetting() {
 	

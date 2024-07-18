@@ -1,10 +1,11 @@
 import { storage } from "@vendetta/plugin"
 import { useProxy } from "@vendetta/storage"
-import { UIElements } from "../../../lib/utility"
 import { plugin } from "@vendetta"
 import { getAssetIDByName } from "@vendetta/ui/assets"
+import { Forms, General } from "@vendetta/ui/components"
 
-const { FormRow, FormIcon, View, FormInput, FormDivider } = UIElements
+const { ScrollView, View, Text, TouchableOpacity, TextInput, Pressable, Image, Animated } = General;
+const { FormLabel, FormIcon, FormArrow, FormRow, FormSwitch, FormSwitchRow, FormSection, FormDivider, FormInput, FormSliderRow } = Forms;
 
 const customizedableTexts = [
 	{

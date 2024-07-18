@@ -1,16 +1,13 @@
 import { useProxy } from "@vendetta/storage";
-import { UIElements, convert, numToHex, openSheet, transparentBase64 } from "../../../../lib/utility"
+import { convert, numToHex, openSheet, transparentBase64 } from "../../../../lib/utility"
 import { storage } from "@vendetta/plugin";
 import { React, ReactNative } from "@vendetta/metro/common";
 import { logger } from "@vendetta";
 import { findByName } from "@vendetta/metro";
+import { Forms, General } from "@vendetta/ui/components";
 
-
-const { 
-	ScrollView, View, Text, TouchableOpacity, TextInput, Image, Animated, 
-	FormLabel, FormIcon, FormArrow, FormRow, FormSwitch, FormSwitchRow, 
-	FormSection, FormDivider, FormInput, FormRadioRow, FormSliderRow
-} = UIElements;
+const { ScrollView, View, Text, TouchableOpacity, TextInput, Pressable, Image, Animated, Component } = General;
+const { FormLabel, FormIcon, FormArrow, FormRow, FormSwitch, FormSwitchRow, FormSection, FormDivider, FormInput, FormRadioRow, FormSliderRow } = Forms;
 
 const CustomColorPickerActionSheet = findByName("CustomColorPickerActionSheet");
 

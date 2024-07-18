@@ -1,7 +1,7 @@
 import { useProxy } from "@vendetta/storage"
 import { storage } from "@vendetta/plugin"
-import { UIElements } from "../../../lib/utility"
 import { SelectRow } from "../lib/SelectRow"
+import { Forms } from "@vendetta/ui/components"
 
 const timestamps = [
 	{
@@ -55,7 +55,7 @@ const timestampsPosition = [
 ]
 
 
-const { FormRow, FormDivider } = UIElements
+const { FormRow, FormDivider } = Forms
 
 
 export default function TimestampComponent() {

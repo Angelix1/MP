@@ -2,14 +2,14 @@ import { React, clipboard, i18n } from "@vendetta/metro/common";
 import { storage } from "@vendetta/plugin";
 import { showToast } from "@vendetta/ui/toasts";
 import { addIcon } from "../../../lib/misc";
-import { UIElements } from "../../../lib/utility";
 import { after } from "@vendetta/patcher";
 import { getAssetIDByName } from "@vendetta/ui/assets";
 import { findInReactTree } from "@vendetta/utils";
 import { findByProps } from "@vendetta/metro";
+import { Forms } from "@vendetta/ui/components";
 
 const { downloadMediaAsset } = findByProps("downloadMediaAsset")
-const { FormRow, FormIcon } = UIElements
+const { FormRow, FormIcon } = Forms
 
 export default function noShare(component, args, actionMessage, ActionSheet) {
 

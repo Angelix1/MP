@@ -1,6 +1,6 @@
-import { UIElements } from "./utility"
+import { Forms } from "@vendetta/ui/components";
 
-const { FormIcon } = UIElements;
+const { FormIcon } = Forms;
 
 
 export function addIcon(icon) {

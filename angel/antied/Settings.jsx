@@ -3,7 +3,7 @@ import { findByName } from '@vendetta/metro';
 import { useProxy } from "@vendetta/storage";
 import { storage } from "@vendetta/plugin";
 import { semanticColors } from "@vendetta/ui";
-
+import { Forms, General } from "@vendetta/ui/components";
 
 import PatchesComponent from './components/patches';
 import TextComponent from './components/texts';
@@ -12,11 +12,11 @@ import ColorPickComponent from './components/colorpick';
 import IgnoreListComponent from './components/ignorelist';
 import CustomizationComponent from './components/customize';
 
-import { UIElements } from '../../lib/utility';
 import updates from "./update";
 import VersionChange from "../../lib/components/versionChange";
 
-const { FormSwitch, FormSection, FormRow, ScrollView, View, FormDivider, Animated } = UIElements;
+const { ScrollView, View, Text, TouchableOpacity, TextInput, Pressable, Image, Animated } = General;
+const { FormLabel, FormIcon, FormArrow, FormRow, FormSwitch, FormSwitchRow, FormSection, FormDivider, FormInput, FormSliderRow } = Forms;
 
 const LinearGradient = findByName("LinearGradient");
 const styles = stylesheet.createThemedStyleSheet({

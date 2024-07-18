@@ -1,10 +1,10 @@
 import { storage } from "@vendetta/plugin"
-import { UIElements } from "../../../../lib/utility"
 import { React } from "@vendetta/metro/common";
 import { useProxy } from "@vendetta/storage";
+import { Forms } from "@vendetta/ui/components";
 
 
-const { FormRow, FormSwitch, FormDivider } = UIElements
+const { FormRow, FormSwitch, FormDivider } = Forms
 
 export default function QuickIdSetting() {
 	useProxy(storage)
