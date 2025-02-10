@@ -1,5 +1,5 @@
 (function(exports,plugin,storage,metro,common,ui,assets,components,_vendetta,toasts,patcher$1,utils,plugins){'use strict';const { ScrollView: ScrollView$4, View: View$4, Text: Text$4, TouchableOpacity: TouchableOpacity$4, TextInput: TextInput$4, Image: Image$4, Animated: Animated$4 } = components.General;
-const { FormLabel: FormLabel$4, FormIcon: FormIcon$5, FormArrow: FormArrow$4, FormRow: FormRow$7, FormSwitch: FormSwitch$6, FormSwitchRow: FormSwitchRow$4, FormSection: FormSection$4, FormDivider: FormDivider$5, FormInput: FormInput$5 } = components.Forms;
+const { FormLabel: FormLabel$4, FormIcon: FormIcon$6, FormArrow: FormArrow$4, FormRow: FormRow$7, FormSwitch: FormSwitch$6, FormSwitchRow: FormSwitchRow$4, FormSection: FormSection$4, FormDivider: FormDivider$5, FormInput: FormInput$5 } = components.Forms;
 const current = assets.getAssetIDByName("ic_radio_square_checked_24px");
 const older = assets.getAssetIDByName("ic_radio_square_24px");
 const info = assets.getAssetIDByName("ic_information_24px");
@@ -35,7 +35,7 @@ const styles = common.stylesheet.createThemedStyleSheet({
   }
 });
 function addIcon(icon) {
-  return /* @__PURE__ */ common.React.createElement(FormIcon$5, {
+  return /* @__PURE__ */ common.React.createElement(FormIcon$6, {
     style: {
       opacity: 1
     },
@@ -45,7 +45,7 @@ function addIcon(icon) {
 function VersionChange(param) {
   let { change, index, totalIndex } = param;
   const [isOpen, setOpen] = common.React.useState(false);
-  common.React.useState(false);
+  const [isRowOpen, setRowOpen] = common.React.useState(false);
   function createSubRow(arr, label, subLabel, icon) {
     return /* @__PURE__ */ common.React.createElement(View$4, null, /* @__PURE__ */ common.React.createElement(FormRow$7, {
       label: label || "No Section",
@@ -185,7 +185,7 @@ const update = [
   createList("1.2", null, ma("[1.2] Removed EML due possibly harmful use case"))
 ];
 var updates = update.reverse();const { ScrollView: ScrollView$3, View: View$3, Text: Text$3, TouchableOpacity: TouchableOpacity$3, TextInput: TextInput$3, Pressable: Pressable$3, Image: Image$3, Animated: Animated$3, Component: Component$3 } = components.General;
-const { FormLabel: FormLabel$3, FormIcon: FormIcon$4, FormArrow: FormArrow$3, FormRow: FormRow$6, FormSwitch: FormSwitch$5, FormSwitchRow: FormSwitchRow$3, FormSection: FormSection$3, FormDivider: FormDivider$4, FormInput: FormInput$4, FormRadioRow: FormRadioRow$3, FormSliderRow } = components.Forms;
+const { FormLabel: FormLabel$3, FormIcon: FormIcon$5, FormArrow: FormArrow$3, FormRow: FormRow$6, FormSwitch: FormSwitch$5, FormSwitchRow: FormSwitchRow$3, FormSection: FormSection$3, FormDivider: FormDivider$4, FormInput: FormInput$4, FormRadioRow: FormRadioRow$3, FormSliderRow } = components.Forms;
 const CustomColorPickerActionSheet$1 = metro.findByName("CustomColorPickerActionSheet");
 function ReplyAlertSetting() {
   storage.useProxy(plugin.storage);
@@ -382,7 +382,7 @@ function QuickIdSetting() {
   }), /* @__PURE__ */ common.React.createElement(FormDivider$3, null));
 }const CustomColorPickerActionSheet = metro.findByName("CustomColorPickerActionSheet");
 const { ScrollView: ScrollView$2, View: View$2, Text: Text$2, TouchableOpacity: TouchableOpacity$2, TextInput: TextInput$2, Pressable: Pressable$2, Image: Image$2, Animated: Animated$2, Component: Component$2 } = components.General;
-const { FormLabel: FormLabel$2, FormIcon: FormIcon$3, FormArrow: FormArrow$2, FormRow: FormRow$3, FormSwitch: FormSwitch$2, FormSwitchRow: FormSwitchRow$2, FormSection: FormSection$2, FormDivider: FormDivider$2, FormInput: FormInput$2, FormRadioRow: FormRadioRow$2 } = components.Forms;
+const { FormLabel: FormLabel$2, FormIcon: FormIcon$4, FormArrow: FormArrow$2, FormRow: FormRow$3, FormSwitch: FormSwitch$2, FormSwitchRow: FormSwitchRow$2, FormSection: FormSection$2, FormDivider: FormDivider$2, FormInput: FormInput$2, FormRadioRow: FormRadioRow$2 } = components.Forms;
 const switches = [
   {
     id: "enableReply",
@@ -424,7 +424,7 @@ function CustomUsernameColorPage() {
     return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(FormRow$3, {
       label: obj?.label,
       subLabel: obj?.subLabel,
-      leading: obj?.icon && /* @__PURE__ */ React.createElement(FormIcon$3, {
+      leading: obj?.icon && /* @__PURE__ */ React.createElement(FormIcon$4, {
         style: {
           opacity: 1
         },
@@ -440,7 +440,7 @@ function CustomUsernameColorPage() {
   }));
 }const defaultImageURL = "https://cdn.discordapp.com/role-icons/1222207470714486825/bc3ef24c3f220155f90e55cc0cb0d0cf.png?size=512";
 const { ScrollView: ScrollView$1, View: View$1, Text: Text$1, TouchableOpacity: TouchableOpacity$1, TextInput: TextInput$1, Pressable: Pressable$1, Image: Image$1, Animated: Animated$1, Component: Component$1 } = components.General;
-const { FormLabel: FormLabel$1, FormIcon: FormIcon$2, FormArrow: FormArrow$1, FormRow: FormRow$2, FormSwitch: FormSwitch$1, FormSwitchRow: FormSwitchRow$1, FormSection: FormSection$1, FormDivider: FormDivider$1, FormInput: FormInput$1, FormRadioRow: FormRadioRow$1 } = components.Forms;
+const { FormLabel: FormLabel$1, FormIcon: FormIcon$3, FormArrow: FormArrow$1, FormRow: FormRow$2, FormSwitch: FormSwitch$1, FormSwitchRow: FormSwitchRow$1, FormSection: FormSection$1, FormDivider: FormDivider$1, FormInput: FormInput$1, FormRadioRow: FormRadioRow$1 } = components.Forms;
 const textInput = [
   {
     id: "name",
@@ -496,7 +496,7 @@ function CustomRoleIconPage() {
     }), index !== textInput?.length - 1 && /* @__PURE__ */ React.createElement(FormDivider$1, null));
   }));
 }const { ScrollView, View, Text, TouchableOpacity, TextInput, Pressable, Image, Animated, Component } = components.General;
-const { FormLabel, FormIcon: FormIcon$1, FormArrow, FormRow: FormRow$1, FormSwitch, FormSwitchRow, FormSection, FormDivider, FormInput, FormRadioRow } = components.Forms;
+const { FormLabel, FormIcon: FormIcon$2, FormArrow, FormRow: FormRow$1, FormSwitch, FormSwitchRow, FormSection, FormDivider, FormInput, FormRadioRow } = components.Forms;
 function settingPage() {
   storage.useProxy(plugin.storage);
   const createList = function(id, title, label, subLabel, props) {
@@ -698,7 +698,7 @@ function quickCopyID(component, args, actionMessage, ActionSheet) {
       });
     });
   }
-}const { downloadMediaAsset } = metro.findByProps("downloadMediaAsset");
+}const { FormIcon: FormIcon$1 } = components.Forms;const { downloadMediaAsset } = metro.findByProps("downloadMediaAsset");
 const { FormRow, FormIcon } = components.Forms;
 function noShare(component, args, actionMessage, ActionSheet) {
   if (plugin.storage?.toggle?.noshare) {

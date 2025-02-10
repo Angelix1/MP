@@ -228,13 +228,14 @@ function selfEditPatch() {
     args[2] = lats[lats.length - 1];
     return args;
   });
-}const { DCDChatManager } = common.ReactNative.NativeModules;
+}const rowsController = metro.findByProps("updateRows", "getConstants");
 function updateRowsPatch(deletedMessagesArray) {
-  return patcher.before("updateRows", DCDChatManager, function(r) {
+  return patcher.before("updateRows", rowsController, function(r) {
     let rows = JSON.parse(r[1]);
     const { textColor, backgroundColor, backgroundColorAlpha, gutterColor, gutterColorAlpha } = plugin.storage.colors;
-    const deletedText = plugin.storage.inputs?.deletedMessageBuffer;
-    const { useBackgroundColor, minimalistic, removeDismissButton } = plugin.storage.switches;
+    const { useBackgroundColor, minimalistic, removeDismissButton, overrideIndicator, useIndicatorForDeleted, useEphemeralForDeleted } = plugin.storage.switches;
+    const { deletedMessageBuffer, customIndicator } = plugin.storage.inputs;
+    const bufferSymbol = " \u2022 ";
     function validateHex(input, defaultColor) {
       if (!input)
         input = defaultColor;
@@ -251,96 +252,56 @@ function updateRowsPatch(deletedMessagesArray) {
       }
       return defaultColor || "#000";
     }
-    function transformObject(obj, inputColor) {
-      const charColor = inputColor?.toString();
-      const compTypes = [
-        "text",
-        "heading",
-        "s",
-        "u",
-        "em",
-        "strong",
-        "list",
-        "blockQuote"
-      ];
-      if (Array.isArray(obj)) {
-        return obj.map(function(data) {
-          return transformObject(data, charColor);
-        });
-      } else if (typeof obj === "object" && obj !== null) {
-        const { content, type, target, items } = obj;
-        if (!compTypes.includes(type))
-          return obj;
-        if (type === "text" && content && content.length >= 1) {
-          return {
-            content: [
-              {
-                content,
-                type: "text"
-              }
-            ],
-            target: "usernameOnClick",
-            type: "link",
-            context: {
-              username: 1,
-              medium: true,
-              usernameOnClick: {
-                action: "0",
-                userId: "0",
-                linkColor: common.ReactNative.processColor(charColor),
-                messageChannelId: "0"
-              }
-            }
-          };
-        }
-        const updatedContent = transformObject(content, charColor);
-        const updatedItems = items ? items.map(transformObject, charColor) : void 0;
-        if (updatedContent !== content || updatedItems !== items || !compTypes.includes(type)) {
-          const updatedObj = {
-            ...obj,
-            content: updatedContent
-          };
-          if (type === "blockQuote" && target) {
-            updatedObj.content = updatedContent;
-            updatedObj.target = target;
-          }
-          if (type === "list") {
-            if (updatedObj?.content) {
-              delete updatedObj.content;
-            }
-          }
-          if (items) {
-            updatedObj.items = updatedItems;
-          }
-          return updatedObj;
-        }
-      }
-      return obj;
-    }
-    function updateEphemeralIndication(object, onlyYouText, dismissText) {
+    function updateEphemeralIndication(object) {
+      let removeDismissText = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : false, overrideText = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : false, onlyYouText = arguments.length > 3 ? arguments[3] : void 0, overrideArray = arguments.length > 4 && arguments[4] !== void 0 ? arguments[4] : [];
       if (object) {
-        {
-          object.content[0].content.splice(1);
+        if (overrideText) {
+          if (onlyYouText != void 0) {
+            object.content[0].content = onlyYouText + "  ";
+          } else if (Array.isArray(overrideArray)) {
+            object.content = overrideArray;
+          }
+        } else {
+          if (removeDismissText) {
+            object?.content?.splice?.(1);
+          }
         }
       }
+      object.helpArticleLink = "";
+      object.helpButtonAccessibilityLabel = "Hello, Antied here Again";
       return object;
     }
     rows.forEach(function(row) {
-      if (plugin.storage.debug)
+      if (plugin.storage.debugUpdateRows)
         console.log(row);
       if (row?.type == 1) {
         if (deletedMessagesArray[row?.message?.id]) {
-          if (deletedText?.length > 0 || deletedText != "") {
-            row.message.edited = deletedText;
+          if (deletedMessageBuffer?.length > 0 || deletedMessageBuffer != "") {
+            if (useIndicatorForDeleted && useEphemeralForDeleted) {
+              row.message.ephemeralIndication = updateEphemeralIndication(row.message.ephemeralIndication, void 0, true, `${deletedMessageBuffer}${bufferSymbol}`);
+            } else {
+              row.message.edited = deletedMessageBuffer;
+            }
           }
           if (minimalistic == false) {
             const characterColor = validateHex(textColor, "#E40303");
-            const appliedColor = transformObject(row?.message?.content, characterColor);
-            row.message.content = appliedColor;
+            row.message.textColor = common.ReactNative.processColor(characterColor);
           }
-          if (removeDismissButton && row?.message?.ephemeralIndication) {
-            row.message.ephemeralIndication = updateEphemeralIndication(row.message.ephemeralIndication);
+          if (removeDismissButton && typeof row?.message?.ephemeralIndication == "object") {
+            row.message.ephemeralIndication = updateEphemeralIndication(row.message.ephemeralIndication, true);
           }
+          if (overrideIndicator) {
+            row.message.ephemeralIndication = {
+              content: [],
+              helpArticleLink: "",
+              helpButtonAccessibilityLabel: "Hello, Antied here Again"
+            };
+          } else if (!useIndicatorForDeleted) {
+            if (customIndicator?.length > 0 || customIndicator != "") {
+              row.message.ephemeralIndication = updateEphemeralIndication(row.message.ephemeralIndication, void 0, true, customIndicator);
+            }
+          }
+          row.message.obscureLearnMoreLabel = "Hello, Antied here";
           if (minimalistic == false && useBackgroundColor == true) {
             const BG = validateHex(`${backgroundColor}`, "#FF2C2F");
             const GC = validateHex(`${gutterColor}`, "#FF2C2F");
@@ -562,6 +523,12 @@ const customizedableTexts = [
     title: "Customize Remove History Toast Message",
     type: "default",
     placeholder: "History Removed"
+  },
+  {
+    id: "customIndicator",
+    title: "Customize Ephemeral 'Only You Can See This' Indicator (if useIndicatorForDeletedMessage enabled this feature be overriden)",
+    type: "default",
+    placeholder: "Only you can see this \u2022 "
   }
 ];
 function TextComponent(param) {
@@ -883,7 +850,7 @@ function ColorPickComponent(param) {
 }const { ScrollView: ScrollView$5, View: View$5, Text: Text$5, TouchableOpacity: TouchableOpacity$5, TextInput: TextInput$5, Image: Image$4, Animated: Animated$4 } = components.General;
 const { FormLabel: FormLabel$4, FormIcon: FormIcon$5, FormArrow: FormArrow$4, FormRow: FormRow$5, FormSwitch: FormSwitch$5, FormSwitchRow: FormSwitchRow$4, FormSection: FormSection$4, FormDivider: FormDivider$5, FormInput: FormInput$4 } = components.Forms;
 const useIsFocused$1 = metro.findByName("useIsFocused");
-metro.findByProps("BottomSheetScrollView");
+const { BottomSheetFlatList: BottomSheetFlatList$1 } = metro.findByProps("BottomSheetScrollView");
 const UserStore = metro.findByStoreName("UserStore");
 const Profiles = metro.findByProps("showUserProfile");
 Assets.getAssetIDByName("ic_add_24px");
@@ -1112,7 +1079,7 @@ function addIcon$1(i, dr) {
   });
 }
 const useIsFocused = metro.findByName("useIsFocused");
-metro.findByProps("BottomSheetScrollView");
+const { BottomSheetFlatList } = metro.findByProps("BottomSheetScrollView");
 const { getUser } = metro.findByProps("getUser");
 const Add = Assets.getAssetIDByName("ic_add_24px");
 Assets.getAssetIDByName("ic_arrow");
@@ -1328,6 +1295,18 @@ const customizeableSwitches = [
     default: true,
     label: "Use Ephemeral for Deleted",
     subLabel: "When messages got deleted it'll use ephemeral instead of normal message (Enabled by Default)."
+  },
+  {
+    id: "useIndicatorForDeleted",
+    default: false,
+    label: "use Indicator For 'This Message is Deleted'",
+    subLabel: "Use 'only you can see this' for deleted message info, instead of (edited)"
+  },
+  {
+    id: "overrideIndicator",
+    default: false,
+    label: "Remove Ephemeral Indicator",
+    subLabel: "When messages got deleted it'll have indicator under the text like 'only you can see this' and this remove those."
   }
 ];
 function CustomizationComponent(param) {
@@ -1366,10 +1345,23 @@ function CustomizationComponent(param) {
   ];
 }
 const update = [
-  createList("1.2.0 - 1.2.5", ma("[1.2.0] Added Update Section", "[1.2.2] Added Support for Semantic Colors", "[1.2.2] Added Support for Raw Colors", "[1.2.2] Added Support for Timestamp Format", "[1.2.5] Added option useEphemeralForDeleted modification in Customize Section", "[1.2.5] Added new button on actionMessage if useEphemeralForDeleted disabled"), ma("[1.2.1] Redesign Setting Page", "[1.2.2] Reworked how Message update appends separator", "[1.2.4] Update Remove Edit button style"), ma("[1.2.3] Fixed Remove Edit button to not persist under Edit Message Button", "[1.2.4] Fixed Message Parser Fails to parse edited message")),
-  createList("1.3", ma("[1.3] Option to custom name the plugin", "[1.3] Option to replace icon toast for edited history toast"), ma("[1.3] Removes Logging system due crashes and inefficient code", "[1.3] Removes patch to user setting to avoid crashes again"), ma("[1.3] Hopefully fixed the issue with IOS crash on setting"))
+  createList("1.0 - 1.3", null, ma("Version 1.4 does not support backwards compatibility after Discord version 265.16 Stable.")),
+  createList("1.4.0", ma("[1.4] Trying to reinstate colorful setting for IOS.", "[1.4] Added new Option to Remove Ephemeral Indicator", "[1.4] Added new Option to Switch 'this message is deleted' to be an indicator", "[1.4] Added debug updateRows Switch for nerds.", "[1.4] Added Known Bugs Section for those annoying peoples complaining about things."), ma("[1.4] Discontinued Support for older version related to updateRows function, Use Version 1.3.1 if you using old version"), ma("[1.4] Update updateRows function to Support Newer Version of Discord"))
 ];
-var updates = update.reverse();const { ScrollView: ScrollView$1, View: View$1, Text: Text$1, TouchableOpacity: TouchableOpacity$1, TextInput: TextInput$1, Image: Image$1, Animated: Animated$1 } = components.General;
+var updates = update.reverse();const knownBugs = [
+  {
+    bugType: "ActionSheet",
+    bugDescription: "Fail to patch custom buttons into Action Sheet"
+  },
+  {
+    bugType: "EDIT",
+    bugDescription: "Removing Edit Logs with link in it caused a crash"
+  },
+  {
+    bugType: "EDIT",
+    bugDescription: "in Rare Occasion, edits Patcher can logs multiple edits of same text or Double Fire Func"
+  }
+];const { ScrollView: ScrollView$1, View: View$1, Text: Text$1, TouchableOpacity: TouchableOpacity$1, TextInput: TextInput$1, Image: Image$1, Animated: Animated$1 } = components.General;
 const { FormLabel: FormLabel$1, FormIcon: FormIcon$1, FormArrow: FormArrow$1, FormRow: FormRow$1, FormSwitch: FormSwitch$1, FormSwitchRow: FormSwitchRow$1, FormSection: FormSection$1, FormDivider: FormDivider$1, FormInput: FormInput$1 } = components.Forms;
 const current = Assets.getAssetIDByName("ic_radio_square_checked_24px");
 const older = Assets.getAssetIDByName("ic_radio_square_24px");
@@ -1416,7 +1408,7 @@ function addIcon(icon) {
 function VersionChange(param) {
   let { change, index, totalIndex } = param;
   const [isOpen, setOpen] = common.React.useState(false);
-  common.React.useState(false);
+  const [isRowOpen, setRowOpen] = common.React.useState(false);
   function createSubRow(arr, label, subLabel, icon) {
     return /* @__PURE__ */ common.React.createElement(View$1, null, /* @__PURE__ */ common.React.createElement(FormRow$1, {
       label: label || "No Section",
@@ -1528,6 +1520,7 @@ const styles = common.stylesheet.createThemedStyleSheet({
 function SettingPage() {
   storage.useProxy(plugin.storage);
   const [animation] = common.React.useState(new Animated.Value(0));
+  const [isKnownBugOpen, setKnownBugOpen] = common.React.useState(false);
   common.React.useEffect(function() {
     Animated.loop(Animated.timing(animation, {
       toValue: 4,
@@ -1571,7 +1564,7 @@ function SettingPage() {
     createChild("colorpick", "Colors", "Customize Colors", null, ColorPickComponent, styles),
     createChild("ingorelist", "Ignore List", "Show IngoreList", null, IgnoreListComponent, null)
   ];
-  const currentOS = common.ReactNative?.Platform?.OS || null;
+  common.ReactNative?.Platform?.OS || null;
   const entireUIList = /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(View, {
     style: [
       styles.lnBorder,
@@ -1600,7 +1593,9 @@ function SettingPage() {
     }, common.React.createElement(element.props, {
       styles: element.propsData
     }))));
-  }), /* @__PURE__ */ common.React.createElement(FormDivider, null), /* @__PURE__ */ common.React.createElement(FormRow, {
+  }), /* @__PURE__ */ common.React.createElement(FormDivider, null), /* @__PURE__ */ common.React.createElement(FormSection, {
+    title: "Nerd Stuff"
+  }, /* @__PURE__ */ common.React.createElement(FormRow, {
     label: "Debug",
     subLabel: "Enable console logging",
     style: [
@@ -1612,7 +1607,19 @@ function SettingPage() {
         plugin.storage.debug = value;
       }
     })
-  }), /* @__PURE__ */ common.React.createElement(FormDivider, null), updates && /* @__PURE__ */ common.React.createElement(FormSection, {
+  }), /* @__PURE__ */ common.React.createElement(FormDivider, null), /* @__PURE__ */ common.React.createElement(FormRow, {
+    label: "Debug updateRows",
+    subLabel: "Enable updateRows console logging",
+    style: [
+      styles.padBot
+    ],
+    trailing: /* @__PURE__ */ common.React.createElement(FormSwitch, {
+      value: plugin.storage.debugUpdateRows,
+      onValueChange: function(value) {
+        plugin.storage.debugUpdateRows = value;
+      }
+    })
+  })), /* @__PURE__ */ common.React.createElement(FormDivider, null), updates && /* @__PURE__ */ common.React.createElement(FormSection, {
     title: "Updates"
   }, /* @__PURE__ */ common.React.createElement(View, {
     style: {
@@ -1627,8 +1634,30 @@ function SettingPage() {
       index,
       totalIndex: updates.length
     });
+  }))), /* @__PURE__ */ common.React.createElement(FormDivider, null), knownBugs && /* @__PURE__ */ common.React.createElement(FormSection, {
+    title: "Known Bugs"
+  }, /* @__PURE__ */ common.React.createElement(FormRow, {
+    label: "Click to show those Lady Bug",
+    onPress: function() {
+      setKnownBugOpen(!isKnownBugOpen);
+    }
+  }), isKnownBugOpen && /* @__PURE__ */ common.React.createElement(View, {
+    style: {
+      margin: 5,
+      padding: 5,
+      borderRadius: 10,
+      backgroundColor: "rgba(59, 30, 55, 0.15)"
+    }
+  }, knownBugs.map(function(data, index) {
+    return /* @__PURE__ */ common.React.createElement(FormRow, {
+      label: data.bugType,
+      subLabel: data.bugDescription,
+      style: [
+        styles.padBot
+      ]
+    });
   })))));
-  return /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(ScrollView, null, currentOS == "android" ? /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(LinearGradient, {
+  return /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(ScrollView, null, /* @__PURE__ */ common.React.createElement(LinearGradient, {
     start: {
       x: 0.8,
       y: 0
@@ -1651,7 +1680,7 @@ function SettingPage() {
       styles.lnShadow,
       styles.padBot
     ]
-  }, entireUIList)) : entireUIList));
+  }, entireUIList)));
 }const ChannelMessages = metro.findByProps("_channelMessages");
 const regexEscaper = function(string) {
   return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -1684,7 +1713,9 @@ makeDefaults(plugin.storage, {
     removeDismissButton: false,
     addTimestampForEdits: false,
     timestampStyle: "R",
-    useEphemeralForDeleted: true
+    useEphemeralForDeleted: true,
+    overrideIndicator: false,
+    useIndicatorForDeleted: false
   },
   colors: {
     textColor: "#E40303",
@@ -1699,13 +1730,15 @@ makeDefaults(plugin.storage, {
     editedMessageBuffer: "`[ EDITED ]`",
     historyToast: "[ANTI ED] History Removed",
     ignoredUserList: [],
-    customPluginName: _vendetta.plugin?.manifest?.name || "ANTIED"
+    customPluginName: _vendetta.plugin?.manifest?.name || "ANTIED",
+    customIndicator: ""
   },
   misc: {
     timestampPos: "BEFORE",
     editHistoryIcon: "ic_edit_24px"
   },
-  debug: false
+  debug: false,
+  debugUpdateRows: false
 });
 let deletedMessageArray = {};
 const patches = [];
