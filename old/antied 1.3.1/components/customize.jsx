@@ -52,18 +52,6 @@ const customizeableSwitches = [
 		default: true,
 		label: "Use Ephemeral for Deleted",
 		subLabel: "When messages got deleted it'll use ephemeral instead of normal message (Enabled by Default).",
-	},
-	{
-		id: "useIndicatorForDeleted",
-		default: false,
-		label: "use Indicator For 'This Message is Deleted'",
-		subLabel: "Use 'only you can see this' for deleted message info, instead of (edited)",
-	},
-	{
-		id: "overrideIndicator",
-		default: false,
-		label: "Remove Ephemeral Indicator",
-		subLabel: "When messages got deleted it'll have indicator under the text like 'only you can see this' and this remove those.",
 	}
 ]
 

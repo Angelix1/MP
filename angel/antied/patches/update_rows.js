@@ -1,15 +1,31 @@
 import { ReactNative } from "@vendetta/metro/common";
 import { before } from "@vendetta/patcher";
 import { storage } from "@vendetta/plugin";
+import { findByProps } from '@vendetta/metro';
 
-const { DCDChatManager } = ReactNative.NativeModules;
+// const { DCDChatManager } = ReactNative.NativeModules;
+const rowsController = findByProps("updateRows", "getConstants")
 
-export default (deletedMessagesArray) => before("updateRows", DCDChatManager, (r) => {
+
+/*
+
+Time wasted: 2 hours 41 minutes
+*/
+
+// export default (deletedMessagesArray) => before("updateRows", DCDChatManager, (r) => {
+// Should Support newer versions
+// Function consist of (num_1, args, bool_1, num_2, num_3)
+export default (deletedMessagesArray) => before("updateRows", rowsController, (r) => {
 	let rows = JSON.parse(r[1]);
 
-	const { textColor, backgroundColor, backgroundColorAlpha, gutterColor, gutterColorAlpha } = storage.colors
-	const deletedText = storage.inputs?.deletedMessageBuffer
-	const { useBackgroundColor, minimalistic, removeDismissButton } = storage.switches
+	const { textColor, backgroundColor, backgroundColorAlpha, gutterColor, gutterColorAlpha } = storage.colors;
+	const { 
+		useBackgroundColor, minimalistic, removeDismissButton, overrideIndicator, useIndicatorForDeleted,
+		useEphemeralForDeleted
+	} = storage.switches;
+	const { deletedMessageBuffer, customIndicator } = storage.inputs;
+
+	const bufferSymbol = " • ";
 
 	function validateHex(input, defaultColor) {
 		if(!input) input = defaultColor;
@@ -53,12 +69,8 @@ export default (deletedMessagesArray) => before("updateRows", DCDChatManager, (r
 			if(!compTypes.includes(type)) return obj;
 
 			if (type === "text" && content && content.length >= 1) {
-
 				return {
-					content: [{
-						content: content,
-						type: "text"
-					}],
+					content: [{ content: content, type: "text"}],
 					target: "usernameOnClick",
 					type: "link",
 					context: {
@@ -102,73 +114,82 @@ export default (deletedMessagesArray) => before("updateRows", DCDChatManager, (r
 		return obj;
 	}
 
-	function updateEphemeralIndication(object, onlyYouText, dismissText) {
+	function updateEphemeralIndication(object, removeDismissText=false, overrideText=false, onlyYouText, overrideArray=[]) {
 		if (object) {
-			if (onlyYouText != undefined) {
-				// Update "Only you can see this"
-				object.content[0].content[0].content = onlyYouText+"  ";
+			if(overrideText) {
+				if (onlyYouText != undefined) {
+					// ephemeralIndication.content[0]
+					// Update "Only you can see this"
+					object.content[0].content = onlyYouText+"  ";
+				}
+				else if(Array.isArray(overrideArray)) {
+					object.content = overrideArray
+				}
 			}
-			if (dismissText == undefined) {
-				// Update "Dismiss message"
-				object.content[0].content.splice(1)
+			else {
+				if (removeDismissText) {
+					// Update "Dismiss message"
+					object?.content?.splice?.(1)
+				}				
 			}
 		}
+		object.helpArticleLink = ""
+		object.helpButtonAccessibilityLabel = "Hello, Antied here Again"
+
 		return object;
 	}
 
-	function parseProxyUrl(originalUrl) {
-		const regex = new RegExp(".+size=([0-9]+)\/https?\/")
-		const decodedUrl = decodeURIComponent(originalUrl)
-
-		const testRegex = decodedUrl?.match(regex)
-
-		if(testRegex) {
-			return {
-				url: decodedUrl?.replace(regex, "https\:\/\/"),
-				size: testRegex[1]
-			}
-		} 
-		else {
-			return {
-				url: decodedUrl
-			}
-		}
-	}
-	
-	function removeProxy(link) {
-		const proxyIndex = link.indexOf("/https/");
-		
-		if (proxyIndex !== -1) {
-			const modifiedLink = "https://" + link.substring(proxyIndex + "/https/".length);
-			return modifiedLink;
-		} 
-		else {
-		// If no proxy found, return the original link
-			return link;
-		}
-	}
-
 	rows.forEach((row) => {
-		if(storage.debug) console.log(row);
+		if(storage.debugUpdateRows) console.log(row);
 		if(row?.type == 1) {
 			if( deletedMessagesArray[row?.message?.id] ) {
-				if(deletedText?.length > 0 || deletedText != "") {
-					   row.message.edited = deletedText;
+				if(deletedMessageBuffer?.length > 0 || deletedMessageBuffer != "") {
+					if(useIndicatorForDeleted && useEphemeralForDeleted) {
+						row.message.ephemeralIndication = updateEphemeralIndication(
+							row.message.ephemeralIndication, 
+							undefined,
+							true,
+							`${deletedMessageBuffer}${bufferSymbol}`
+						)
+					} 
+					else {
+					   row.message.edited = deletedMessageBuffer;						
+					}
 				}
 				
 				if(minimalistic == false) {
 					const characterColor = validateHex(textColor, "#E40303")
-					const appliedColor = transformObject(row?.message?.content, characterColor)
-					row.message.content = appliedColor;
+					// transformObject Broke on latest,  because usernameOnClick linkColor function seem gone
+					// const appliedColor = transformObject(row?.message?.content, characterColor)
+					// row.message.content = appliedColor;
+					
+					// Apparently i find workaround for textcoloring yay
+					row.message.textColor = ReactNative.processColor(characterColor);
 				}
 				
-				if(removeDismissButton && row?.message?.ephemeralIndication) {
-					row.message.ephemeralIndication = updateEphemeralIndication(
-						row.message.ephemeralIndication,
-						undefined,
-						undefined,
-					)
+				if(removeDismissButton && typeof row?.message?.ephemeralIndication == "object") {
+					row.message.ephemeralIndication = updateEphemeralIndication(row.message.ephemeralIndication, true)
 				}
+
+				if(overrideIndicator) {
+					row.message.ephemeralIndication = { 
+						content: [], 
+						helpArticleLink: "", 
+						helpButtonAccessibilityLabel: "Hello, Antied here Again"
+					};
+				}
+				else if (!useIndicatorForDeleted) {
+					if(customIndicator?.length > 0 || customIndicator != "") {
+						row.message.ephemeralIndication = updateEphemeralIndication(
+							row.message.ephemeralIndication, 
+							undefined,
+							true,
+							customIndicator
+						)
+					}
+				}
+
+				row.message.obscureLearnMoreLabel = "Hello, Antied here";
 
 				if(minimalistic == false && useBackgroundColor == true) {
 					

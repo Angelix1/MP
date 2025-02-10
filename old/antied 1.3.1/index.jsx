@@ -45,9 +45,7 @@ makeDefaults(storage, {
 		removeDismissButton: false,
 		addTimestampForEdits: false,
 		timestampStyle: 'R',
-		useEphemeralForDeleted: true,
-		overrideIndicator: false,
-		useIndicatorForDeleted: false
+		useEphemeralForDeleted: true		
 	},
 	colors: {
 		textColor: "#E40303",
@@ -62,15 +60,13 @@ makeDefaults(storage, {
 		editedMessageBuffer: "`[ EDITED ]`",
 		historyToast: "[ANTI ED] History Removed",
 		ignoredUserList: [],
-		customPluginName: (plugin?.manifest?.name || "ANTIED"),
-		customIndicator: ""
+		customPluginName: (plugin?.manifest?.name || "ANTIED")
 	},
 	misc: {
 		timestampPos: "BEFORE", // BEFORE|AFTER
 		editHistoryIcon: "ic_edit_24px"
 	},
-	debug: false,
-	debugUpdateRows: false
+	debug: false
 })
 
 let deletedMessageArray = {};

@@ -13,7 +13,6 @@ import IgnoreListComponent from './components/ignorelist';
 import CustomizationComponent from './components/customize';
 
 import updates from "./update";
-import bugs from "./knowbug";
 import VersionChange from "../../lib/components/versionChange";
 
 const { ScrollView, View, Text, TouchableOpacity, TextInput, Pressable, Image, Animated } = General;
@@ -98,7 +97,6 @@ export default function SettingPage() {
 	useProxy(storage);
 
 	const [animation] = React.useState(new Animated.Value(0));
-	const [isKnownBugOpen, setKnownBugOpen] = React.useState(false)
 
 	React.useEffect(() => {
 		Animated.loop(
@@ -177,35 +175,19 @@ export default function SettingPage() {
 				})
 			}
 			<FormDivider />
-			<FormSection title="Nerd Stuff">
-				<FormRow
-					label="Debug"
-					subLabel="Enable console logging"
-					style={[styles.padBot]}
-					trailing={
-						<FormSwitch
-							value={storage.debug}
-							onValueChange={(value) => {
-								storage.debug = value
-							}}
-						/>
-					}
-				/>
-				<FormDivider />
-				<FormRow
-					label="Debug updateRows"
-					subLabel="Enable updateRows console logging"
-					style={[styles.padBot]}
-					trailing={
-						<FormSwitch
-							value={storage.debugUpdateRows}
-							onValueChange={(value) => {
-								storage.debugUpdateRows = value
-							}}
-						/>
-					}
-				/>
-			</FormSection>
+			<FormRow
+				label="Debug"
+				subLabel="Enable console logging"
+				style={[styles.padBot]}
+				trailing={
+					<FormSwitch
+						value={storage.debug}
+						onValueChange={(value) => {
+							storage.debug = value
+						}}
+					/>
+				}
+			/>
 			<FormDivider />
 			{
 				updates && (
@@ -225,49 +207,12 @@ export default function SettingPage() {
 					</FormSection>
 				)
 			}
-			<FormDivider />
-			{
-				bugs && (
-					<FormSection title="Known Bugs">
-						<FormRow
-							label="Click to show those Lady Bug"
-							onPress={() => {
-								setKnownBugOpen(!isKnownBugOpen)
-							}}
-						/>
-						{
-
-							isKnownBugOpen && (
-								<View style={{ 
-									margin: 5, 
-									padding: 5,
-									borderRadius: 10,
-									backgroundColor: "rgba(59, 30, 55, 0.15)"
-								}}>
-									{
-										bugs.map((data, index) => {
-											return (
-												<FormRow
-													label={data.bugType}
-													subLabel={data.bugDescription}
-													style={[styles.padBot]}
-												/>
-											)
-										})
-									}
-									</View>
-							)
-						}						
-					</FormSection>
-				)
-			}
 		</View>
 	</>)
 
 	return (<>
 		<ScrollView>
 			{
-				/*
 				(currentOS == "android") ? 
 					(<>					
 						<LinearGradient 
@@ -280,16 +225,7 @@ export default function SettingPage() {
 						</LinearGradient>
 					</>) :
 					(entireUIList)
-				*/
 			}
-			<LinearGradient 
-				start={{x: 0.8, y: 0}}
-				end={{x: 0, y: 0.8}}
-				colors={[ "#b8ff34", "#4bff61", "#44f6ff", "#4dafff", "#413dff", "#d63efd" ]}
-				style={[ styles.lnBorder, styles.shadowTemplate, styles.lnShadow, styles.padBot ]}
-			>
-				{entireUIList}	
-			</LinearGradient>
 		</ScrollView>
 	</>)
 }

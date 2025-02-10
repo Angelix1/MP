@@ -6,37 +6,24 @@ function ma(...a) { return [...a] }
 
 const update = [
 	createList(
-		"1.2.0 - 1.2.5",
-		ma(
-			"[1.2.0] Added Update Section",
-			"[1.2.2] Added Support for Semantic Colors",
-			"[1.2.2] Added Support for Raw Colors",
-			"[1.2.2] Added Support for Timestamp Format",
-			"[1.2.5] Added option useEphemeralForDeleted modification in Customize Section",
-			"[1.2.5] Added new button on actionMessage if useEphemeralForDeleted disabled"
-		),
-		ma(
-			"[1.2.1] Redesign Setting Page",
-			"[1.2.2] Reworked how Message update appends separator",
-			"[1.2.4] Update Remove Edit button style"
-		),
-		ma(
-			"[1.2.3] Fixed Remove Edit button to not persist under Edit Message Button",
-			"[1.2.4] Fixed Message Parser Fails to parse edited message"
-		)
+		"1.0 - 1.3",
+		null,
+		ma("Version 1.4 does not support backwards compatibility after Discord version 265.16 Stable.")
 	),
 	createList(
-		"1.3",
+		"1.4.0",
 		ma(
-			"[1.3] Option to custom name the plugin",
-			"[1.3] Option to replace icon toast for edited history toast",
+			"[1.4] Trying to reinstate colorful setting for IOS.",
+			"[1.4] Added new Option to Remove Ephemeral Indicator",
+			"[1.4] Added new Option to Switch 'this message is deleted' to be an indicator",
+			"[1.4] Added debug updateRows Switch for nerds.",
+			"[1.4] Added Known Bugs Section for those annoying peoples complaining about things."
 		),
 		ma(
-			"[1.3] Removes Logging system due crashes and inefficient code",
-			"[1.3] Removes patch to user setting to avoid crashes again",
+			"[1.4] Discontinued Support for older version related to updateRows function, Use Version 1.3.1 if you using old version",
 		),
 		ma(
-			"[1.3] Hopefully fixed the issue with IOS crash on setting",
+			"[1.4] Update updateRows function to Support Newer Version of Discord",
 		)
 	),
 

@@ -25,12 +25,6 @@ const customizedableTexts = [
 		title: "Customize Remove History Toast Message",
 		type: "default",
 		placeholder: "History Removed",
-	},
-	{
-		id: "customIndicator",
-		title: "Customize Ephemeral 'Only You Can See This' Indicator (if useIndicatorForDeletedMessage enabled this feature be overriden)",
-		type: "default",
-		placeholder: "Only you can see this • ",
 	}
 ]
 
