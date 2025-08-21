@@ -18,17 +18,25 @@ export default function quickCopyID(component, args, actionMessage, ActionSheet)
 			const unpatch = after("default", instance, (_, comp) => {
 				React.useEffect(() => () => { unpatch() }, []);
 
-				const buttons = findInReactTree(comp, c => c?.find?.(child => child?.props?.label == i18n?.Messages?.MENTION))
+				// as of now idfk where the localization located, so i'll be using hardcoded code
+				function someFunc(a) {
+					return a?.props?.label?.toLowerCase?.() == 'mention'
+				}
+
+
+				// const buttons = findInReactTree(comp, c => c?.find?.(child => child?.props?.label == i18n?.Messages?.MENTION))
+				const buttons = findInReactTree(comp, c => c?.find?.(someFunc))
 				if (!buttons) return comp;
 				
+
 				const position = Math.max(
-					buttons.findIndex((x) => x?.props?.label == i18n?.Messages?.MENTION), 
+					buttons.findIndex(someFunc), //(x) => x?.props?.label == i18n?.Messages?.MENTION), 
 					buttons.length - 1
 				);
 
 				if(storage.debug) {
-					console.log(buttons)
 					console.log("Position => " + position)
+					console.log(buttons)
 				}
 
 				function createButton(label, sub, icon, callback) {
@@ -98,12 +106,7 @@ export default function quickCopyID(component, args, actionMessage, ActionSheet)
 						/>
 					</>)
 
-					if(position >= 0) {
-						buttons.splice(position, 0, newButton)
-					} 
-					else {
-						buttons.push(newButton)
-					}
+					buttons.unshift(newButton)
 				}
 			})
 		})

@@ -2,15 +2,13 @@ import { storage } from "@vendetta/plugin"
 import { useProxy } from "@vendetta/storage"
 import { findByName } from "@vendetta/metro";
 
-import VersionChange from "../../lib/components/versionChange";
-import updates from "./update";
-
 import { CustomMentionsSetting, ReplyAlertSetting } from "./pages/utils/replyAlertSetting";
 import NoShareSetting from "./pages/utils/NoShareSetting";
 import CAT from "./pages/utils/cat";
 import QuickIdSetting from "./pages/utils/quickIdSetting";
 import CustomUsernameColorPage from "./pages/utils/cuc";
 import CustomRoleIconPage from "./pages/utils/cri";
+import CustomClanBadge from "./pages/utils/ct";
 import { Forms, General } from "@vendetta/ui/components";
 
 // const HelpMessage = findByName("HelpMessage");
@@ -39,6 +37,7 @@ export default () => {
 		createList("noshare", "No Share", "Toggle No Share", null, NoShareSetting),
 		createList("customUsernameColor", "CUC", "Toggle Custom Username Color", null, CustomUsernameColorPage),
 		createList("customRoleIcon", "CRI", "Toggle Custom Role Icon", null, CustomRoleIconPage),
+		createList("customClan", "CCB", "Toggle Custom Clan Badge", null, CustomClanBadge),
 		createList("ralert", "Reply Alert", "Toggle Settings", null, ReplyAlertSetting),
 		createList("customMention", "Custom Mentions", "Toggle Custom Mentions Settings", null, CustomMentionsSetting),
 		createList("removeDecor", "I HATE AVATAR DECORATIONS", "Toggle Remove Avatar Decoration", null, null),
@@ -48,9 +47,11 @@ export default () => {
 		<ScrollView>
 			<View style={{				
 				borderRadius: 10, 
-				backgroundColor: "rgba(0, 12, 46, 0.15)"
+				backgroundColor: "rgba(0, 12, 46, 0.15)",
+				marginBottom: 50,
+				marginTop: 20
 			}}>
-			{/*<HelpMessage messageType={0}>"This Plugin development is moved to new Repository"</HelpMessage>*/}
+			{/*{<HelpMessage messageType={0}>"To use a feature, please enable them and their respective setting open."</HelpMessage>}*/}
 			<FormRow
 				label="Debug"
 				subLabel="enable console logging"
@@ -99,28 +100,6 @@ export default () => {
 			}
 			</View>
 			<FormDivider />
-			{
-				updates && (
-					<View style={{
-						paddingBottom: 36
-					}}>
-						<FormSection title="Updates">
-							<View style={{ 
-								margin: 5, 
-								padding: 5,
-								borderRadius: 10,
-								backgroundColor: "rgba(59, 30, 55, 0.15)"
-							}}>
-								{
-									updates.map((data, index) => {
-										return <VersionChange change={data} index={index} totalIndex={updates.length}/>
-									})
-								}
-							</View>
-						</FormSection>
-					</View>
-				)
-			}
 		</ScrollView>
 	</>)
 }

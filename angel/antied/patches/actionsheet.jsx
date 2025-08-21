@@ -26,11 +26,16 @@ export default (deletedMessageArray) => before("openLazy", ActionSheet, ([compon
 			// if(storage.debug) console.log(deletedMessageArray);
 			if(storage.debug) console.log(`[ANTIED ActionSheet]`, message)
 
-			const buttons = findInReactTree(comp, c => c?.find?.(child => child?.props?.label == i18n?.Messages?.MESSAGE_ACTION_REPLY))
+			function someFunc(a) {
+				// return a?.props?.label == i18n?.Messages?.MESSAGE_ACTION_REPLY
+				return a?.props?.label?.toLowerCase?.() == 'reply'
+			}
+
+			const buttons = findInReactTree(comp, c => c?.find?.(someFunc))
 			if (!buttons) return comp;
 			
 			const position = Math.max(
-				buttons.findIndex((x) => x?.props?.label == i18n?.Messages?.MESSAGE_ACTION_REPLY), 
+				buttons.findIndex(someFunc), 
 				buttons.length - 1
 			);
 			

@@ -35,6 +35,17 @@ export default function CustomUsernameColorPage() {
 		}
 	);
 
+	const whenPressed2 = () => openSheet(
+		CustomColorPickerActionSheet, {
+			color: (ReactNative.processColor(SUCUC?.hex2) || 0),
+			onSelect: (color) => {
+				const hex = numToHex(color)
+				SUCUC.hex2 = hex
+			//	showToast(storage.colors.hex)
+			}
+		}
+	);
+
 	return (<>
 		<FormRow
 			label="Color"
@@ -49,6 +60,25 @@ export default function CustomUsernameColorPage() {
 							height: 128,
 							borderRadius: 10, 
 							backgroundColor: SUCUC?.hex || "#000000"
+						}}
+					/>
+				</TouchableOpacity>
+			}
+		/>
+		<FormDivider />
+		<FormRow
+			label="Color #2"
+			subLabel="Click to Update"
+			onPress={whenPressed2}
+			trailing={
+				<TouchableOpacity onPress={whenPressed2}>
+					<Image
+						source={{ uri: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mJsrQAAAgwBAJ9P6qYAAAAASUVORK5CYII=' }}
+						style={{ 
+							width: 128, 
+							height: 128,
+							borderRadius: 10, 
+							backgroundColor: SUCUC?.hex2 || "#FFFFFF"
 						}}
 					/>
 				</TouchableOpacity>

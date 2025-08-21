@@ -26,7 +26,7 @@ export function patchCustomRoleIcon(row) {
 				roleIconObject.size = CRI.size;
 				roleIconObject.alt = `Role icon, ${CRI.name}`;
 			}
-
+			
 			row.message.roleIcon = roleIconObject;
 		}
 

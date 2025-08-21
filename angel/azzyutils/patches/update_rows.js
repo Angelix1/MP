@@ -1,4 +1,3 @@
-import { ReactNative, moment } from "@vendetta/metro/common";
 import { after, before } from "@vendetta/patcher";
 import { storage } from "@vendetta/plugin";
 import { isEnabled } from "..";
@@ -6,10 +5,15 @@ import { updateRowCustomMentionPatch } from "../utils/replyAlert";
 import { updateRowTextMod } from "../utils/textMod";
 import { patchCustomUsernameColor } from "../utils/cuc";
 import { patchCustomRoleIcon } from "../utils/cri";
+import { patchCustomClanBadge } from "../utils/ct";
 
-const { DCDChatManager } = ReactNative.NativeModules;
+import { findByProps } from "@vendetta/metro";
 
-export const patchUpdateRowBefore = () => before("updateRows", DCDChatManager, (r) => {
+// const { DCDChatManager } = ReactNative.NativeModules; // ancient shit
+
+const rowsController = findByProps("updateRows", "getConstants")
+
+export const patchUpdateRowBefore = () => before("updateRows", rowsController, (r) => {
 	if(isEnabled) {
 		let rows = JSON.parse(r[1]);
 		if(storage?.debug) console.log("[AZZYUTILS update_rows.js] ========== updateRows rows ==========");
@@ -19,6 +23,7 @@ export const patchUpdateRowBefore = () => before("updateRows", DCDChatManager, (
 			updateRowCustomMentionPatch(row) // Custom Mention
 			if(storage?.toggle?.customUsernameColor) patchCustomUsernameColor(row); // Custom Username Color
 			if(storage?.toggle?.customRoleIcon) patchCustomRoleIcon(row); // Custom Role Icon
+			if(storage?.toggle?.customClan) patchCustomClanBadge(row);
 			// updateRowTextMod(row) // Text Color Mod
 
 		})
@@ -29,7 +34,7 @@ export const patchUpdateRowBefore = () => before("updateRows", DCDChatManager, (
 	}
 })
 
-export const patchUpdateRowAfter = () => after("updateRows", DCDChatManager, (r) => {
+export const patchUpdateRowAfter = () => after("updateRows", rowsController, (r) => {
 	if(isEnabled) {
 		let rows = JSON.parse(r[1]);
 

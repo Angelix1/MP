@@ -44,7 +44,8 @@ makeDefaults(storage, {
 			gutterAlpha: "33",
 			useReplyAlert: false,
 			useCustomColor: false,
-			ignoreSelf: false
+			ignoreSelf: false,
+			altAlpha: false,
 		},
 		eml: {
 			logEdit: false,
@@ -56,6 +57,7 @@ makeDefaults(storage, {
 		},
 		customUsernameColor: {
 			hex: "#FFFFFF",
+			hex2: "#AAAAAA",
 			enableReply: false,
 		},
 		customRoleIcon: {
@@ -65,8 +67,8 @@ makeDefaults(storage, {
 			showOthers: false,
 		},
 		customClan: {
-			icon: "",
-			tag: ""
+			clanBadgeUrl: "https://cdn.discordapp.com/clan-badges/603970300668805120/e5926f1f8cf6592d56d27bac37f01a9b.png?size=32",
+			clanTag: "AGWX"
 		}
 	},
 	debug: false
@@ -115,8 +117,8 @@ export default {
 	},
 	onUnload: () => {
 		isEnabled = false
-		unpatch();
-		unLoadDatas();
+		unpatch?.();
+		unLoadDatas?.();
 	},
 	settings: settingPage
 }
