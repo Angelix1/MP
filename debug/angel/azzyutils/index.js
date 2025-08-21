@@ -1,84 +1,4 @@
-(function(exports,plugin,storage,metro,common,ui,assets,components,_vendetta,toasts,patcher$1,utils,plugins){'use strict';const { ScrollView: ScrollView$4, View: View$4, Text: Text$4, TouchableOpacity: TouchableOpacity$4, TextInput: TextInput$4, Image: Image$4, Animated: Animated$4 } = components.General;
-const { FormLabel: FormLabel$4, FormIcon: FormIcon$6, FormArrow: FormArrow$4, FormRow: FormRow$7, FormSwitch: FormSwitch$6, FormSwitchRow: FormSwitchRow$4, FormSection: FormSection$4, FormDivider: FormDivider$5, FormInput: FormInput$5 } = components.Forms;
-const current = assets.getAssetIDByName("ic_radio_square_checked_24px");
-const older = assets.getAssetIDByName("ic_radio_square_24px");
-const info = assets.getAssetIDByName("ic_information_24px");
-assets.getAssetIDByName("ic_info");
-const newStuff = assets.getAssetIDByName("premium_sparkles");
-const updatedStuff = assets.getAssetIDByName("ic_sync_24px");
-const fixStuff = assets.getAssetIDByName("ic_progress_wrench_24px");
-const styles = common.stylesheet.createThemedStyleSheet({
-  border: {
-    borderRadius: 10
-  },
-  textBody: {
-    color: ui.semanticColors.TEXT_NORMAL,
-    fontFamily: common.constants.Fonts.PRIMARY_MEDIUM,
-    letterSpacing: 0.25,
-    fontSize: 22
-  },
-  textBody: {
-    color: ui.semanticColors.INPUT_PLACEHOLDER_TEXT,
-    fontFamily: common.constants.Fonts.DISPLAY_NORMAL,
-    letterSpacing: 0.25,
-    fontSize: 16
-  },
-  versionBG: {
-    margin: 10,
-    padding: 15,
-    backgroundColor: "rgba(55, 149, 225, 0.3)"
-  },
-  rowLabel: {
-    margin: 10,
-    padding: 15,
-    backgroundColor: "rgba(33, 219, 222, 0.34)"
-  }
-});
-function addIcon(icon) {
-  return /* @__PURE__ */ common.React.createElement(FormIcon$6, {
-    style: {
-      opacity: 1
-    },
-    source: icon
-  });
-}
-function VersionChange(param) {
-  let { change, index, totalIndex } = param;
-  const [isOpen, setOpen] = common.React.useState(false);
-  const [isRowOpen, setRowOpen] = common.React.useState(false);
-  function createSubRow(arr, label, subLabel, icon) {
-    return /* @__PURE__ */ common.React.createElement(View$4, null, /* @__PURE__ */ common.React.createElement(FormRow$7, {
-      label: label || "No Section",
-      subLabel: subLabel || null,
-      leading: icon && addIcon(icon),
-      style: [
-        styles.textHeader
-      ]
-    }), arr.map(function(x, i) {
-      return /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(FormRow$7, {
-        label: x,
-        style: [
-          styles.textBody,
-          styles.rowLabel,
-          styles.border
-        ]
-      }));
-    }));
-  }
-  return /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(components.ErrorBoundary, null, /* @__PURE__ */ common.React.createElement(FormRow$7, {
-    label: change?.version,
-    leading: index == 0 ? addIcon(current) : addIcon(older),
-    trailing: addIcon(info),
-    onPress: function() {
-      setOpen(!isOpen);
-    }
-  }), isOpen && /* @__PURE__ */ common.React.createElement(View$4, {
-    style: [
-      styles.versionBG,
-      styles.border
-    ]
-  }, change?.new?.length > 0 && createSubRow(change.new, "New", "New stuffies", newStuff), change?.updated?.length > 0 && createSubRow(change.updated, "Changes", "Update things", updatedStuff), change?.fix?.length > 0 && createSubRow(change.fix, "Fixes", "Me hate borken things", fixStuff)), index == totalIndex.length - 1 ? void 0 : /* @__PURE__ */ common.React.createElement(FormDivider$5, null)));
-}const { openLazy, hideActionSheet } = metro.findByProps("openLazy", "hideActionSheet");
+(function(exports,plugin,storage,metro,_vendetta,components,common,assets,toasts,patcher$1,utils,plugins){'use strict';const { openLazy, hideActionSheet } = metro.findByProps("openLazy", "hideActionSheet");
 function makeDefaults(object, defaults) {
   if (object != void 0) {
     if (defaults != void 0) {
@@ -106,24 +26,34 @@ function openSheet(sheet, props) {
     showToast("Got error when opening ActionSheet! Please check debug logs");
   }
 }
+const colorConverter = {
+  toInt(hex) {
+    hex = hex.replace(/^#/, "");
+    return parseInt(hex, 16);
+  },
+  toHex(integer) {
+    const hex = integer.toString(16).toUpperCase();
+    return "#" + hex;
+  },
+  HSLtoHEX(h, s, l) {
+    l /= 100;
+    const a = s * Math.min(l, 1 - l) / 100;
+    const f = function(n) {
+      const k = (n + h / 30) % 12;
+      const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+      return Math.round(255 * color).toString(16).padStart(2, "0");
+    };
+    return `#${f(0)}${f(8)}${f(4)}`;
+  }
+};
 function numToHex(numericColor) {
   const red = numericColor >> 16 & 255;
   const green = numericColor >> 8 & 255;
   const blue = numericColor & 255;
   return `#${(1 << 24 | red << 16 | green << 8 | blue).toString(16).slice(1)}`;
 }
-function createList(version) {
-  let a = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : null, u = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : null, f = arguments.length > 3 && arguments[3] !== void 0 ? arguments[3] : null;
-  return {
-    version,
-    new: a,
-    updated: u,
-    fix: f
-  };
-}
 const transparentBase64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mJsrQAAAgwBAJ9P6qYAAAAASUVORK5CYII=";
-function validateHex(input) {
-  let defaultColor = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : "#000";
+function validateHex(input, defaultColor = "#000") {
   if (!input)
     input = defaultColor;
   const trimmedInput = input?.trim();
@@ -170,39 +100,25 @@ const convert = {
 function withinChance(percentage) {
   const random = Math.random();
   return random < percentage / 100;
-}function ma() {
-  for (var _len = arguments.length, a = new Array(_len), _key = 0; _key < _len; _key++) {
-    a[_key] = arguments[_key];
-  }
-  return [
-    ...a
-  ];
-}
-const update = [
-  createList("1.0.0", ma("Created the Plugin")),
-  createList("1.0.1 - 1.0.3", ma("[1.0.1] Added Remove Decor", "[1.0.1] Customization for reply alert", "[1.0.1] Option to revert locally edited message (wipe on unload of the plugin)", "[1.0.22] Setting for Quick Id", "[1.0.22] Option to toggle Force alert", "[1.0.22] Preview for ReplyAlert"), ma("[1.0.2] Remove Custom Timestamp", "[1.0.24] EML will wipe its log when onunload and revert every message its edit", "[1.0.3] Update EML, QID buttons"), ma("[1.0.21] Fix Cactus", "[1.0.22] Fix No Share fails to find Share button", "[1.0.23] Fix Quick ID removing edit message button", "[1.0.3] Fixed EML button fails to append under Reply Button", "[1.0.3] Fixed QID buttons fails to append to a correct place")),
-  createList("1.1", ma("[1.1.0] Added Custom Username Color", "[1.1.0] Added Custom Role Icon"), ma("[1.1.0] Separated reply alert and custom mention to be their own thing")),
-  createList("1.2", null, ma("[1.2] Removed EML due possibly harmful use case"))
-];
-var updates = update.reverse();const { ScrollView: ScrollView$3, View: View$3, Text: Text$3, TouchableOpacity: TouchableOpacity$3, TextInput: TextInput$3, Pressable: Pressable$3, Image: Image$3, Animated: Animated$3, Component: Component$3 } = components.General;
-const { FormLabel: FormLabel$3, FormIcon: FormIcon$5, FormArrow: FormArrow$3, FormRow: FormRow$6, FormSwitch: FormSwitch$5, FormSwitchRow: FormSwitchRow$3, FormSection: FormSection$3, FormDivider: FormDivider$4, FormInput: FormInput$4, FormRadioRow: FormRadioRow$3, FormSliderRow } = components.Forms;
+}const { ScrollView: ScrollView$4, View: View$4, Text: Text$4, TouchableOpacity: TouchableOpacity$4, TextInput: TextInput$4, Pressable: Pressable$4, Image: Image$4, Animated: Animated$4, Component: Component$4 } = components.General;
+const { FormLabel: FormLabel$4, FormIcon: FormIcon$6, FormArrow: FormArrow$4, FormRow: FormRow$7, FormSwitch: FormSwitch$6, FormSwitchRow: FormSwitchRow$4, FormSection: FormSection$4, FormDivider: FormDivider$5, FormInput: FormInput$5, FormRadioRow: FormRadioRow$4, FormSliderRow } = components.Forms;
 const CustomColorPickerActionSheet$1 = metro.findByName("CustomColorPickerActionSheet");
 function ReplyAlertSetting() {
   storage.useProxy(plugin.storage);
   const reply = plugin.storage.utils.replyAlert;
-  return /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(FormRow$6, {
+  return /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(FormRow$7, {
     label: "Toggle Force Alert",
     subLabel: "When someone replying to your message with mention disabled, this option will force ping you",
-    trailing: /* @__PURE__ */ common.React.createElement(FormSwitch$5, {
+    trailing: /* @__PURE__ */ common.React.createElement(FormSwitch$6, {
       value: reply?.useReplyAlert || false,
       onValueChange: function(value) {
         reply.useReplyAlert = value;
       }
     })
-  }), /* @__PURE__ */ common.React.createElement(FormDivider$4, null), /* @__PURE__ */ common.React.createElement(FormRow$6, {
+  }), /* @__PURE__ */ common.React.createElement(FormDivider$5, null), /* @__PURE__ */ common.React.createElement(FormRow$7, {
     label: "Ignore self Reply",
     subLabel: "When replying to own message, do not ping",
-    trailing: /* @__PURE__ */ common.React.createElement(FormSwitch$5, {
+    trailing: /* @__PURE__ */ common.React.createElement(FormSwitch$6, {
       value: reply?.ignoreSelf || false,
       onValueChange: function(value) {
         reply.ignoreSelf = value;
@@ -237,10 +153,10 @@ function CustomMentionsSetting() {
       }
     });
   };
-  return /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(FormRow$6, {
+  return /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(FormRow$7, {
     label: "Preview",
     subLabel: "How it looks in the chat"
-  }), /* @__PURE__ */ common.React.createElement(View$3, {
+  }), /* @__PURE__ */ common.React.createElement(View$4, {
     style: [
       {
         flexDirection: "row",
@@ -253,35 +169,35 @@ function CustomMentionsSetting() {
         marginLeft: 10
       }
     ]
-  }, /* @__PURE__ */ common.React.createElement(View$3, {
+  }, /* @__PURE__ */ common.React.createElement(View$4, {
     style: {
       width: "2%",
       backgroundColor: `${reply?.gutterColor}${convert.alphaToHex(convert.toPercentage(GA))}`
     }
-  }), /* @__PURE__ */ common.React.createElement(View$3, {
+  }), /* @__PURE__ */ common.React.createElement(View$4, {
     style: {
       flex: 1,
       backgroundColor: `${reply?.customColor}${convert.alphaToHex(convert.toPercentage(CA))}`,
       justifyContent: "center",
       alignItems: "center"
     }
-  }, /* @__PURE__ */ common.React.createElement(Text$3, {
+  }, /* @__PURE__ */ common.React.createElement(Text$4, {
     style: {
       fontSize: 20,
       color: "#FFFFFF"
     }
-  }, " Example White Text "), /* @__PURE__ */ common.React.createElement(Text$3, {
+  }, " Example White Text "), /* @__PURE__ */ common.React.createElement(Text$4, {
     style: {
       fontSize: 20,
       color: "#000000"
     }
-  }, " Example Black Text "))), /* @__PURE__ */ common.React.createElement(FormDivider$4, null), /* @__PURE__ */ common.React.createElement(FormRow$6, {
+  }, " Example Black Text "))), /* @__PURE__ */ common.React.createElement(FormDivider$5, null), /* @__PURE__ */ common.React.createElement(FormRow$7, {
     label: "Background Color",
     subLabel: "Click to Update",
     onPress: colorSet,
-    trailing: /* @__PURE__ */ common.React.createElement(TouchableOpacity$3, {
+    trailing: /* @__PURE__ */ common.React.createElement(TouchableOpacity$4, {
       onPress: colorSet
-    }, /* @__PURE__ */ common.React.createElement(Image$3, {
+    }, /* @__PURE__ */ common.React.createElement(Image$4, {
       source: {
         uri: transparentBase64
       },
@@ -292,13 +208,13 @@ function CustomMentionsSetting() {
         backgroundColor: reply?.customColor || "#000"
       }
     }))
-  }), /* @__PURE__ */ common.React.createElement(FormDivider$4, null), /* @__PURE__ */ common.React.createElement(FormRow$6, {
+  }), /* @__PURE__ */ common.React.createElement(FormDivider$5, null), /* @__PURE__ */ common.React.createElement(FormRow$7, {
     label: "Gutter Color",
     subLabel: "Click to Update",
     onPress: gutterSet,
-    trailing: /* @__PURE__ */ common.React.createElement(TouchableOpacity$3, {
+    trailing: /* @__PURE__ */ common.React.createElement(TouchableOpacity$4, {
       onPress: gutterSet
-    }, /* @__PURE__ */ common.React.createElement(Image$3, {
+    }, /* @__PURE__ */ common.React.createElement(Image$4, {
       source: {
         uri: transparentBase64
       },
@@ -309,7 +225,7 @@ function CustomMentionsSetting() {
         backgroundColor: reply?.gutterColor || "#000"
       }
     }))
-  }), /* @__PURE__ */ common.React.createElement(FormDivider$4, null), /* @__PURE__ */ common.React.createElement(FormSliderRow, {
+  }), /* @__PURE__ */ common.React.createElement(FormDivider$5, null), /* @__PURE__ */ common.React.createElement(FormSliderRow, {
     label: `Background Color Alpha: ${convert.toPercentage(CA)}%`,
     value: CA,
     style: {
@@ -319,7 +235,7 @@ function CustomMentionsSetting() {
       setCA(Number(convert.formatDecimal(v)));
       reply.colorAlpha = convert.alphaToHex(convert.toPercentage(v));
     }
-  }), /* @__PURE__ */ common.React.createElement(FormDivider$4, null), /* @__PURE__ */ common.React.createElement(FormSliderRow, {
+  }), /* @__PURE__ */ common.React.createElement(FormDivider$5, null), /* @__PURE__ */ common.React.createElement(FormSliderRow, {
     label: `Gutter Color Alpha: ${convert.toPercentage(GA)}%`,
     value: GA,
     style: {
@@ -330,21 +246,21 @@ function CustomMentionsSetting() {
       reply.gutterAlpha = convert.alphaToHex(convert.toPercentage(v));
     }
   }));
-}const { FormRow: FormRow$5, FormSwitch: FormSwitch$4 } = components.Forms;
+}const { FormRow: FormRow$6, FormSwitch: FormSwitch$5 } = components.Forms;
 function NoShareSetting() {
-  return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(FormRow$5, {
+  return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(FormRow$6, {
     label: "Add Save Image Button to Image ActionSheet",
     subLabel: "if Built-in Save Image gone",
-    trailing: /* @__PURE__ */ React.createElement(FormSwitch$4, {
+    trailing: /* @__PURE__ */ React.createElement(FormSwitch$5, {
       value: plugin.storage?.utils?.noshare?.addSaveImage || false,
       onValueChange: function(value) {
         plugin.storage.utils.noshare.addSaveImage = value;
       }
     })
   }));
-}const { FormInput: FormInput$3 } = components.Forms;
+}const { FormInput: FormInput$4 } = components.Forms;
 function CAT() {
-  return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(FormInput$3, {
+  return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(FormInput$4, {
     title: "Name",
     keyboardType: "default",
     placeholder: "Angel",
@@ -353,7 +269,7 @@ function CAT() {
       return plugin.storage.utils.cactus.name = val.toString();
     }
   }));
-}const { FormRow: FormRow$4, FormSwitch: FormSwitch$3, FormDivider: FormDivider$3 } = components.Forms;
+}const { FormRow: FormRow$5, FormSwitch: FormSwitch$4, FormDivider: FormDivider$4 } = components.Forms;
 function QuickIdSetting() {
   storage.useProxy(plugin.storage);
   const cl = function(label, subLabel, key) {
@@ -369,20 +285,20 @@ function QuickIdSetting() {
     cl("Id and Mention", "add Copy User Id & Mention", "addCombine")
   ];
   return /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, lists.map(function(el, i) {
-    return /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(FormRow$4, {
+    return /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(FormRow$5, {
       label: el?.label || "Missing Label",
       subLabel: el?.subLabel,
-      trailing: /* @__PURE__ */ common.React.createElement(FormSwitch$3, {
+      trailing: /* @__PURE__ */ common.React.createElement(FormSwitch$4, {
         value: plugin.storage?.utils?.quickid?.[el?.key] || false,
         onValueChange: function(value) {
           plugin.storage.utils.quickid[el.key] = value;
         }
       })
-    }), i !== lists?.length - 1 && /* @__PURE__ */ common.React.createElement(FormDivider$3, null));
-  }), /* @__PURE__ */ common.React.createElement(FormDivider$3, null));
+    }), i !== lists?.length - 1 && /* @__PURE__ */ common.React.createElement(FormDivider$4, null));
+  }), /* @__PURE__ */ common.React.createElement(FormDivider$4, null));
 }const CustomColorPickerActionSheet = metro.findByName("CustomColorPickerActionSheet");
-const { ScrollView: ScrollView$2, View: View$2, Text: Text$2, TouchableOpacity: TouchableOpacity$2, TextInput: TextInput$2, Pressable: Pressable$2, Image: Image$2, Animated: Animated$2, Component: Component$2 } = components.General;
-const { FormLabel: FormLabel$2, FormIcon: FormIcon$4, FormArrow: FormArrow$2, FormRow: FormRow$3, FormSwitch: FormSwitch$2, FormSwitchRow: FormSwitchRow$2, FormSection: FormSection$2, FormDivider: FormDivider$2, FormInput: FormInput$2, FormRadioRow: FormRadioRow$2 } = components.Forms;
+const { ScrollView: ScrollView$3, View: View$3, Text: Text$3, TouchableOpacity: TouchableOpacity$3, TextInput: TextInput$3, Pressable: Pressable$3, Image: Image$3, Animated: Animated$3, Component: Component$3 } = components.General;
+const { FormLabel: FormLabel$3, FormIcon: FormIcon$5, FormArrow: FormArrow$3, FormRow: FormRow$4, FormSwitch: FormSwitch$3, FormSwitchRow: FormSwitchRow$3, FormSection: FormSection$3, FormDivider: FormDivider$3, FormInput: FormInput$3, FormRadioRow: FormRadioRow$3 } = components.Forms;
 const switches = [
   {
     id: "enableReply",
@@ -403,13 +319,22 @@ function CustomUsernameColorPage() {
       }
     });
   };
-  return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(FormRow$3, {
+  const whenPressed2 = function() {
+    return openSheet(CustomColorPickerActionSheet, {
+      color: common.ReactNative.processColor(SUCUC?.hex2) || 0,
+      onSelect: function(color) {
+        const hex = numToHex(color);
+        SUCUC.hex2 = hex;
+      }
+    });
+  };
+  return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(FormRow$4, {
     label: "Color",
     subLabel: "Click to Update",
     onPress: whenPressed,
-    trailing: /* @__PURE__ */ React.createElement(TouchableOpacity$2, {
+    trailing: /* @__PURE__ */ React.createElement(TouchableOpacity$3, {
       onPress: whenPressed
-    }, /* @__PURE__ */ React.createElement(Image$2, {
+    }, /* @__PURE__ */ React.createElement(Image$3, {
       source: {
         uri: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mJsrQAAAgwBAJ9P6qYAAAAASUVORK5CYII="
       },
@@ -420,28 +345,45 @@ function CustomUsernameColorPage() {
         backgroundColor: SUCUC?.hex || "#000000"
       }
     }))
-  }), /* @__PURE__ */ React.createElement(FormDivider$2, null), switches?.map(function(obj, index) {
-    return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(FormRow$3, {
+  }), /* @__PURE__ */ React.createElement(FormDivider$3, null), /* @__PURE__ */ React.createElement(FormRow$4, {
+    label: "Color #2",
+    subLabel: "Click to Update",
+    onPress: whenPressed2,
+    trailing: /* @__PURE__ */ React.createElement(TouchableOpacity$3, {
+      onPress: whenPressed2
+    }, /* @__PURE__ */ React.createElement(Image$3, {
+      source: {
+        uri: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mJsrQAAAgwBAJ9P6qYAAAAASUVORK5CYII="
+      },
+      style: {
+        width: 128,
+        height: 128,
+        borderRadius: 10,
+        backgroundColor: SUCUC?.hex2 || "#FFFFFF"
+      }
+    }))
+  }), /* @__PURE__ */ React.createElement(FormDivider$3, null), switches?.map(function(obj, index) {
+    return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(FormRow$4, {
       label: obj?.label,
       subLabel: obj?.subLabel,
-      leading: obj?.icon && /* @__PURE__ */ React.createElement(FormIcon$4, {
+      leading: obj?.icon && /* @__PURE__ */ React.createElement(FormIcon$5, {
         style: {
           opacity: 1
         },
         source: assets.getAssetIDByName(obj?.icon)
       }),
-      trailing: "id" in obj ? /* @__PURE__ */ React.createElement(FormSwitch$2, {
+      trailing: "id" in obj ? /* @__PURE__ */ React.createElement(FormSwitch$3, {
         value: plugin.storage?.utils?.customUsernameColor[obj?.id] ?? obj?.def,
         onValueChange: function(value) {
           return plugin.storage.utils.customUsernameColor[obj?.id] = value;
         }
       }) : void 0
-    }), index !== switches?.length - 1 && /* @__PURE__ */ React.createElement(FormDivider$2, null));
+    }), index !== switches?.length - 1 && /* @__PURE__ */ React.createElement(FormDivider$3, null));
   }));
-}const defaultImageURL = "https://cdn.discordapp.com/role-icons/1222207470714486825/bc3ef24c3f220155f90e55cc0cb0d0cf.png?size=512";
-const { ScrollView: ScrollView$1, View: View$1, Text: Text$1, TouchableOpacity: TouchableOpacity$1, TextInput: TextInput$1, Pressable: Pressable$1, Image: Image$1, Animated: Animated$1, Component: Component$1 } = components.General;
-const { FormLabel: FormLabel$1, FormIcon: FormIcon$3, FormArrow: FormArrow$1, FormRow: FormRow$2, FormSwitch: FormSwitch$1, FormSwitchRow: FormSwitchRow$1, FormSection: FormSection$1, FormDivider: FormDivider$1, FormInput: FormInput$1, FormRadioRow: FormRadioRow$1 } = components.Forms;
-const textInput = [
+}const defaultImageURL$1 = "https://cdn.discordapp.com/role-icons/1222207470714486825/bc3ef24c3f220155f90e55cc0cb0d0cf.png?size=512";
+const { ScrollView: ScrollView$2, View: View$2, Text: Text$2, TouchableOpacity: TouchableOpacity$2, TextInput: TextInput$2, Pressable: Pressable$2, Image: Image$2, Animated: Animated$2, Component: Component$2 } = components.General;
+const { FormLabel: FormLabel$2, FormIcon: FormIcon$4, FormArrow: FormArrow$2, FormRow: FormRow$3, FormSwitch: FormSwitch$2, FormSwitchRow: FormSwitchRow$2, FormSection: FormSection$2, FormDivider: FormDivider$2, FormInput: FormInput$2, FormRadioRow: FormRadioRow$2 } = components.Forms;
+const textInput$1 = [
   {
     id: "name",
     label: "Role Icon Name",
@@ -454,7 +396,7 @@ const textInput = [
     label: "Role Icon Image Url",
     keyType: "default",
     placeholder: "https://cdn.discordapp.com/role-icons/1222207470714486825/bc3ef24c3f220155f90e55cc0cb0d0cf.png?size=512",
-    def: defaultImageURL
+    def: defaultImageURL$1
   },
   {
     id: "size",
@@ -464,10 +406,60 @@ const textInput = [
     def: 18
   }
 ];
-function CustomRoleIconPage() {
+function CustomRoleIconPage$1() {
   const SUCRI = plugin.storage?.utils?.customRoleIcon;
   const copyDefaultURL = function() {
     common.clipboard.setString("https://cdn.discordapp.com/role-icons/1222207470714486825/bc3ef24c3f220155f90e55cc0cb0d0cf.png?size=512");
+    toasts.showToast("Copied placeholder URL", assets.getAssetIDByName("toast_copy_link"));
+  };
+  return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(FormRow$3, {
+    label: "Icon Preview",
+    trailing: /* @__PURE__ */ React.createElement(TouchableOpacity$2, {
+      onPress: copyDefaultURL
+    }, /* @__PURE__ */ React.createElement(Image$2, {
+      source: {
+        uri: SUCRI?.source || defaultImageURL$1
+      },
+      style: {
+        width: 128,
+        height: 128,
+        borderRadius: 10
+      }
+    }))
+  }), /* @__PURE__ */ React.createElement(FormDivider$2, null), textInput$1?.map(function(obj, index) {
+    return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(FormInput$2, {
+      title: obj.label,
+      keyboardType: obj?.keyType,
+      placeholder: obj?.placeholder,
+      value: SUCRI[obj?.id] ?? obj?.def,
+      onChange: function(val) {
+        return SUCRI[obj?.id] = val.toString();
+      }
+    }), index !== textInput$1?.length - 1 && /* @__PURE__ */ React.createElement(FormDivider$2, null));
+  }));
+}const defaultImageURL = "https://cdn.discordapp.com/clan-badges/603970300668805120/e5926f1f8cf6592d56d27bac37f01a9b.png?size=32";
+const { ScrollView: ScrollView$1, View: View$1, Text: Text$1, TouchableOpacity: TouchableOpacity$1, TextInput: TextInput$1, Pressable: Pressable$1, Image: Image$1, Animated: Animated$1, Component: Component$1 } = components.General;
+const { FormLabel: FormLabel$1, FormIcon: FormIcon$3, FormArrow: FormArrow$1, FormRow: FormRow$2, FormSwitch: FormSwitch$1, FormSwitchRow: FormSwitchRow$1, FormSection: FormSection$1, FormDivider: FormDivider$1, FormInput: FormInput$1, FormRadioRow: FormRadioRow$1 } = components.Forms;
+const textInput = [
+  {
+    id: "clanTag",
+    label: "Tag Name",
+    keyType: "default",
+    placeholder: "AGWX",
+    def: "AGWX"
+  },
+  {
+    id: "clanBadgeUrl",
+    label: "Badge Url",
+    keyType: "default",
+    placeholder: defaultImageURL,
+    def: defaultImageURL
+  }
+];
+function CustomRoleIconPage() {
+  const SUCRI = plugin.storage?.utils?.customClan;
+  const copyDefaultURL = function() {
+    common.clipboard.setString(defaultImageURL);
     toasts.showToast("Copied placeholder URL", assets.getAssetIDByName("toast_copy_link"));
   };
   return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(FormRow$2, {
@@ -476,7 +468,7 @@ function CustomRoleIconPage() {
       onPress: copyDefaultURL
     }, /* @__PURE__ */ React.createElement(Image$1, {
       source: {
-        uri: SUCRI?.source || defaultImageURL
+        uri: SUCRI?.clanBadgeUrl || defaultImageURL
       },
       style: {
         width: 128,
@@ -514,7 +506,8 @@ function settingPage() {
     createList("quickid", "QID", "Toggle Quick ID Setting", null, QuickIdSetting),
     createList("noshare", "No Share", "Toggle No Share", null, NoShareSetting),
     createList("customUsernameColor", "CUC", "Toggle Custom Username Color", null, CustomUsernameColorPage),
-    createList("customRoleIcon", "CRI", "Toggle Custom Role Icon", null, CustomRoleIconPage),
+    createList("customRoleIcon", "CRI", "Toggle Custom Role Icon", null, CustomRoleIconPage$1),
+    createList("customClan", "CCB", "Toggle Custom Clan Badge", null, CustomRoleIconPage),
     createList("ralert", "Reply Alert", "Toggle Settings", null, ReplyAlertSetting),
     createList("customMention", "Custom Mentions", "Toggle Custom Mentions Settings", null, CustomMentionsSetting),
     createList("removeDecor", "I HATE AVATAR DECORATIONS", "Toggle Remove Avatar Decoration", null, null)
@@ -522,7 +515,9 @@ function settingPage() {
   return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(ScrollView, null, /* @__PURE__ */ React.createElement(View, {
     style: {
       borderRadius: 10,
-      backgroundColor: "rgba(0, 12, 46, 0.15)"
+      backgroundColor: "rgba(0, 12, 46, 0.15)",
+      marginBottom: 50,
+      marginTop: 20
     }
   }, /* @__PURE__ */ React.createElement(FormRow$1, {
     label: "Debug",
@@ -553,29 +548,10 @@ function settingPage() {
         backgroundColor: "rgba(0, 0, 0, 0.15)"
       }
     }, /* @__PURE__ */ React.createElement(element.props, null))));
-  })), /* @__PURE__ */ React.createElement(FormDivider, null), updates && /* @__PURE__ */ React.createElement(View, {
-    style: {
-      paddingBottom: 36
-    }
-  }, /* @__PURE__ */ React.createElement(FormSection, {
-    title: "Updates"
-  }, /* @__PURE__ */ React.createElement(View, {
-    style: {
-      margin: 5,
-      padding: 5,
-      borderRadius: 10,
-      backgroundColor: "rgba(59, 30, 55, 0.15)"
-    }
-  }, updates.map(function(data, index) {
-    return /* @__PURE__ */ React.createElement(VersionChange, {
-      change: data,
-      index,
-      totalIndex: updates.length
-    });
-  }))))));
-}const UserStore$3 = metro.findByStoreName("UserStore");
+  })), /* @__PURE__ */ React.createElement(FormDivider, null)));
+}const UserStore$4 = metro.findByStoreName("UserStore");
 metro.findByProps("getMessage", "getMessages");
-const selfId = UserStore$3?.getCurrentUser?.()?.id;
+const selfId = UserStore$4?.getCurrentUser?.()?.id;
 function replyAlertPatch(event) {
   if (event.type == "MESSAGE_CREATE") {
     const check1 = event?.message?.referenced_message?.author?.id == selfId;
@@ -612,8 +588,7 @@ function updateRowCustomMentionPatch(row) {
   }
   return row;
 }function fluxDispatch() {
-  return patcher$1.before("dispatch", common.FluxDispatcher, function(param) {
-    let [event] = param;
+  return patcher$1.before("dispatch", common.FluxDispatcher, function([event]) {
     if (exports.isEnabled) {
       replyAlertPatch(event);
     }
@@ -631,19 +606,18 @@ function quickCopyID(component, args, actionMessage, ActionSheet) {
             unpatch();
           };
         }, []);
+        function someFunc(a) {
+          return a?.props?.label?.toLowerCase?.() == "mention";
+        }
         const buttons = utils.findInReactTree(comp, function(c) {
-          return c?.find?.(function(child) {
-            return child?.props?.label == common.i18n?.Messages?.MENTION;
-          });
+          return c?.find?.(someFunc);
         });
         if (!buttons)
           return comp;
-        const position = Math.max(buttons.findIndex(function(x) {
-          return x?.props?.label == common.i18n?.Messages?.MENTION;
-        }), buttons.length - 1);
+        const position = Math.max(buttons.findIndex(someFunc), buttons.length - 1);
         if (plugin.storage.debug) {
-          console.log(buttons);
           console.log("Position => " + position);
+          console.log(buttons);
         }
         function createButton(label, sub, icon, callback) {
           return {
@@ -689,11 +663,7 @@ function quickCopyID(component, args, actionMessage, ActionSheet) {
             }),
             onPress: btn?.callback
           }));
-          if (position >= 0) {
-            buttons.splice(position, 0, newButton);
-          } else {
-            buttons.push(newButton);
-          }
+          buttons.unshift(newButton);
         }
       });
     });
@@ -704,8 +674,7 @@ function noShare(component, args, actionMessage, ActionSheet) {
   if (plugin.storage?.toggle?.noshare) {
     if (args == "MediaShareActionSheet") {
       component.then(function(instance) {
-        const unpatch = patcher$1.after("default", instance, function(param, res) {
-          let [{ syncer }] = param;
+        const unpatch = patcher$1.after("default", instance, function([{ syncer }], res) {
           common.React.useEffect(function() {
             return unpatch();
           }, []);
@@ -769,37 +738,66 @@ function noShare(component, args, actionMessage, ActionSheet) {
   }
 }const ActionSheet = metro.findByProps("openLazy", "hideActionSheet");
 function actionSheet() {
-  return patcher$1.before("openLazy", ActionSheet, function(param) {
-    let [component, args, actionMessage] = param;
+  return patcher$1.before("openLazy", ActionSheet, function([component, args, actionMessage]) {
     if (exports.isEnabled) {
       quickCopyID(component, args, actionMessage, ActionSheet);
       noShare(component, args, actionMessage, ActionSheet);
     }
   });
-}const UserStore$2 = metro.findByStoreName("UserStore");
+}const UserStore$3 = metro.findByStoreName("UserStore");
 function patchCustomUsernameColor(row) {
   if (row?.message) {
-    let { hex, enableReply } = plugin.storage?.utils?.customUsernameColor;
+    if (plugin.storage?.debug) {
+      const a = [
+        "editedColor",
+        "textColor",
+        "linkColor",
+        "opTagTextColor",
+        "opTagBackgroundColor",
+        "usernameColor",
+        "roleColor",
+        "roleColors",
+        "colorString",
+        "feedbackColor",
+        "highlightColor",
+        "clanTag",
+        "clanBadgeUrl"
+      ];
+      for (let v of a) {
+        console.log(`
+========= [${v}] ---`, row?.message?.[v], "\n", row?.message?.[v] != void 0 || row?.message?.[v] != null ? colorConverter.toHex(row?.message?.[v]) : "None", "\n");
+      }
+    }
+    let { hex, hex2, enableReply } = plugin.storage?.utils?.customUsernameColor;
     hex ?? (hex = "#000");
+    hex2 ?? (hex2 = "#FFF");
     enableReply ?? (enableReply = false);
     const handleColor = function(mes) {
-      if (hex)
+      if (hex) {
         mes.usernameColor = common.ReactNative.processColor(hex);
+        mes.roleColor = common.ReactNative.processColor(hex);
+        if (hex2) {
+          mes.roleColors = {
+            primaryColor: common.ReactNative.processColor(hex),
+            secondaryColor: common.ReactNative.processColor(hex2)
+          };
+        }
+      }
       return mes;
     };
     if (plugin.storage?.debug)
       console.log("[AZZYUTILS cuc.js]", row.message.authorId, row?.message?.referencedMessage?.message?.authorId);
-    if (UserStore$2?.getCurrentUser?.()?.id == row?.message?.authorId)
+    if (UserStore$3?.getCurrentUser?.()?.id == row?.message?.authorId)
       handleColor(row?.message);
-    if (enableReply && row?.message?.referencedMessage?.message && UserStore$2?.getCurrentUser?.()?.id == row?.message?.referencedMessage?.message?.authorId) {
+    if (enableReply && row?.message?.referencedMessage?.message && UserStore$3?.getCurrentUser?.()?.id == row?.message?.referencedMessage?.message?.authorId) {
       handleColor(row?.message?.referencedMessage?.message);
     }
     return row;
   }
-}const UserStore$1 = metro.findByStoreName("UserStore");
+}const UserStore$2 = metro.findByStoreName("UserStore");
 function patchCustomRoleIcon(row) {
   if (row?.message) {
-    if (UserStore$1?.getCurrentUser?.()?.id == row?.message?.authorId) {
+    if (UserStore$2?.getCurrentUser?.()?.id == row?.message?.authorId) {
       const CRI = plugin.storage?.utils?.customRoleIcon;
       let roleIconObject = {};
       if (!CRI?.name && !CRI?.source && !CRI?.size) {
@@ -819,9 +817,21 @@ function patchCustomRoleIcon(row) {
     }
     return row;
   }
-}const { DCDChatManager } = common.ReactNative.NativeModules;
+}const UserStore$1 = metro.findByStoreName("UserStore");
+function patchCustomClanBadge(row) {
+  if (row?.message) {
+    if (UserStore$1?.getCurrentUser?.()?.id == row?.message?.authorId) {
+      const CT = plugin.storage?.utils?.customClan;
+      if (CT?.clanBadgeUrl && CT?.clanTag) {
+        row.message.clanTag = (typeof CT?.clanTag == "string" ? CT?.clanTag?.toUpperCase() : CT?.clanTag) || "AGWX";
+        row.message.clanBadgeUrl = CT?.clanBadgeUrl || "https://cdn.discordapp.com/clan-badges/603970300668805120/e5926f1f8cf6592d56d27bac37f01a9b.png?size=32";
+      }
+    }
+    return row;
+  }
+}const rowsController = metro.findByProps("updateRows", "getConstants");
 const patchUpdateRowBefore = function() {
-  return patcher$1.before("updateRows", DCDChatManager, function(r) {
+  return patcher$1.before("updateRows", rowsController, function(r) {
     if (exports.isEnabled) {
       let rows = JSON.parse(r[1]);
       if (plugin.storage?.debug)
@@ -834,6 +844,8 @@ const patchUpdateRowBefore = function() {
           patchCustomUsernameColor(row);
         if (plugin.storage?.toggle?.customRoleIcon)
           patchCustomRoleIcon(row);
+        if (plugin.storage?.toggle?.customClan)
+          patchCustomClanBadge(row);
       });
       if (plugin.storage?.debug)
         console.log("=====================================");
@@ -843,7 +855,7 @@ const patchUpdateRowBefore = function() {
   });
 };
 const patchUpdateRowAfter = function() {
-  return patcher$1.after("updateRows", DCDChatManager, function(r) {
+  return patcher$1.after("updateRows", rowsController, function(r) {
     if (exports.isEnabled) {
       let rows = JSON.parse(r[1]);
       rows.forEach(function(row) {
@@ -945,7 +957,8 @@ function sendMessage() {
       gutterAlpha: "33",
       useReplyAlert: false,
       useCustomColor: false,
-      ignoreSelf: false
+      ignoreSelf: false,
+      altAlpha: false
     },
     eml: {
       logEdit: false,
@@ -957,6 +970,7 @@ function sendMessage() {
     },
     customUsernameColor: {
       hex: "#FFFFFF",
+      hex2: "#AAAAAA",
       enableReply: false
     },
     customRoleIcon: {
@@ -966,8 +980,8 @@ function sendMessage() {
       showOthers: false
     },
     customClan: {
-      icon: "",
-      tag: ""
+      clanBadgeUrl: "https://cdn.discordapp.com/clan-badges/603970300668805120/e5926f1f8cf6592d56d27bac37f01a9b.png?size=32",
+      clanTag: "AGWX"
     }
   },
   debug: false
@@ -1004,8 +1018,8 @@ var index = {
   },
   onUnload: function() {
     exports.isEnabled = false;
-    unpatch();
-    unLoadDatas();
+    unpatch?.();
+    unLoadDatas?.();
   },
   settings: settingPage
-};exports.default=index;Object.defineProperty(exports,'__esModule',{value:true});return exports;})({},vendetta.plugin,vendetta.storage,vendetta.metro,vendetta.metro.common,vendetta.ui,vendetta.ui.assets,vendetta.ui.components,vendetta,vendetta.ui.toasts,vendetta.patcher,vendetta.utils,vendetta.plugins);
+};exports.default=index;Object.defineProperty(exports,'__esModule',{value:true});return exports;})({},vendetta.plugin,vendetta.storage,vendetta.metro,vendetta,vendetta.ui.components,vendetta.metro.common,vendetta.ui.assets,vendetta.ui.toasts,vendetta.patcher,vendetta.utils,vendetta.plugins);

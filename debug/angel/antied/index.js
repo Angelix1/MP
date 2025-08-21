@@ -49,8 +49,7 @@ const colorConverter = {
     return `#${f(0)}${f(8)}${f(4)}`;
   }
 };
-function createList(version) {
-  let a = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : null, u = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : null, f = arguments.length > 3 && arguments[3] !== void 0 ? arguments[3] : null;
+function createList(version, a = null, u = null, f = null) {
   return {
     version,
     new: a,
@@ -252,8 +251,7 @@ function updateRowsPatch(deletedMessagesArray) {
       }
       return defaultColor || "#000";
     }
-    function updateEphemeralIndication(object) {
-      let removeDismissText = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : false, overrideText = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : false, onlyYouText = arguments.length > 3 ? arguments[3] : void 0, overrideArray = arguments.length > 4 && arguments[4] !== void 0 ? arguments[4] : [];
+    function updateEphemeralIndication(object, removeDismissText = false, overrideText = false, onlyYouText, overrideArray = []) {
       if (object) {
         if (overrideText) {
           if (onlyYouText != void 0) {
@@ -319,20 +317,17 @@ function updateRowsPatch(deletedMessagesArray) {
   });
 }const MessageRecordUtils$1 = metro.findByProps("updateMessageRecord", "createMessageRecord");
 function createMessageRecord() {
-  return patcher.after("createMessageRecord", MessageRecordUtils$1, function(param, record) {
-    let [message] = param;
+  return patcher.after("createMessageRecord", MessageRecordUtils$1, function([message], record) {
     record.was_deleted = message.was_deleted;
   });
 }const MessageRecord = metro.findByName("MessageRecord", false);
 function messageRecordDefault() {
-  return patcher.after("default", MessageRecord, function(param, record) {
-    let [props] = param;
+  return patcher.after("default", MessageRecord, function([props], record) {
     record.was_deleted = !!props.was_deleted;
   });
 }const MessageRecordUtils = metro.findByProps("updateMessageRecord", "createMessageRecord");
 function updateMessageRecord() {
-  return patcher.instead("updateMessageRecord", MessageRecordUtils, function(param, orig) {
-    let [oldRecord, newRecord] = param;
+  return patcher.instead("updateMessageRecord", MessageRecordUtils, function([oldRecord, newRecord], orig) {
     if (newRecord.was_deleted) {
       return MessageRecordUtils.createMessageRecord(newRecord, oldRecord.reactions);
     }
@@ -346,8 +341,7 @@ const MessageStore = metro.findByProps("getMessage", "getMessages");
 const ChannelStore = metro.findByProps("getChannel", "getDMFromUserId");
 const { ActionSheetRow } = metro.findByProps("ActionSheetRow");
 function actionsheet(deletedMessageArray) {
-  return patcher.before("openLazy", ActionSheet, function(param) {
-    let [component, args, actionMessage] = param;
+  return patcher.before("openLazy", ActionSheet, function([component, args, actionMessage]) {
     const message = actionMessage?.message;
     if (args !== "MessageLongPressActionSheet" || !message)
       return;
@@ -360,16 +354,15 @@ function actionsheet(deletedMessageArray) {
         }, []);
         if (plugin.storage.debug)
           console.log(`[ANTIED ActionSheet]`, message);
+        function someFunc(a) {
+          return a?.props?.label?.toLowerCase?.() == "reply";
+        }
         const buttons = utils.findInReactTree(comp, function(c) {
-          return c?.find?.(function(child) {
-            return child?.props?.label == common.i18n?.Messages?.MESSAGE_ACTION_REPLY;
-          });
+          return c?.find?.(someFunc);
         });
         if (!buttons)
           return comp;
-        const position = Math.max(buttons.findIndex(function(x) {
-          return x?.props?.label == common.i18n?.Messages?.MESSAGE_ACTION_REPLY;
-        }), buttons.length - 1);
+        const position = Math.max(buttons.findIndex(someFunc), buttons.length - 1);
         const originalMessage = MessageStore.getMessage(message.channel_id, message?.id);
         const escapedBuffer = regexEscaper(plugin.storage?.inputs?.editedMessageBuffer || "`[ EDITED ]`");
         const separator = new RegExp(escapedBuffer, "gmi");
@@ -478,8 +471,7 @@ const togglePatch = [
     subLabel: "Logs edited message"
   }
 ];
-function PatchesComponent(param) {
-  let { styles } = param;
+function PatchesComponent({ styles }) {
   storage.useProxy(plugin.storage);
   return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(View$8, {
     style: [
@@ -531,8 +523,7 @@ const customizedableTexts = [
     placeholder: "Only you can see this \u2022 "
   }
 ];
-function TextComponent(param) {
-  let { styles } = param;
+function TextComponent({ styles }) {
   storage.useProxy(plugin.storage);
   return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(View$7, {
     style: [
@@ -577,8 +568,7 @@ function TextComponent(param) {
   })));
 }const { FormRow: FormRow$9 } = components.Forms;
 const RowCheckmark = metro.findByName("RowCheckmark");
-function SelectRow(param) {
-  let { label, subLabel, selected, onPress } = param;
+function SelectRow({ label, subLabel, selected, onPress }) {
   return /* @__PURE__ */ React.createElement(FormRow$9, {
     label,
     subLabel,
@@ -641,8 +631,7 @@ function TimestampComponent() {
   storage.useProxy(plugin.storage);
   return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(FormRow$8, {
     label: "Timestamp Style"
-  }), timestamps.map(function(param, i) {
-    let { type, label, subLabel } = param;
+  }), timestamps.map(function({ type, label, subLabel }, i) {
     return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(SelectRow, {
       label,
       subLabel: `Example: ${subLabel}`,
@@ -653,8 +642,7 @@ function TimestampComponent() {
     }), i !== timestamps.length - 1 && /* @__PURE__ */ React.createElement(FormDivider$8, null));
   }), /* @__PURE__ */ React.createElement(FormDivider$8, null), /* @__PURE__ */ React.createElement(FormRow$8, {
     label: "Timestamp Position"
-  }), timestampsPosition.map(function(param, i) {
-    let { key, label, subLabel } = param;
+  }), timestampsPosition.map(function({ key, label, subLabel }, i) {
     return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(SelectRow, {
       label,
       subLabel: `Example: ${subLabel}`,
@@ -712,8 +700,7 @@ const customizeableColors = [
     defaultColor: "#FF2C2F"
   }
 ];
-function ColorPickComponent(param) {
-  let { styles } = param;
+function ColorPickComponent({ styles }) {
   storage.useProxy(plugin.storage);
   const [BGAlpha, setBGAlpha] = common.React.useState(toDecimal(hexAlphaToPercent(plugin.storage?.colors?.backgroundColorAlpha) ?? 100));
   const [gutterAlpha, setGutterAlpha] = common.React.useState(toDecimal(hexAlphaToPercent(plugin.storage?.colors?.gutterColorAlpha) ?? 100));
@@ -933,8 +920,7 @@ const styles$3 = common.stylesheet.createThemedStyleSheet({
     fontSize: 12.75
   }
 });
-function AddUser(param) {
-  let { index } = param;
+function AddUser({ index }) {
   storage.useProxy(plugin.storage);
   let object = plugin.storage?.inputs?.ignoredUserList[index];
   const animatedButtonScale = common.React.useRef(new Animated$4.Value(1)).current;
@@ -1309,8 +1295,7 @@ const customizeableSwitches = [
     subLabel: "When messages got deleted it'll have indicator under the text like 'only you can see this' and this remove those."
   }
 ];
-function CustomizationComponent(param) {
-  let { styles } = param;
+function CustomizationComponent({ styles }) {
   storage.useProxy(plugin.storage);
   return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(View$2, {
     style: [
@@ -1336,10 +1321,7 @@ function CustomizationComponent(param) {
       }) : void 0
     }), index !== customizeableSwitches?.length - 1 && /* @__PURE__ */ React.createElement(FormDivider$2, null));
   })));
-}function ma() {
-  for (var _len = arguments.length, a = new Array(_len), _key = 0; _key < _len; _key++) {
-    a[_key] = arguments[_key];
-  }
+}function ma(...a) {
   return [
     ...a
   ];
@@ -1405,8 +1387,7 @@ function addIcon(icon) {
     source: icon
   });
 }
-function VersionChange(param) {
-  let { change, index, totalIndex } = param;
+function VersionChange({ change, index, totalIndex }) {
   const [isOpen, setOpen] = common.React.useState(false);
   const [isRowOpen, setRowOpen] = common.React.useState(false);
   function createSubRow(arr, label, subLabel, icon) {
