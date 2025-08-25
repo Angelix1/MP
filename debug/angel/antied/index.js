@@ -87,7 +87,7 @@ const convert = {
   }
 };metro.findByProps("openLazy", "hideActionSheet");
 const ChannelStore$1 = metro.findByProps("getChannel", "getDMFromUserId");
-const ChannelMessages$1 = metro.findByProps("_channelMessages");
+const ChannelMessages$2 = metro.findByProps("_channelMessages");
 const MessageStore$1 = metro.findByProps("getMessage", "getMessages");
 function fluxDispatchPatch(deletedMessageArray) {
   return patcher.before("dispatch", common.FluxDispatcher, function(args) {
@@ -100,7 +100,7 @@ function fluxDispatchPatch(deletedMessageArray) {
         return args;
       if (event?.otherPluginBypass)
         return args;
-      const channel = ChannelMessages$1.get(event.channelId);
+      const channel = ChannelMessages$2.get(event.channelId);
       const originalMessage = channel?.get(event.id);
       if (!originalMessage)
         return args;
@@ -155,13 +155,23 @@ function fluxDispatchPatch(deletedMessageArray) {
         return args;
       if (event?.message?.author?.bot)
         return args;
-      const originalMessage = MessageStore$1.getMessage(event?.message?.channel_id || event?.channelId, event?.message?.id || event?.id);
-      const OMCheck1 = originalMessage?.author?.id;
-      const OMCheck2 = originalMessage?.author?.username;
-      const OMCheck3 = !originalMessage?.content && originalMessage?.attachments?.length == 0 && originalMessage?.embeds?.length == 0;
-      if (!originalMessage || !OMCheck1 || !OMCheck2 || OMCheck3)
+      const channelId = event?.message?.channel_id ?? event?.channelId;
+      const messageId = event?.message?.id ?? event?.id;
+      let originalMessage = null;
+      if (channelId && messageId) {
+        originalMessage = MessageStore$1.getMessage(channelId, messageId);
+        if (!originalMessage) {
+          const channel = ChannelMessages$2.get(channelId);
+          originalMessage = channel?.get(messageId);
+        }
+      }
+      if (!originalMessage)
         return args;
-      if (!event?.message?.content || !originalMessage?.content)
+      if (!originalMessage.author?.id || !originalMessage.author?.username)
+        return args;
+      if (!originalMessage.content && originalMessage.attachments?.length === 0 && originalMessage.embeds?.length === 0)
+        return args;
+      if (!event?.message?.content)
         return args;
       if (event?.message?.content == originalMessage?.content)
         return args;
@@ -227,18 +237,32 @@ function selfEditPatch() {
     args[2] = lats[lats.length - 1];
     return args;
   });
-}const rowsController = metro.findByProps("updateRows", "getConstants");
+}const rowsController = metro.findByProps("updateRows", "getConstants") || metro.findByProps("updateRows");
 function updateRowsPatch(deletedMessagesArray) {
   return patcher.before("updateRows", rowsController, function(r) {
-    if (!r || r.length <= 1 || typeof r[1] !== "string") {
+    if (!r || r.length < 1) {
       return r;
     }
+    let isDirect = false;
     let rows;
-    try {
-      rows = JSON.parse(r[1]);
-    } catch (e) {
-      console.error("JSON Parse failed in updateRows patch. Aborting.", e);
+    if (typeof r[1] == "string") {
+      try {
+        rows = JSON.parse(r[1]);
+      } catch (e) {
+        console.log("[ANTIED:updateRowsPatch] JSON Parse failed in updateRows patch. Aborting.", e, "Input:", r[1]);
+        return r;
+      }
+    } else if (typeof r[1] == "object" && r[1]) {
+      rows = r[1];
+      isDirect = true;
+    } else {
+      console.log("[ANTIED:updateRowsPatch] Unexpected type for r[1] in updateRows. Expected object or string, got:", typeof r[1]);
       return r;
+    }
+    if (plugin.storage?.debugUpdateRows) {
+      console.log("BEFORE");
+      console.log(isDirect);
+      console.log(rows);
     }
     const { textColor, backgroundColor, backgroundColorAlpha, gutterColor, gutterColorAlpha } = plugin.storage.colors;
     const { useBackgroundColor, minimalistic, removeDismissButton, overrideIndicator, useIndicatorForDeleted, useEphemeralForDeleted } = plugin.storage.switches;
@@ -323,10 +347,19 @@ function updateRowsPatch(deletedMessagesArray) {
         }
       }
     });
+    if (plugin.storage?.debugUpdateRows) {
+      console.log("AFTER");
+      console.log(isDirect);
+      console.log(rows);
+    }
     try {
-      r[1] = JSON.stringify(rows);
+      if (isDirect) {
+        r[1] = rows;
+      } else {
+        r[1] = JSON.stringify(rows);
+      }
     } catch (e) {
-      console.error("Failed to stringify modified rows. Aborting.", e);
+      console.log("[ANTIED:updateRowsPatch] Failed to stringify modified rows. Aborting.", e);
       return r;
     }
     return r;
@@ -355,6 +388,7 @@ function updateMessageRecord() {
 }const ActionSheet = metro.findByProps("openLazy", "hideActionSheet");
 const MessageStore = metro.findByProps("getMessage", "getMessages");
 const ChannelStore = metro.findByProps("getChannel", "getDMFromUserId");
+const ChannelMessages$1 = metro.findByProps("_channelMessages");
 const { ActionSheetRow } = metro.findByProps("ActionSheetRow");
 function actionsheet(deletedMessageArray) {
   return patcher.before("openLazy", ActionSheet, function([component, args, actionMessage]) {
@@ -379,7 +413,16 @@ function actionsheet(deletedMessageArray) {
         if (!buttons)
           return comp;
         const position = Math.max(buttons.findIndex(someFunc), buttons.length - 1);
-        const originalMessage = MessageStore.getMessage(message.channel_id, message?.id);
+        let originalMessage = null;
+        if (message?.channel_id && message?.id) {
+          originalMessage = MessageStore.getMessage(message?.channel_id, message?.id);
+          if (!originalMessage) {
+            const channel = ChannelMessages$1.get(message?.channel_id);
+            originalMessage = channel?.get(message?.id);
+          }
+        }
+        if (!originalMessage)
+          return comp;
         const escapedBuffer = regexEscaper(plugin.storage?.inputs?.editedMessageBuffer || "`[ EDITED ]`");
         const separator = new RegExp(escapedBuffer, "gmi");
         const checkIfBufferExist = separator.test(message.content);
