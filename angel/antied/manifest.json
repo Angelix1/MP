@@ -1,10 +1,10 @@
 {
-    "name":"Antied v1.4.1",
+    "name":"Antied v1.4.2",
     "description":"Keeps deleted messages and logs edited messages, until you restart/reloads the app",
     "main": "index.jsx",
     "authors": [
         {
-            "name": "Angelica",
+            "name": "Angelw0lf",
             "id": "692632336961110087"
         }
     ],

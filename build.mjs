@@ -94,7 +94,7 @@ async function buildPlugin(isDebug = false, NOTE, path, distro, plugins, usesKey
 			manifest.main = "index.js";
 
 			if(isDebug) {
-				manifest.name = `[DEBUG] ${stripVersions(manifest.name)}`;
+				manifest.name = `[DEBUG] ${manifest.name}`;
 			}
 
 			await writeFile(`${distro}/${plug}/manifest.json`, JSON.stringify(manifest));

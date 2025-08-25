@@ -26,6 +26,8 @@ export default (deletedMessageArray) => before("openLazy", ActionSheet, ([compon
 			// if(storage.debug) console.log(deletedMessageArray);
 			if(storage.debug) console.log(`[ANTIED ActionSheet]`, message)
 
+
+			// added in 1.4.1, for simple pointer func used to filter out target button group, and where the func i18n goes?
 			function someFunc(a) {
 				// return a?.props?.label == i18n?.Messages?.MESSAGE_ACTION_REPLY
 				return a?.props?.label?.toLowerCase?.() == 'reply'

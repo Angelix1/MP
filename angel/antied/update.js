@@ -23,7 +23,9 @@ const update = [
 			"[1.4] Discontinued Support for older version related to updateRows function, Use Version 1.3.1 if you using old version",
 		),
 		ma(
-			"[1.4] Update updateRows function to Support Newer Version of Discord",
+			"[1.4] Update updateRowsPatch to Support Newer Version of Discord",
+			"[1.4.1] Fixed ActionSheet button being weird, updated in 293.xx Stable release",
+			"[1.4.2] Fortified updateRowsPatch with additonal safeguards, possibly fixed crashes on Alpha/Beta builds."
 		)
 	),
 
