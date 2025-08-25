@@ -3,33 +3,49 @@ import { before } from "@vendetta/patcher";
 import { storage } from "@vendetta/plugin";
 import { findByProps } from '@vendetta/metro';
 
-// const { DCDChatManager } = ReactNative.NativeModules;
-const rowsController = findByProps("updateRows", "getConstants")
-
+const rowsController = findByProps("updateRows", "getConstants") || findByProps("updateRows");
 
 /*
-	Time wasted: 3 hours 10 minutes
+	Time wasted: 3 hours 25 minutes
 */
 
-// export default (deletedMessagesArray) => before("updateRows", DCDChatManager, (r) => {
-// Should Support newer versions
 // Function consist of (num_1, args, bool_1, num_2, num_3)
 export default (deletedMessagesArray) => before("updateRows", rowsController, (r) => {
-	
-	// added this in 1.4.2 basically for safe guard against "cannot convert undefined value to object"
-    if (!r || r.length <= 1 || typeof r[1] !== "string") {
+
+	// safe guard if r returns undefined, but then again rowsController might be undefined
+	// if it happens then "Cannot convert undefined value to object" error would occour and should be in updateRowsPatch function
+    if (!r || r.length < 1) {
         return r;
     }
 
+    let isDirect = false;
     let rows;
 
-    try {
-        rows = JSON.parse(r[1]);
-    } catch (e) {
-		// another safeguard for if said r[1] is empty string or invalid stringified JSON
-        console.error("JSON Parse failed in updateRows patch. Aborting.", e);
-        return r;
-    }
+	if (typeof r[1] == 'string') {
+		// handle stringified object, happens in Stable Build
+	    try {
+	        rows = JSON.parse(r[1]);
+	    } catch (e) {
+	        console.log("[ANTIED:updateRowsPatch] JSON Parse failed in updateRows patch. Aborting.", e, "Input:", r[1]);
+	        return r;
+	    }
+	}
+    else if (typeof r[1] == 'object' && r[1]) {
+    	// handle Direct Object, happens in Alpha Build
+	    rows = r[1]; 
+	    isDirect = true;
+	}
+	else {
+		// fallback if not object nor stringified object
+	    console.log("[ANTIED:updateRowsPatch] Unexpected type for r[1] in updateRows. Expected object or string, got:", typeof r[1]);
+	    return r;
+	}
+
+	if(storage?.debugUpdateRows) {
+		console.log("BEFORE")
+		console.log(isDirect)
+	  	console.log(rows)
+	}
 
 	const { textColor, backgroundColor, backgroundColorAlpha, gutterColor, gutterColorAlpha } = storage.colors;
 	const { 
@@ -160,12 +176,23 @@ export default (deletedMessagesArray) => before("updateRows", rowsController, (r
 		}
 	})
 
+	if(storage?.debugUpdateRows) {
+		console.log("AFTER")
+		console.log(isDirect)
+	  	console.log(rows)
+	}
+
 	
 	// simple safeguard if modification is faulty, we didnt push the modified rows
 	try {
-        r[1] = JSON.stringify(rows);
+		if(isDirect) {
+			r[1] = rows;
+		}
+		else {
+        	r[1] = JSON.stringify(rows);
+		}
     } catch (e) {
-        console.error("Failed to stringify modified rows. Aborting.", e);
+        console.log("[ANTIED:updateRowsPatch] Failed to stringify modified rows. Aborting.", e);
         return r; // we return as is
     }
 

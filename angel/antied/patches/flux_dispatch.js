@@ -1,7 +1,7 @@
 import { instead, before, after } from "@vendetta/patcher"
 import { getAssetIDByName } from "@vendetta/ui/assets"
 import { findInReactTree } from "@vendetta/utils"
-import { findByProps } from "@vendetta/metro"
+import { findByProps, findByStoreName } from "@vendetta/metro"
 import { React, FluxDispatcher } from "@vendetta/metro/common"
 import { Forms } from "@vendetta/ui/components"
 import { storage } from "@vendetta/plugin";
@@ -11,12 +11,28 @@ const ChannelStore = findByProps("getChannel", "getDMFromUserId");
 const ChannelMessages = findByProps("_channelMessages");
 const MessageStore = findByProps('getMessage', 'getMessages');
 
+/* THIS Function Janky
+const altMessageStore = findByStoreName("MessageStore")
+const logs = altMessageStore._dispatcher.actionLogger.logs;
+
+function messageGetter(authorId) {
+    const allOcc = logs.filter(x => 
+        x?.action?.type === "MESSAGE_UPDATE" && 
+        x?.action?.message?.author?.id === authorId
+    );
+    
+    // Use .at(-1) for cleaner syntax, with a fallback to the old way
+    const lastEntry = allOcc.at(-1);
+    return lastEntry?.action?.message ?? null;
+}
+
+*/
 
 /*
-This forsaken File, ohhh maa gaaawd
+i kinda hated discord constant nugging the flux
 
 
-- Angelica
+- Angelw0lf
 */
 
 export default (deletedMessageArray) => before("dispatch", FluxDispatcher, (args) => {
@@ -94,26 +110,40 @@ export default (deletedMessageArray) => before("dispatch", FluxDispatcher, (args
 
 	// Message Update Patch
 	if( type == "MESSAGE_UPDATE" ) {
+		// console.log(event)
 		if(storage.switches.enableMU == false) return args;
 		
 		if(event?.otherPluginBypass) return args;
 
 		if(event?.message?.author?.bot) return args;
 
-		const originalMessage = MessageStore.getMessage(
-          (event?.message?.channel_id || event?.channelId), 
-          (event?.message?.id || event?.id)
-        );
+		const channelId = event?.message?.channel_id ?? event?.channelId;
+		const messageId = event?.message?.id ?? event?.id;
+
+		let originalMessage = null;
+
+		// first use existing getter;
+		if (channelId && messageId) {
+		    originalMessage = MessageStore.getMessage(channelId, messageId);
+		    
+			if(!originalMessage) {			
+				const channel = ChannelMessages.get(channelId);
+				originalMessage = channel?.get(messageId);	
+			}
+		}
+
+		// console.log(event?.message?.content)
+		// console.log(originalMessage?.content)
+
+		// if still doesnt exist then just bypass
+        if(!originalMessage) return	args;
          
-		const OMCheck1 = originalMessage?.author?.id;
-		const OMCheck2 = originalMessage?.author?.username;
-		const OMCheck3 = (!originalMessage?.content && originalMessage?.attachments?.length == 0 && originalMessage?.embeds?.length == 0);
+		if (!originalMessage.author?.id || !originalMessage.author?.username) return args;
+		if (!originalMessage.content && originalMessage.attachments?.length === 0 && originalMessage.embeds?.length === 0) return args;
 		
-		if(!originalMessage || !OMCheck1 || !OMCheck2 || OMCheck3) return args;
+		if(!event?.message?.content) return args;
 		
-		if(!event?.message?.content || !originalMessage?.content) return args;
-		
-		if(event?.message?.content == originalMessage?.content) return args;		
+		if(event?.message?.content == originalMessage?.content) return args;
 
 		if(
 			(storage?.inputs?.ignoredUserList?.length > 0) &&

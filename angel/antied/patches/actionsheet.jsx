@@ -12,6 +12,7 @@ import { plugin } from "@vendetta";
 const ActionSheet = findByProps("openLazy", "hideActionSheet")
 const MessageStore = findByProps("getMessage", "getMessages");
 const ChannelStore = findByProps("getChannel", "getDMFromUserId");
+const ChannelMessages = findByProps("_channelMessages");
 const { ActionSheetRow } = findByProps("ActionSheetRow");
 
 export default (deletedMessageArray) => before("openLazy", ActionSheet, ([component, args, actionMessage]) => {
@@ -41,7 +42,18 @@ export default (deletedMessageArray) => before("openLazy", ActionSheet, ([compon
 				buttons.length - 1
 			);
 			
-			const originalMessage = MessageStore.getMessage(message.channel_id, message?.id)		
+			let originalMessage = null;
+
+			if (message?.channel_id && message?.id) {
+			    originalMessage = MessageStore.getMessage(message?.channel_id, message?.id);
+
+				if(!originalMessage) {
+					const channel = ChannelMessages.get(message?.channel_id);
+					originalMessage = channel?.get(message?.id);
+				}
+			}
+
+			if(!originalMessage) return comp;
 
 			const escapedBuffer = regexEscaper(storage?.inputs?.editedMessageBuffer || "`[ EDITED ]`")
 
