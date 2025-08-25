@@ -230,7 +230,16 @@ function selfEditPatch() {
 }const rowsController = metro.findByProps("updateRows", "getConstants");
 function updateRowsPatch(deletedMessagesArray) {
   return patcher.before("updateRows", rowsController, function(r) {
-    let rows = JSON.parse(r[1]);
+    if (!r || r.length <= 1 || typeof r[1] !== "string") {
+      return r;
+    }
+    let rows;
+    try {
+      rows = JSON.parse(r[1]);
+    } catch (e) {
+      console.error("JSON Parse failed in updateRows patch. Aborting.", e);
+      return r;
+    }
     const { textColor, backgroundColor, backgroundColorAlpha, gutterColor, gutterColorAlpha } = plugin.storage.colors;
     const { useBackgroundColor, minimalistic, removeDismissButton, overrideIndicator, useIndicatorForDeleted, useEphemeralForDeleted } = plugin.storage.switches;
     const { deletedMessageBuffer, customIndicator } = plugin.storage.inputs;
@@ -238,7 +247,9 @@ function updateRowsPatch(deletedMessagesArray) {
     function validateHex(input, defaultColor) {
       if (!input)
         input = defaultColor;
-      const trimmedInput = input?.trim();
+      const trimmedInput = String(input).trim();
+      if (!trimmedInput)
+        return defaultColor;
       if (trimmedInput.startsWith("#")) {
         const hexCode = trimmedInput.slice(1);
         if (/^[0-9A-Fa-f]{6}$/.test(hexCode)) {
@@ -252,7 +263,7 @@ function updateRowsPatch(deletedMessagesArray) {
       return defaultColor || "#000";
     }
     function updateEphemeralIndication(object, removeDismissText = false, overrideText = false, onlyYouText, overrideArray = []) {
-      if (object) {
+      if (object && Array.isArray(object.content)) {
         if (overrideText) {
           if (onlyYouText != void 0) {
             object.content[0].content = onlyYouText + "  ";
@@ -312,8 +323,13 @@ function updateRowsPatch(deletedMessagesArray) {
         }
       }
     });
-    r[1] = JSON.stringify(rows);
-    return r[1];
+    try {
+      r[1] = JSON.stringify(rows);
+    } catch (e) {
+      console.error("Failed to stringify modified rows. Aborting.", e);
+      return r;
+    }
+    return r;
   });
 }const MessageRecordUtils$1 = metro.findByProps("updateMessageRecord", "createMessageRecord");
 function createMessageRecord() {
@@ -1328,13 +1344,9 @@ function CustomizationComponent({ styles }) {
 }
 const update = [
   createList("1.0 - 1.3", null, ma("Version 1.4 does not support backwards compatibility after Discord version 265.16 Stable.")),
-  createList("1.4.0", ma("[1.4] Trying to reinstate colorful setting for IOS.", "[1.4] Added new Option to Remove Ephemeral Indicator", "[1.4] Added new Option to Switch 'this message is deleted' to be an indicator", "[1.4] Added debug updateRows Switch for nerds.", "[1.4] Added Known Bugs Section for those annoying peoples complaining about things."), ma("[1.4] Discontinued Support for older version related to updateRows function, Use Version 1.3.1 if you using old version"), ma("[1.4] Update updateRows function to Support Newer Version of Discord"))
+  createList("1.4.0", ma("[1.4] Trying to reinstate colorful setting for IOS.", "[1.4] Added new Option to Remove Ephemeral Indicator", "[1.4] Added new Option to Switch 'this message is deleted' to be an indicator", "[1.4] Added debug updateRows Switch for nerds.", "[1.4] Added Known Bugs Section for those annoying peoples complaining about things."), ma("[1.4] Discontinued Support for older version related to updateRows function, Use Version 1.3.1 if you using old version"), ma("[1.4] Update updateRowsPatch to Support Newer Version of Discord", "[1.4.1] Fixed ActionSheet button being weird, updated in 293.xx Stable release", "[1.4.2] Fortified updateRowsPatch with additonal safeguards, possibly fixed crashes on Alpha/Beta builds."))
 ];
 var updates = update.reverse();const knownBugs = [
-  {
-    bugType: "ActionSheet",
-    bugDescription: "Fail to patch custom buttons into Action Sheet"
-  },
   {
     bugType: "EDIT",
     bugDescription: "Removing Edit Logs with link in it caused a crash"
