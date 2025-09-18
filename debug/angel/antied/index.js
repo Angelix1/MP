@@ -294,8 +294,6 @@ function updateRowsPatch(deletedMessagesArray) {
         args[1] = rows;
       return args;
     }
-  }, {
-    suppressErrors: true
   });
 }const MessageRecordUtils$1 = metro.findByProps("updateMessageRecord", "createMessageRecord");
 function createMessageRecord() {
