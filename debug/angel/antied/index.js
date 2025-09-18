@@ -1,4 +1,4 @@
-(function(exports,_vendetta,metro,components,patcher,Assets,utils,common,plugin,toasts,storage,ui,alerts){'use strict';function _interopNamespaceDefault(e){var n=Object.create(null);if(e){Object.keys(e).forEach(function(k){if(k!=='default'){var d=Object.getOwnPropertyDescriptor(e,k);Object.defineProperty(n,k,d.get?d:{enumerable:true,get:function(){return e[k]}});}})}n.default=e;return Object.freeze(n)}var Assets__namespace=/*#__PURE__*/_interopNamespaceDefault(Assets);const { openLazy, hideActionSheet } = metro.findByProps("openLazy", "hideActionSheet");
+(function(exports,_vendetta,metro,components,patcher$1,plugin,toasts,common,Assets,plugins,utils,storage,ui,alerts){'use strict';function _interopNamespaceDefault(e){var n=Object.create(null);if(e){Object.keys(e).forEach(function(k){if(k!=='default'){var d=Object.getOwnPropertyDescriptor(e,k);Object.defineProperty(n,k,d.get?d:{enumerable:true,get:function(){return e[k]}});}})}n.default=e;return Object.freeze(n)}var Assets__namespace=/*#__PURE__*/_interopNamespaceDefault(Assets);const { openLazy, hideActionSheet } = metro.findByProps("openLazy", "hideActionSheet");
 function makeDefaults(object, defaults) {
   if (object != void 0) {
     if (defaults != void 0) {
@@ -26,9 +26,6 @@ function openSheet(sheet, props) {
     showToast("Got error when opening ActionSheet! Please check debug logs");
   }
 }
-const setOpacity = function(hex, alpha) {
-  return `${hex}${Math.floor(alpha * 255).toString(16).padStart(2, 0)}`;
-};
 const colorConverter = {
   toInt(hex) {
     hex = hex.replace(/^#/, "");
@@ -59,19 +56,6 @@ function createList(version, a = null, u = null, f = null) {
 }
 const transparentBase64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mJsrQAAAgwBAJ9P6qYAAAAASUVORK5CYII=";
 const convert = {
-  toPercentage: function(decimalValue) {
-    decimalValue = Number(decimalValue);
-    return decimalValue === 0 ? 0 : decimalValue === 1 ? 100 : Math.round(decimalValue * 100);
-  },
-  toDecimal: function(percentageValue) {
-    percentageValue = Number(percentageValue);
-    const clampedPercentage = Math.min(Math.max(percentageValue, 0), 100);
-    return clampedPercentage === 0 ? 0 : clampedPercentage === 100 ? 1 : clampedPercentage / 100;
-  },
-  formatDecimal: function(decimalValue) {
-    decimalValue = Number(decimalValue);
-    return decimalValue === 0 || decimalValue === 1 ? decimalValue : decimalValue.toFixed(2);
-  },
   alphaToHex: function(percentageValue) {
     percentageValue = Number(percentageValue);
     const clampedPercentage = Math.min(Math.max(percentageValue, 0), 100);
@@ -85,298 +69,251 @@ const convert = {
     }
     return Math.round(decimalAlpha / 255 * 100);
   }
-};metro.findByProps("openLazy", "hideActionSheet");
-const ChannelStore$1 = metro.findByProps("getChannel", "getDMFromUserId");
+};const ChannelStore$1 = metro.findByProps("getChannel", "getDMFromUserId");
 const ChannelMessages$2 = metro.findByProps("_channelMessages");
 const MessageStore$1 = metro.findByProps("getMessage", "getMessages");
+const now = function() {
+  return Date.now();
+};
+const tsStyle = function() {
+  const s = plugin.storage.switches?.timestampStyle;
+  return s && "tTdDfFR".includes(s) ? s : "R";
+};
+const logger$1 = function(...a) {
+};
 function fluxDispatchPatch(deletedMessageArray) {
-  return patcher.before("dispatch", common.FluxDispatcher, function(args) {
-    const [event] = args;
-    const type = event?.type;
-    if (plugin.storage.debug)
-      console.log(`[ANTIED fluxdispatcher]`, event);
-    if (type == "MESSAGE_DELETE") {
-      if (plugin.storage.switches.enableMD == false)
-        return args;
-      if (event?.otherPluginBypass)
-        return args;
-      const channel = ChannelMessages$2.get(event.channelId);
-      const originalMessage = channel?.get(event.id);
-      if (!originalMessage)
-        return args;
-      if (event?.id && deletedMessageArray[event?.id]?.stage == 2)
-        return args;
-      if (event?.id && deletedMessageArray[event?.id]?.stage == 1) {
-        deletedMessageArray[event?.id].stage = 2;
-        return deletedMessageArray[event?.id]?.message ?? args;
-      }
-      const OMCheck1 = originalMessage?.author?.id;
-      const OMCheck2 = originalMessage?.author?.username;
-      const OMCheck3 = !originalMessage?.content && originalMessage?.attachments?.length == 0 && originalMessage?.embeds?.length == 0;
-      if (!OMCheck1 || !OMCheck2 || OMCheck3)
-        return args;
-      if (plugin.storage?.switches?.ignoreBots && originalMessage?.author?.bot)
-        return args;
-      if (plugin.storage?.inputs?.ignoredUserList?.length > 0 && plugin.storage.inputs.ignoredUserList?.some(function(user) {
-        return user?.id == originalMessage?.author?.id || user.username == originalMessage.author.username;
-      }))
-        return args;
-      const messageGuildId = ChannelStore$1?.getChannel(originalMessage?.channel_id)?.guild_id;
-      let messageObjectByAntied = {
-        ...originalMessage,
-        content: originalMessage?.content,
-        type: 0,
-        channel_id: originalMessage?.channel_id || event?.channelId,
-        guild_id: messageGuildId,
-        timestamp: `${(/* @__PURE__ */ new Date()).toJSON()}`,
-        state: "SENT",
-        was_deleted: true
-      };
-      if (plugin.storage?.switches?.useEphemeralForDeleted)
-        messageObjectByAntied.flags = 64;
-      args[0] = {
-        type: "MESSAGE_UPDATE",
-        channelId: originalMessage?.channel_id || event?.channelId,
-        message: messageObjectByAntied,
-        optimistic: false,
-        sendMessageOptions: {},
-        isPushNotification: false
-      };
-      deletedMessageArray[event?.id || originalMessage?.id] = {
-        message: args,
-        stage: 1
-      };
-      return args;
-    }
-    if (type == "MESSAGE_UPDATE") {
-      if (plugin.storage.switches.enableMU == false)
-        return args;
-      if (event?.otherPluginBypass)
-        return args;
-      if (event?.message?.author?.bot)
-        return args;
-      const channelId = event?.message?.channel_id ?? event?.channelId;
-      const messageId = event?.message?.id ?? event?.id;
-      let originalMessage = null;
-      if (channelId && messageId) {
-        originalMessage = MessageStore$1.getMessage(channelId, messageId);
-        if (!originalMessage) {
-          const channel = ChannelMessages$2.get(channelId);
-          originalMessage = channel?.get(messageId);
+  return patcher$1.before("dispatch", common.FluxDispatcher, function(args) {
+    if (exports.isEnabled) {
+      try {
+        const ev = args[0];
+        if (!ev || !ev.type)
+          return;
+        const cfg = plugin.storage;
+        if (cfg.debug)
+          console.log("[ANTIED flux]", ev);
+        if (ev.type === "MESSAGE_DELETE") {
+          if (!cfg.switches?.enableMD || ev.otherPluginBypass)
+            return;
+          const orig = ChannelMessages$2.get(ev.channelId)?.get(ev.id);
+          if (!orig?.author?.id || !orig.author.username)
+            return;
+          if (!orig.content && !orig.attachments?.length && !orig.embeds?.length)
+            return;
+          if (cfg.switches.ignoreBots && orig.author.bot)
+            return;
+          if (cfg.inputs?.ignoredUserList?.length) {
+            const list = cfg.inputs.ignoredUserList;
+            if (list.some(function(u) {
+              return u.id === orig.author.id || u.username === orig.author.username;
+            }))
+              return;
+          }
+          const entry = deletedMessageArray.get(ev.id);
+          if (entry?.stage === 2)
+            return;
+          if (entry?.stage === 1) {
+            entry.stage = 2;
+            return entry.message || args;
+          }
+          const guildId = ChannelStore$1.getChannel(orig.channel_id || ev.channelId)?.guild_id;
+          ev.type = "MESSAGE_UPDATE";
+          ev.channelId = orig.channel_id || ev.channelId;
+          ev.message = {
+            ...orig,
+            content: orig.content,
+            type: 0,
+            channel_id: orig.channel_id || ev.channelId,
+            guild_id: guildId,
+            timestamp: (/* @__PURE__ */ new Date()).toJSON(),
+            state: "SENT",
+            was_deleted: true,
+            flags: cfg.switches.useEphemeralForDeleted ? 64 : orig.flags
+          };
+          ev.optimistic = false;
+          ev.sendMessageOptions = {};
+          ev.isPushNotification = false;
+          deletedMessageArray.set(ev.id, {
+            message: args,
+            stage: 1
+          });
+          args[0] = ev;
+          return args;
         }
-      }
-      if (!originalMessage)
-        return args;
-      if (!originalMessage.author?.id || !originalMessage.author?.username)
-        return args;
-      if (!originalMessage.content && originalMessage.attachments?.length === 0 && originalMessage.embeds?.length === 0)
-        return args;
-      if (!event?.message?.content)
-        return args;
-      if (event?.message?.content == originalMessage?.content)
-        return args;
-      if (plugin.storage?.inputs?.ignoredUserList?.length > 0 && plugin.storage?.inputs?.ignoredUserList?.some(function(user) {
-        return user?.id == originalMessage?.author?.id || user?.username == originalMessage?.author?.username;
-      }))
-        return args;
-      let Edited = plugin.storage?.inputs?.editedMessageBuffer || "`[ EDITED ]`";
-      const addNewLine = function(str) {
-        return `${str}
+        if (ev.type === "MESSAGE_UPDATE") {
+          logger$1("FX; MU", 1);
+          if (!cfg.switches?.enableMU || ev.otherPluginBypass)
+            return;
+          const msg = ev.message;
+          logger$1("FX; MU", 2);
+          if (!msg || msg.author?.bot)
+            return;
+          const chId = msg.channel_id || ev.channelId;
+          const id = msg.id || ev.id;
+          logger$1(chId, " | ", id);
+          const orig = MessageStore$1.getMessage(chId, id) || ChannelMessages$2.get(chId)?.get(id);
+          logger$1(orig);
+          logger$1("FX; MU", 3);
+          if (!orig?.author?.id || !orig.author.username)
+            return;
+          logger$1("FX; MU", 4);
+          if (!orig.content && !orig.attachments?.length && !orig.embeds?.length)
+            return;
+          logger$1("FX; MU", 5);
+          if (!msg.content || msg.content === orig.content)
+            return;
+          logger$1("FX; MU", 6);
+          if (cfg.inputs?.ignoredUserList?.length) {
+            const list = cfg.inputs.ignoredUserList;
+            if (list.some(function(u) {
+              return u.id === orig.author.id || u.username === orig.author.username;
+            }))
+              return;
+          }
+          const editedTag = cfg.inputs?.editedMessageBuffer || "`[ EDITED ]`";
+          const time = cfg.switches?.addTimestampForEdits ? `(<t:${Math.floor(now() / 1e3)}:${tsStyle()}>)` : null;
+          const tsPos = cfg.misc?.timestampPos === "BEFORE";
+          let prefix = `${editedTag}`;
+          prefix = time ? tsPos ? `${time} ${prefix}
+
+` : `${prefix} ${time}
+
+` : `${prefix}
 
 `;
-      };
-      const newMsg = event?.message || originalMessage;
-      let newMessageContent = `${originalMessage?.content}`;
-      if (plugin.storage?.switches?.addTimestampForEdits) {
-        const now = Date.now();
-        const validPrefix = [
-          "t",
-          "T",
-          "d",
-          "D",
-          "f",
-          "F",
-          "R"
-        ];
-        const timeStyle = validPrefix.some(function(x) {
-          return x == plugin.storage.switches.timestampStyle;
-        }) ? plugin.storage.switches.timestampStyle : "R";
-        const timeRelative = `<t:${Math.abs(Math.round(now / 1e3))}:${timeStyle}>`;
-        if (plugin.storage?.misc?.timestampPos == "BEFORE") {
-          const tem = `${addNewLine(`(${timeRelative}) ${Edited}`)}${event?.message?.content ?? ""}`;
-          newMessageContent += `  ${tem}`;
-        } else {
-          const tem = `${addNewLine(`${Edited} (${timeRelative})`)}${event?.message?.content ?? ""}`;
-          newMessageContent += `  ${tem}`;
+          logger$1("FX; MU", 7);
+          logger$1(orig.content.includes(editedTag), orig.content.includes(editedTag)?.length ?? "N/A");
+          logger$1(orig, "\n".msg);
+          ev.message = {
+            ...msg,
+            content: `${orig.content} ${prefix}${msg.content}`,
+            guild_id: ChannelStore$1.getChannel(chId)?.guild_id ?? msg.guild_id,
+            edited_timestamp: "invalid_timestamp"
+          };
+          args[0] = ev;
+          return args;
         }
-      } else {
-        newMessageContent += `  ${addNewLine(Edited)}${event?.message?.content ?? ""}`;
+      } catch (e) {
+        toasts.showToast("[ANTIED] FluxDispatcher crash \u2013 check logs");
+        console.error("[ANTIED] Flux patch\n", e);
       }
-      const messageGuildId = ChannelStore$1.getChannel(event?.channelId || event?.message?.channel_id || originalMessage?.channel_id)?.guild_id;
-      args[0] = {
-        type: "MESSAGE_UPDATE",
-        message: {
-          ...newMsg,
-          content: newMessageContent,
-          guild_id: messageGuildId,
-          edited_timestamp: "invalid_timestamp"
-        }
-      };
-      return args;
     }
-    return args;
   });
-}const Message = metro.findByProps("startEditMessage");
+}const Message = metro.findByProps("sendMessage", "startEditMessage");
+const logger = function(...a) {
+};
 function selfEditPatch() {
-  return patcher.before("startEditMessage", Message, function(args) {
+  return patcher$1.before("startEditMessage", Message, function(args) {
+    if (!exports.isEnabled)
+      return;
     let Edited = plugin.storage?.inputs?.editedMessageBuffer || "`[ EDITED ]`";
     const DAN = regexEscaper(Edited);
     const regexPattern = new RegExp(`(?:(?:\\s${DAN}(\\s\\(<t:\\d+:[tTdDfFR]>\\))?\\n{2})|(?:(?:\\s\\(<t:\\d+:[tTdDfFR]>\\) ${DAN}\\n{2})))`, "gm");
     const [channelId, messageId, msg] = args;
     const lats = msg.split(regexPattern);
-    args[2] = lats[lats.length - 1];
-    return args;
+    const f = lats[lats.length - 1];
+    args[2] = f;
+    logger(`[ANTIED > self_edit]
+Modified: ${args[2]}
+Orig BELOW
+`, [
+      channelId,
+      messageId,
+      msg
+    ], regexPattern);
   });
-}const rowsController = metro.findByProps("updateRows", "getConstants") || metro.findByProps("updateRows");
+}const rowsController = metro.findByProps("updateRows", "getConstants") ?? metro.findByProps("updateRows");
+if (!rowsController) {
+  console.error("[ANTIED] rowsController not found \u2013 patch will not be applied");
+}
 function updateRowsPatch(deletedMessagesArray) {
-  return patcher.before("updateRows", rowsController, function(r) {
-    if (!r || r.length < 1) {
-      return r;
-    }
-    let isDirect = false;
-    let rows;
-    if (typeof r[1] == "string") {
-      try {
-        rows = JSON.parse(r[1]);
-      } catch (e) {
-        console.log("[ANTIED:updateRowsPatch] JSON Parse failed in updateRows patch. Aborting.", e, "Input:", r[1]);
-        return r;
-      }
-    } else if (typeof r[1] == "object" && r[1]) {
-      rows = r[1];
-      isDirect = true;
-    } else {
-      console.log("[ANTIED:updateRowsPatch] Unexpected type for r[1] in updateRows. Expected object or string, got:", typeof r[1]);
-      return r;
-    }
-    if (plugin.storage?.debugUpdateRows) {
-      console.log("BEFORE");
-      console.log(isDirect);
-      console.log(rows);
-    }
-    const { textColor, backgroundColor, backgroundColorAlpha, gutterColor, gutterColorAlpha } = plugin.storage.colors;
-    const { useBackgroundColor, minimalistic, removeDismissButton, overrideIndicator, useIndicatorForDeleted, useEphemeralForDeleted } = plugin.storage.switches;
-    const { deletedMessageBuffer, customIndicator } = plugin.storage.inputs;
-    const bufferSymbol = " \u2022 ";
-    function validateHex(input, defaultColor) {
-      if (!input)
-        input = defaultColor;
-      const trimmedInput = String(input).trim();
-      if (!trimmedInput)
-        return defaultColor;
-      if (trimmedInput.startsWith("#")) {
-        const hexCode = trimmedInput.slice(1);
-        if (/^[0-9A-Fa-f]{6}$/.test(hexCode)) {
-          return "#" + hexCode.toUpperCase();
+  return patcher$1.before("updateRows", rowsController, function(args) {
+    if (exports.isEnabled) {
+      if (!args?.length)
+        return;
+      const raw = args[1];
+      if (!raw)
+        return;
+      let rows;
+      let isString = false;
+      if (typeof raw === "string") {
+        try {
+          rows = JSON.parse(raw);
+          isString = true;
+        } catch {
+          return;
         }
+      } else if (Array.isArray(raw)) {
+        rows = raw;
       } else {
-        if (/^[0-9A-Fa-f]{6}$/.test(trimmedInput)) {
-          return "#" + trimmedInput.toUpperCase();
+        return;
+      }
+      const hasDeleted = rows.some(function(r) {
+        return r?.message && deletedMessagesArray.has(r.message.id);
+      });
+      if (!hasDeleted)
+        return;
+      const { colors: { textColor, backgroundColor, backgroundColorAlpha, gutterColor, gutterColorAlpha }, switches: { useBackgroundColor, minimalistic, removeDismissButton, overrideIndicator, useIndicatorForDeleted, useEphemeralForDeleted }, inputs: { deletedMessageBuffer, customIndicator } } = plugin.storage;
+      const toHex = function(v, fallback) {
+        const s = String(v || "").trim();
+        const hex = s.startsWith("#") ? s.slice(1) : s;
+        return /^[0-9a-fA-F]{6}$/.test(hex) ? `#${hex.toUpperCase()}` : fallback;
+      };
+      const bufferSymbol = " \u2022 ";
+      for (const row of rows) {
+        if (row?.type !== 1)
+          continue;
+        const msg = row.message;
+        if (!msg || !deletedMessagesArray.has(msg.id))
+          continue;
+        if (useIndicatorForDeleted && useEphemeralForDeleted) {
+          msg.ephemeralIndication.content[0].content = `${deletedMessageBuffer}${bufferSymbol}  `;
+        } else if (deletedMessageBuffer) {
+          msg.edited = deletedMessageBuffer;
+        }
+        if (!minimalistic) {
+          msg.textColor = common.ReactNative.processColor(toHex(textColor, "#E40303"));
+        }
+        if (overrideIndicator) {
+          msg.ephemeralIndication.content = [];
+        } else if (!useIndicatorForDeleted && customIndicator) {
+          msg.ephemeralIndication.content[0].content = `${customIndicator}  `;
+        }
+        if (removeDismissButton && msg.ephemeralIndication?.content) {
+          msg.ephemeralIndication?.content?.splice?.(1, 1);
+        }
+        if (!minimalistic && useBackgroundColor) {
+          row.backgroundHighlight = {
+            backgroundColor: common.ReactNative.processColor(toHex(backgroundColor, "#FF2C2F") + backgroundColorAlpha),
+            gutterColor: common.ReactNative.processColor(toHex(gutterColor, "#FF2C2F") + gutterColorAlpha)
+          };
         }
       }
-      return defaultColor || "#000";
+      if (isString)
+        args[1] = JSON.stringify(rows);
+      else
+        args[1] = rows;
+      return args;
     }
-    function updateEphemeralIndication(object, removeDismissText = false, overrideText = false, onlyYouText, overrideArray = []) {
-      if (object && Array.isArray(object.content)) {
-        if (overrideText) {
-          if (onlyYouText != void 0) {
-            object.content[0].content = onlyYouText + "  ";
-          } else if (Array.isArray(overrideArray)) {
-            object.content = overrideArray;
-          }
-        } else {
-          if (removeDismissText) {
-            object?.content?.splice?.(1);
-          }
-        }
-      }
-      object.helpArticleLink = "";
-      object.helpButtonAccessibilityLabel = "Hello, Antied here Again";
-      return object;
-    }
-    rows.forEach(function(row) {
-      if (plugin.storage.debugUpdateRows)
-        console.log(row);
-      if (row?.type == 1) {
-        if (deletedMessagesArray[row?.message?.id]) {
-          if (deletedMessageBuffer?.length > 0 || deletedMessageBuffer != "") {
-            if (useIndicatorForDeleted && useEphemeralForDeleted) {
-              row.message.ephemeralIndication = updateEphemeralIndication(row.message.ephemeralIndication, void 0, true, `${deletedMessageBuffer}${bufferSymbol}`);
-            } else {
-              row.message.edited = deletedMessageBuffer;
-            }
-          }
-          if (minimalistic == false) {
-            const characterColor = validateHex(textColor, "#E40303");
-            row.message.textColor = common.ReactNative.processColor(characterColor);
-          }
-          if (removeDismissButton && typeof row?.message?.ephemeralIndication == "object") {
-            row.message.ephemeralIndication = updateEphemeralIndication(row.message.ephemeralIndication, true);
-          }
-          if (overrideIndicator) {
-            row.message.ephemeralIndication = {
-              content: [],
-              helpArticleLink: "",
-              helpButtonAccessibilityLabel: "Hello, Antied here Again"
-            };
-          } else if (!useIndicatorForDeleted) {
-            if (customIndicator?.length > 0 || customIndicator != "") {
-              row.message.ephemeralIndication = updateEphemeralIndication(row.message.ephemeralIndication, void 0, true, customIndicator);
-            }
-          }
-          row.message.obscureLearnMoreLabel = "Hello, Antied here";
-          if (minimalistic == false && useBackgroundColor == true) {
-            const BG = validateHex(`${backgroundColor}`, "#FF2C2F");
-            const GC = validateHex(`${gutterColor}`, "#FF2C2F");
-            row.backgroundHighlight ?? (row.backgroundHighlight = {});
-            row.backgroundHighlight = {
-              backgroundColor: common.ReactNative.processColor(`${BG}${backgroundColorAlpha}`),
-              gutterColor: common.ReactNative.processColor(`${GC}${gutterColorAlpha}`)
-            };
-          }
-        }
-      }
-    });
-    if (plugin.storage?.debugUpdateRows) {
-      console.log("AFTER");
-      console.log(isDirect);
-      console.log(rows);
-    }
-    try {
-      if (isDirect) {
-        r[1] = rows;
-      } else {
-        r[1] = JSON.stringify(rows);
-      }
-    } catch (e) {
-      console.log("[ANTIED:updateRowsPatch] Failed to stringify modified rows. Aborting.", e);
-      return r;
-    }
-    return r;
+  }, {
+    suppressErrors: true
   });
 }const MessageRecordUtils$1 = metro.findByProps("updateMessageRecord", "createMessageRecord");
 function createMessageRecord() {
-  return patcher.after("createMessageRecord", MessageRecordUtils$1, function([message], record) {
-    record.was_deleted = message.was_deleted;
+  return patcher$1.after("createMessageRecord", MessageRecordUtils$1, function([message], record) {
+    if (exports.isEnabled) {
+      record.was_deleted = message.was_deleted;
+    }
   });
 }const MessageRecord = metro.findByName("MessageRecord", false);
 function messageRecordDefault() {
-  return patcher.after("default", MessageRecord, function([props], record) {
-    record.was_deleted = !!props.was_deleted;
+  return patcher$1.after("default", MessageRecord, function([props], record) {
+    if (exports.isEnabled) {
+      record.was_deleted = !!props.was_deleted;
+    }
   });
 }const MessageRecordUtils = metro.findByProps("updateMessageRecord", "createMessageRecord");
 function updateMessageRecord() {
-  return patcher.instead("updateMessageRecord", MessageRecordUtils, function([oldRecord, newRecord], orig) {
+  return patcher$1.instead("updateMessageRecord", MessageRecordUtils, function([oldRecord, newRecord], orig) {
     if (newRecord.was_deleted) {
       return MessageRecordUtils.createMessageRecord(newRecord, oldRecord.reactions);
     }
@@ -391,128 +328,119 @@ const ChannelStore = metro.findByProps("getChannel", "getDMFromUserId");
 const ChannelMessages$1 = metro.findByProps("_channelMessages");
 const { ActionSheetRow } = metro.findByProps("ActionSheetRow");
 function actionsheet(deletedMessageArray) {
-  return patcher.before("openLazy", ActionSheet, function([component, args, actionMessage]) {
-    const message = actionMessage?.message;
-    if (args !== "MessageLongPressActionSheet" || !message)
-      return;
-    component.then(function(instance) {
-      const unpatch = patcher.after("default", instance, function(_, comp) {
-        common.React.useEffect(function() {
-          return function() {
-            unpatch();
-          };
-        }, []);
-        if (plugin.storage.debug)
-          console.log(`[ANTIED ActionSheet]`, message);
-        function someFunc(a) {
-          return a?.props?.label?.toLowerCase?.() == "reply";
-        }
-        const buttons = utils.findInReactTree(comp, function(c) {
-          return c?.find?.(someFunc);
-        });
-        if (!buttons)
-          return comp;
-        const position = Math.max(buttons.findIndex(someFunc), buttons.length - 1);
-        let originalMessage = null;
-        if (message?.channel_id && message?.id) {
-          originalMessage = MessageStore.getMessage(message?.channel_id, message?.id);
-          if (!originalMessage) {
-            const channel = ChannelMessages$1.get(message?.channel_id);
-            originalMessage = channel?.get(message?.id);
-          }
-        }
-        if (!originalMessage)
-          return comp;
-        const escapedBuffer = regexEscaper(plugin.storage?.inputs?.editedMessageBuffer || "`[ EDITED ]`");
-        const separator = new RegExp(escapedBuffer, "gmi");
-        const checkIfBufferExist = separator.test(message.content);
-        if (checkIfBufferExist) {
-          const targetPos = position || 1;
-          buttons.splice(targetPos, 0, /* @__PURE__ */ common.React.createElement(ActionSheetRow, {
-            label: "Remove Edit History",
-            subLabel: `Added by ${stripVersions(_vendetta.plugin?.manifest?.name) || "ANTIED"}`,
-            icon: /* @__PURE__ */ common.React.createElement(ActionSheetRow.Icon, {
-              source: Assets.getAssetIDByName("ic_edit_24px")
-            }),
-            onPress: function() {
-              let Edited = plugin.storage?.inputs?.editedMessageBuffer || "`[ EDITED ]`";
-              const DAN = regexEscaper(Edited);
-              const regexPattern = new RegExp(`(?:(?:\\s${DAN}(\\s\\(<t:\\d+:[tTdDfFR]>\\))?\\n{2})|(?:(?:\\s\\(<t:\\d+:[tTdDfFR]>\\) ${DAN}\\n{2})))`, "gm");
-              const lats = message?.content?.split(regexPattern);
-              if (plugin.storage.debug) {
-                console.log([
-                  [
-                    Edited
-                  ],
-                  message?.content?.split(regexPattern),
-                  lats
-                ]);
-              }
-              const targetMessage = lats[lats.length - 1];
-              const messageEmbeds = message?.embeds?.map(function(embedData) {
-                const rawHSLA = embedData?.color?.replace(/.+\(/, "")?.replace(/%/g, "")?.replace(")", "");
-                const split = rawHSLA?.split(", ");
-                const embedColor = common.ReactNative.processColor(`${setOpacity(colorConverter.HSLtoHEX(split[0], split[1], split[2]), split[3])}`);
-                return {
-                  ...embedData,
-                  author: embedData.author,
-                  title: embedData.rawTitle,
-                  description: embedData.rawDescription,
-                  url: embedData.url,
-                  type: embedData.type,
-                  image: embedData.image,
-                  thumbnail: embedData.thumbnail,
-                  color: embedColor,
-                  content_scan_version: 1
+  return patcher$1.before("openLazy", ActionSheet, function([component, args, actionMessage]) {
+    if (exports.isEnabled) {
+      try {
+        const message = actionMessage?.message;
+        if (args !== "MessageLongPressActionSheet" || !message)
+          return;
+        component.then(function(instance) {
+          const unpatch = patcher$1.after("default", instance, function(_, comp) {
+            try {
+              let someFunc = function(a) {
+                return a?.props?.label?.toLowerCase?.() == "reply";
+              };
+              common.React.useEffect(function() {
+                return function() {
+                  unpatch();
                 };
+              }, []);
+              if (plugin.storage.debug)
+                console.log(`[ANTIED ActionSheet]`, message);
+              const buttons = utils.findInReactTree(comp, function(c) {
+                return c?.find?.(someFunc);
               });
-              common.FluxDispatcher.dispatch({
-                type: "MESSAGE_UPDATE",
-                message: {
-                  ...message,
-                  content: `${targetMessage}`,
-                  embeds: messageEmbeds ?? [],
-                  attachments: message.attachments ?? [],
-                  mentions: message.mentions ?? [],
-                  guild_id: ChannelStore.getChannel(originalMessage.channel_id).guild_id
-                },
-                otherPluginBypass: true
-              });
-              ActionSheet.hideActionSheet();
-              if (plugin.storage?.inputs?.historyToast?.length > 0 || plugin.storage?.inputs?.historyToast != "") {
-                toasts.showToast(plugin.storage?.inputs?.historyToast?.toString?.(), Assets.getAssetIDByName(plugin.storage?.misc?.editHistoryIcon || "ic_edit_24px"));
+              if (!buttons)
+                return comp;
+              const position = Math.max(buttons.findIndex(someFunc), buttons.length - 1);
+              let originalMessage = null;
+              if (message?.channel_id && message?.id) {
+                originalMessage = MessageStore.getMessage(message?.channel_id, message?.id);
+                if (!originalMessage) {
+                  const channel = ChannelMessages$1.get(message?.channel_id);
+                  originalMessage = channel?.get(message?.id);
+                }
               }
-            }
-          }));
-        }
-        if (plugin.storage.debug)
-          console.log(`[ANTIED ActionSheet]`, "useEphemeralForDeleted", !plugin.storage?.switches?.useEphemeralForDeleted, "msgExist?", Boolean(deletedMessageArray[message.id]));
-        if (!plugin.storage?.switches?.useEphemeralForDeleted && deletedMessageArray[message.id]) {
-          const targetPos = position || 1;
-          buttons.splice(targetPos, 0, /* @__PURE__ */ common.React.createElement(ActionSheetRow, {
-            label: "Remove Deleted Message",
-            subLabel: `Added by ${stripVersions(_vendetta.plugin?.manifest?.name) || "ANTIED"}`,
-            isDestructive: true,
-            icon: /* @__PURE__ */ common.React.createElement(ActionSheetRow.Icon, {
-              source: Assets.getAssetIDByName("ic_edit_24px")
-            }),
-            onPress: function() {
-              common.FluxDispatcher.dispatch({
-                type: "MESSAGE_DELETE",
-                guildId: ChannelStore.getChannel(originalMessage.channel_id).guild_id,
-                id: message?.id,
-                channelId: message?.channel_id,
-                otherPluginBypass: true
-              });
-              ActionSheet.hideActionSheet();
-              if (plugin.storage?.inputs?.historyToast?.length > 0 || plugin.storage?.inputs?.historyToast != "") {
-                toasts.showToast(`[ANTIED] Message Removed`, Assets.getAssetIDByName("ic_edit_24px"));
+              if (!originalMessage)
+                return comp;
+              const escapedBuffer = regexEscaper(plugin.storage?.inputs?.editedMessageBuffer || "`[ EDITED ]`");
+              const separator = new RegExp(escapedBuffer, "gmi");
+              const checkIfBufferExist = separator.test(message.content);
+              if (checkIfBufferExist) {
+                const targetPos = position || 1;
+                buttons.splice(targetPos, 0, /* @__PURE__ */ common.React.createElement(ActionSheetRow, {
+                  label: "Remove Edit History",
+                  subLabel: `Added by ${stripVersions(_vendetta.plugin?.manifest?.name) || "ANTIED"}`,
+                  icon: /* @__PURE__ */ common.React.createElement(ActionSheetRow.Icon, {
+                    source: Assets.getAssetIDByName("ic_edit_24px")
+                  }),
+                  onPress: function() {
+                    const DAN = escapedBuffer;
+                    const regexPattern = new RegExp(`(?:(?:\\s${DAN}(\\s\\(<t:\\d+:[tTdDfFR]>\\))?\\n{2})|(?:(?:\\s\\(<t:\\d+:[tTdDfFR]>\\) ${DAN}\\n{2})))`, "gm");
+                    const lats = message?.content?.split(regexPattern);
+                    if (plugin.storage.debug) {
+                      console.log([
+                        [
+                          escapedBuffer
+                        ],
+                        message?.content?.split(regexPattern),
+                        lats
+                      ]);
+                    }
+                    const targetMessage = lats[lats.length - 1];
+                    common.FluxDispatcher.dispatch({
+                      type: "MESSAGE_UPDATE",
+                      message: {
+                        ...message,
+                        content: `${targetMessage}`,
+                        guild_id: ChannelStore.getChannel(originalMessage.channel_id).guild_id
+                      },
+                      otherPluginBypass: true
+                    });
+                    ActionSheet.hideActionSheet();
+                    if (plugin.storage?.inputs?.historyToast?.length > 0 || plugin.storage?.inputs?.historyToast != "") {
+                      toasts.showToast(plugin.storage?.inputs?.historyToast?.toString?.(), Assets.getAssetIDByName(plugin.storage?.misc?.editHistoryIcon || "ic_edit_24px"));
+                    }
+                  }
+                }));
               }
+              if (plugin.storage.debug)
+                console.log(`[ANTIED ActionSheet]`, "useEphemeralForDeleted", !plugin.storage?.switches?.useEphemeralForDeleted, "msgExist?", Boolean(deletedMessageArray.has(message.id)));
+              if (!plugin.storage?.switches?.useEphemeralForDeleted && deletedMessageArray.has(message.id)) {
+                const targetPos = position || 1;
+                buttons.splice(targetPos, 0, /* @__PURE__ */ common.React.createElement(ActionSheetRow, {
+                  label: "Remove Deleted Message",
+                  subLabel: `Added by ${stripVersions(_vendetta.plugin?.manifest?.name) || "ANTIED"}`,
+                  isDestructive: true,
+                  icon: /* @__PURE__ */ common.React.createElement(ActionSheetRow.Icon, {
+                    source: Assets.getAssetIDByName("ic_edit_24px")
+                  }),
+                  onPress: function() {
+                    common.FluxDispatcher.dispatch({
+                      type: "MESSAGE_DELETE",
+                      guildId: ChannelStore.getChannel(originalMessage.channel_id).guild_id,
+                      id: message?.id,
+                      channelId: message?.channel_id,
+                      otherPluginBypass: true
+                    });
+                    ActionSheet.hideActionSheet();
+                    if (plugin.storage?.inputs?.historyToast?.length > 0 || plugin.storage?.inputs?.historyToast != "") {
+                      toasts.showToast(`[ANTIED] Message Removed`, Assets.getAssetIDByName("ic_edit_24px"));
+                    }
+                  }
+                }));
+              }
+            } catch (e) {
+              toasts.showToast("[ANTIED] Crash on ActionSheet, check debug log for more info");
+              console.error("[ANTIED Error > ActionSheet:Component Patch\n", e);
             }
-          }));
-        }
-      });
-    });
+          });
+        });
+      } catch (e) {
+        toasts.showToast("[ANTIED] Crash on ActionSheet, check debug log for more info");
+        console.error("[ANTIED Error > ActionSheet Patch\n", e);
+      }
+    }
   });
 }const { ScrollView: ScrollView$9, View: View$8, Text: Text$8, TouchableOpacity: TouchableOpacity$8, TextInput: TextInput$8, Pressable: Pressable$5, Image: Image$7, Animated: Animated$7 } = components.General;
 const { FormLabel: FormLabel$7, FormIcon: FormIcon$8, FormArrow: FormArrow$7, FormRow: FormRow$b, FormSwitch: FormSwitch$8, FormSwitchRow: FormSwitchRow$7, FormSection: FormSection$7, FormDivider: FormDivider$a, FormInput: FormInput$7, FormSliderRow: FormSliderRow$4 } = components.Forms;
@@ -736,7 +664,7 @@ function SemRawComponent() {
     }), i !== semRaw.length - 1 && /* @__PURE__ */ React.createElement(FormDivider$7, null));
   })));
 }const CustomColorPickerActionSheet = metro.findByName("CustomColorPickerActionSheet");
-const { alphaToHex, hexAlphaToPercent, toPercentage, toDecimal, formatDecimal } = convert;
+const { alphaToHex, hexAlphaToPercent } = convert;
 const { ScrollView: ScrollView$6, View: View$6, Text: Text$6, TouchableOpacity: TouchableOpacity$6, TextInput: TextInput$6, Pressable: Pressable$3, Image: Image$5, Animated: Animated$5 } = components.General;
 const { FormLabel: FormLabel$5, FormIcon: FormIcon$6, FormArrow: FormArrow$5, FormRow: FormRow$6, FormSwitch: FormSwitch$6, FormSwitchRow: FormSwitchRow$5, FormSection: FormSection$5, FormDivider: FormDivider$6, FormInput: FormInput$5, FormSliderRow: FormSliderRow$2 } = components.Forms;
 const customizeableColors = [
@@ -761,12 +689,13 @@ const customizeableColors = [
 ];
 function ColorPickComponent({ styles }) {
   storage.useProxy(plugin.storage);
-  const [BGAlpha, setBGAlpha] = common.React.useState(toDecimal(hexAlphaToPercent(plugin.storage?.colors?.backgroundColorAlpha) ?? 100));
-  const [gutterAlpha, setGutterAlpha] = common.React.useState(toDecimal(hexAlphaToPercent(plugin.storage?.colors?.gutterColorAlpha) ?? 100));
-  const navigation = common.NavigationNative.useNavigation();
-  const parseColorPercentage = function(clr) {
-    return alphaToHex(toPercentage(clr));
+  const clamp = function(v, min, max) {
+    return Math.max(min, Math.min(max, v));
   };
+  const [BGAlpha, setBGAlpha] = common.React.useState(clamp(hexAlphaToPercent(plugin.storage?.colors?.backgroundColorAlpha) ?? 100, 0, 100));
+  const [gutterAlpha, setGutterAlpha] = common.React.useState(clamp(hexAlphaToPercent(plugin.storage?.colors?.gutterColorAlpha) ?? 100, 0, 100));
+  const [useText, setUseText] = common.React.useState(false);
+  const navigation = common.NavigationNative.useNavigation();
   const handleSemRaw = function(prefix) {
     if (!prefix)
       return null;
@@ -853,46 +782,80 @@ function ColorPickComponent({ styles }) {
   }, /* @__PURE__ */ common.React.createElement(View$6, {
     style: {
       width: "2%",
-      backgroundColor: `${plugin.storage.colors.gutterColor}${parseColorPercentage(gutterAlpha)}`
+      backgroundColor: `${plugin.storage.colors.gutterColor}${plugin.storage.colors.gutterColorAlpha}`
     }
   }), /* @__PURE__ */ common.React.createElement(View$6, {
     style: {
       flex: 1,
-      backgroundColor: `${plugin.storage.switches.useSemRawColors ? handleSemRaw(plugin.storage?.colors?.semRawColorPrefix) || plugin.storage.colors.backgroundColor : plugin.storage.colors.backgroundColor}${parseColorPercentage(BGAlpha)}`,
+      backgroundColor: `${plugin.storage.switches.useSemRawColors ? handleSemRaw(plugin.storage?.colors?.semRawColorPrefix) || plugin.storage.colors.backgroundColor : plugin.storage.colors.backgroundColor}${plugin.storage.colors.backgroundColorAlpha}`,
       justifyContent: "center",
       alignItems: "center"
     }
   }, /* @__PURE__ */ common.React.createElement(Text$6, {
     style: {
       fontSize: 20,
-      color: plugin.storage?.switches?.darkMode ? "white" : "black"
+      color: plugin.storage?.switches?.darkMode ? "black" : "white"
     }
   }, " Low Effort Normal Example Message "), /* @__PURE__ */ common.React.createElement(Text$6, {
     style: {
       fontSize: 20,
       color: plugin.storage.colors.textColor || "#000000"
     }
-  }, " Low Effort Deleted Example Message "))), /* @__PURE__ */ common.React.createElement(FormSliderRow$2, {
-    label: `Background Color Alpha: ${toPercentage(BGAlpha)}%`,
+  }, " Low Effort Deleted Example Message "))), /* @__PURE__ */ common.React.createElement(FormRow$6, {
+    label: "Click to switch input type",
+    subLabel: "Switch from slider to number and vise versa",
+    onPress: function() {
+      setUseText(!useText);
+    }
+  }), useText ? /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(FormInput$5, {
+    title: `Background Color Alpha: ${BGAlpha}%`,
+    keyboardType: "numeric",
+    style: {
+      width: "90%"
+    },
+    value: `${BGAlpha}`,
+    onChange: function(val) {
+      val = clamp(val, 0, 100);
+      setBGAlpha(Number(val));
+      plugin.storage.colors.backgroundColorAlpha = alphaToHex(val);
+    }
+  })) : /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(FormSliderRow$2, {
+    label: `Background Color Alpha: ${BGAlpha}%`,
     value: BGAlpha,
+    minVal: 0,
+    maxVal: 100,
     style: {
       width: "90%"
     },
     onValueChange: function(v) {
-      setBGAlpha(Number(formatDecimal(v)));
-      plugin.storage.colors.backgroundColorAlpha = alphaToHex(toPercentage(v));
+      setBGAlpha(Number(v));
+      plugin.storage.colors.backgroundColorAlpha = alphaToHex(v);
     }
-  }), /* @__PURE__ */ common.React.createElement(FormDivider$6, null), /* @__PURE__ */ common.React.createElement(FormSliderRow$2, {
-    label: `Background Gutter Alpha: ${toPercentage(gutterAlpha)}%`,
+  })), /* @__PURE__ */ common.React.createElement(FormDivider$6, null), useText ? /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(FormInput$5, {
+    title: `Background Gutter Alpha: ${gutterAlpha}%`,
+    keyboardType: "numeric",
+    style: {
+      width: "90%"
+    },
+    value: `${gutterAlpha}`,
+    onChange: function(val) {
+      val = clamp(val, 0, 100);
+      setGutterAlpha(Number(val));
+      plugin.storage.colors.gutterColorAlpha = alphaToHex(val);
+    }
+  })) : /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(FormSliderRow$2, {
+    label: `Background Gutter Alpha: ${gutterAlpha}%`,
     value: gutterAlpha,
+    minVal: 0,
+    maxVal: 100,
     style: {
       width: "90%"
     },
     onValueChange: function(v) {
-      setGutterAlpha(Number(formatDecimal(v)));
-      plugin.storage.colors.gutterColorAlpha = alphaToHex(toPercentage(v));
+      setGutterAlpha(Number(v));
+      plugin.storage.colors.gutterColorAlpha = alphaToHex(v);
     }
-  }))));
+  })))));
 }const { ScrollView: ScrollView$5, View: View$5, Text: Text$5, TouchableOpacity: TouchableOpacity$5, TextInput: TextInput$5, Image: Image$4, Animated: Animated$4 } = components.General;
 const { FormLabel: FormLabel$4, FormIcon: FormIcon$5, FormArrow: FormArrow$4, FormRow: FormRow$5, FormSwitch: FormSwitch$5, FormSwitchRow: FormSwitchRow$4, FormSection: FormSection$4, FormDivider: FormDivider$5, FormInput: FormInput$4 } = components.Forms;
 const useIsFocused$1 = metro.findByName("useIsFocused");
@@ -1352,6 +1315,12 @@ const customizeableSwitches = [
     default: false,
     label: "Remove Ephemeral Indicator",
     subLabel: "When messages got deleted it'll have indicator under the text like 'only you can see this' and this remove those."
+  },
+  {
+    id: "useCustomPluginName",
+    default: false,
+    label: "Override Plugin Name with custom one",
+    subLabel: "Replace plugin name with custom one when enabled"
   }
 ];
 function CustomizationComponent({ styles }) {
@@ -1386,8 +1355,7 @@ function CustomizationComponent({ styles }) {
   ];
 }
 const update = [
-  createList("1.0 - 1.3", null, ma("Version 1.4 does not support backwards compatibility after Discord version 265.16 Stable.")),
-  createList("1.4.0", ma("[1.4] Trying to reinstate colorful setting for IOS.", "[1.4] Added new Option to Remove Ephemeral Indicator", "[1.4] Added new Option to Switch 'this message is deleted' to be an indicator", "[1.4] Added debug updateRows Switch for nerds.", "[1.4] Added Known Bugs Section for those annoying peoples complaining about things."), ma("[1.4] Discontinued Support for older version related to updateRows function, Use Version 1.3.1 if you using old version"), ma("[1.4] Update updateRowsPatch to Support Newer Version of Discord", "[1.4.1] Fixed ActionSheet button being weird, updated in 293.xx Stable release", "[1.4.2] Fortified updateRowsPatch with additonal safeguards, possibly fixed crashes on Alpha/Beta builds."))
+  createList("1.4.0", ma("[1.4] Trying to reinstate colorful setting for IOS.", "[1.4] Added new Option to Remove Ephemeral Indicator", "[1.4] Added new Option to Switch 'this message is deleted' to be an indicator", "[1.4] Added Known Bugs Section for those annoying peoples complaining about things.", "[1.4.3] Added use Custom Plugin name option and alternative way to set Alpha."), ma("[1.4] Discontinued Support for older version related to updateRows function, Use Version 1.3.1 if you using old version", "[1.4.3] Refactor Flux and Row to be more efficent and added cache limit.", "[1.4.3] Fixed editing message issue where it includes old content."), ma("[1.4] Update updateRowsPatch to Support Newer Version of Discord", "[1.4.1] Fixed ActionSheet button being weird, updated in 293.xx Stable release", "[1.4.2] Fortified updateRowsPatch with additonal safeguards, possibly fixed crashes on Alpha/Beta builds."))
 ];
 var updates = update.reverse();const knownBugs = [
   {
@@ -1613,11 +1581,13 @@ function SettingPage() {
     }, /* @__PURE__ */ common.React.createElement(FormRow, {
       label: element?.label,
       subLabel: element?.subLabel,
-      trailing: /* @__PURE__ */ common.React.createElement(FormSwitch, {
-        value: plugin.storage.setting[element?.id],
-        onValueChange: function(value) {
-          plugin.storage.setting[element?.id] = value;
-        }
+      onPress: function() {
+        plugin.storage.setting[element?.id] = !plugin.storage.setting[element?.id];
+      },
+      trailing: plugin.storage.setting[element?.id] == true ? /* @__PURE__ */ common.React.createElement(FormRow.Icon, {
+        source: Assets.getAssetIDByName("ic_arrow_down")
+      }) : /* @__PURE__ */ common.React.createElement(FormRow.Icon, {
+        source: Assets.getAssetIDByName("ic_arrow_right")
       })
     }), plugin.storage.setting[element.id] && element.props && /* @__PURE__ */ common.React.createElement(View, {
       style: {
@@ -1727,6 +1697,7 @@ const stripVersions = function(str) {
 const vendettaUiAssets = Object.keys(Assets__namespace.all).map(function(x) {
   return x?.name;
 });
+exports.isEnabled = false;
 makeDefaults(plugin.storage, {
   setting: {
     colorpick: false,
@@ -1751,7 +1722,8 @@ makeDefaults(plugin.storage, {
     timestampStyle: "R",
     useEphemeralForDeleted: true,
     overrideIndicator: false,
-    useIndicatorForDeleted: false
+    useIndicatorForDeleted: false,
+    useCustomPluginName: false
   },
   colors: {
     textColor: "#E40303",
@@ -1776,22 +1748,79 @@ makeDefaults(plugin.storage, {
   debug: false,
   debugUpdateRows: false
 });
-let deletedMessageArray = {};
-const patches = [];
+let deletedMessageArray = /* @__PURE__ */ new Map();
+let unpatch = null;
+let intervalPurge;
+const KEEP_NEWEST = 5;
+const DELETE_EACH_CYCLE = 95;
+const patches = [
+  [
+    fluxDispatchPatch,
+    [
+      deletedMessageArray
+    ]
+  ],
+  [
+    updateRowsPatch,
+    [
+      deletedMessageArray
+    ]
+  ],
+  [
+    selfEditPatch,
+    []
+  ],
+  [
+    createMessageRecord,
+    []
+  ],
+  [
+    messageRecordDefault,
+    []
+  ],
+  [
+    updateMessageRecord,
+    []
+  ],
+  [
+    actionsheet,
+    [
+      deletedMessageArray
+    ]
+  ]
+];
+const patcher = function() {
+  return patches.forEach(function([fn, args]) {
+    return fn(...args);
+  });
+};
 var index = {
   onLoad: function() {
-    patches.push(fluxDispatchPatch(deletedMessageArray), updateRowsPatch(deletedMessageArray), selfEditPatch(), createMessageRecord(), messageRecordDefault(), updateMessageRecord(), actionsheet(deletedMessageArray));
-    if (_vendetta.plugin?.manifest?.name != plugin.storage?.inputs?.customPluginName) {
-      _vendetta.plugin.manifest.name = plugin.storage?.inputs?.customPluginName;
+    exports.isEnabled = true;
+    try {
+      unpatch = patcher();
+    } catch (err) {
+      console.log("[ANTIED], Crash On Load.\n\n", err);
+      toasts.showToast("[ANTIED], Crashing On Load. Please check debug log for more info.");
+      plugins.stopPlugin(plugin.id);
     }
+    intervalPurge = setInterval(function() {
+      if (deletedMessageArray.size <= KEEP_NEWEST)
+        return;
+      const toDelete = Math.min(DELETE_EACH_CYCLE, deletedMessageArray.size - KEEP_NEWEST);
+      let i = 0;
+      for (const key of deletedMessageArray.keys()) {
+        deletedMessageArray.delete(key);
+        if (++i >= toDelete)
+          break;
+      }
+    }, 15 * 60 * 1e3);
+    _vendetta.plugin.manifest.name = plugin.storage?.switches?.useCustomPluginName ? plugin.storage?.inputs?.customPluginName : _vendetta.plugin.manifest.name;
   },
   onUnload: function() {
-    for (const unpatch of patches) {
-      unpatch();
-    }
-    if (_vendetta.plugin?.manifest?.name != plugin.storage?.inputs?.customPluginName) {
-      _vendetta.plugin.manifest.name = plugin.storage?.inputs?.customPluginName;
-    }
+    exports.isEnabled = false;
+    clearInterval(intervalPurge);
+    unpatch?.();
     for (const channelId in ChannelMessages._channelMessages) {
       for (const message of ChannelMessages._channelMessages[channelId]._array) {
         if (message.was_deleted) {
@@ -1806,4 +1835,4 @@ var index = {
     }
   },
   settings: SettingPage
-};exports.default=index;exports.regexEscaper=regexEscaper;exports.stripVersions=stripVersions;exports.vendettaUiAssets=vendettaUiAssets;Object.defineProperty(exports,'__esModule',{value:true});return exports;})({},vendetta,vendetta.metro,vendetta.ui.components,vendetta.patcher,vendetta.ui.assets,vendetta.utils,vendetta.metro.common,vendetta.plugin,vendetta.ui.toasts,vendetta.storage,vendetta.ui,vendetta.ui.alerts);
+};exports.default=index;exports.regexEscaper=regexEscaper;exports.stripVersions=stripVersions;exports.vendettaUiAssets=vendettaUiAssets;Object.defineProperty(exports,'__esModule',{value:true});return exports;})({},vendetta,vendetta.metro,vendetta.ui.components,vendetta.patcher,vendetta.plugin,vendetta.ui.toasts,vendetta.metro.common,vendetta.ui.assets,vendetta.plugins,vendetta.utils,vendetta.storage,vendetta.ui,vendetta.ui.alerts);
