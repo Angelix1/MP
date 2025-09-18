@@ -128,7 +128,7 @@ export default deletedMessagesArray => before("updateRows", rowsController, func
 
 	}
 
-}, { suppressErrors: true });
+});
 
 
 /*
