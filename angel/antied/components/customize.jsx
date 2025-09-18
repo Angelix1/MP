@@ -64,6 +64,12 @@ const customizeableSwitches = [
 		default: false,
 		label: "Remove Ephemeral Indicator",
 		subLabel: "When messages got deleted it'll have indicator under the text like 'only you can see this' and this remove those.",
+	},
+	{
+		id: "useCustomPluginName",
+		default: false,
+		label: "Override Plugin Name with custom one",
+		subLabel: "Replace plugin name with custom one when enabled"
 	}
 ]
 

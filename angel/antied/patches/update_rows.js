@@ -1,204 +1,134 @@
+/*
+	Time wasted: 3 hours 27 minutes
+
+
+	Alternative Function: findByName("ChatManager").prototype => "createRow"
+*/
+
 import { ReactNative } from "@vendetta/metro/common";
 import { before } from "@vendetta/patcher";
 import { storage } from "@vendetta/plugin";
 import { findByProps } from '@vendetta/metro';
+import { showToast } from "@vendetta/ui/toasts";
 
-const rowsController = findByProps("updateRows", "getConstants") || findByProps("updateRows");
+import { isEnabled } from "..";
 
-/*
-	Time wasted: 3 hours 25 minutes
-*/
+const rowsController = findByProps("updateRows", "getConstants") ?? findByProps("updateRows");
 
-// Function consist of (num_1, args, bool_1, num_2, num_3)
-export default (deletedMessagesArray) => before("updateRows", rowsController, (r) => {
+if (!rowsController) {
+  console.error('[ANTIED] rowsController not found – patch will not be applied');
+}
 
-	// safe guard if r returns undefined, but then again rowsController might be undefined
-	// if it happens then "Cannot convert undefined value to object" error would occour and should be in updateRowsPatch function
-    if (!r || r.length < 1) {
-        return r;
-    }
-
-    let isDirect = false;
-    let rows;
-
-	if (typeof r[1] == 'string') {
-		// handle stringified object, happens in Stable Build
-	    try {
-	        rows = JSON.parse(r[1]);
-	    } catch (e) {
-	        console.log("[ANTIED:updateRowsPatch] JSON Parse failed in updateRows patch. Aborting.", e, "Input:", r[1]);
-	        return r;
-	    }
+const logger = (...a) => {
+	if(false) {
+		console.log(...a)
 	}
-    else if (typeof r[1] == 'object' && r[1]) {
-    	// handle Direct Object, happens in Alpha Build
-	    rows = r[1]; 
-	    isDirect = true;
-	}
-	else {
-		// fallback if not object nor stringified object
-	    console.log("[ANTIED:updateRowsPatch] Unexpected type for r[1] in updateRows. Expected object or string, got:", typeof r[1]);
-	    return r;
-	}
+};
 
-	if(storage?.debugUpdateRows) {
-		console.log("BEFORE")
-		console.log(isDirect)
-	  	console.log(rows)
-	}
+export default deletedMessagesArray => before("updateRows", rowsController, function (args) {
+	if(isEnabled) {
 
-	const { textColor, backgroundColor, backgroundColorAlpha, gutterColor, gutterColorAlpha } = storage.colors;
-	const { 
-		useBackgroundColor, minimalistic, removeDismissButton, overrideIndicator, useIndicatorForDeleted,
-		useEphemeralForDeleted
-	} = storage.switches;
+		/* ---------- Fail-fast guards ---------- */
+		logger("row", 1)
+		if (!args?.length) return;
+		const raw = args[1];
+		logger("row", 2)
+		if (!raw) return;
 
-	const { deletedMessageBuffer, customIndicator } = storage.inputs;
-
-	const bufferSymbol = " • ";
-
-	function validateHex(input, defaultColor) {
-		if(!input) input = defaultColor;
-
-		// Handle cases where input might be a number or other non-string type
-	    const trimmedInput = String(input).trim(); // Convert to string first
-
-	    if (!trimmedInput) return defaultColor; // Check if it's empty after trimming
-
-		if (trimmedInput.startsWith("#")) {
-			const hexCode = trimmedInput.slice(1);
-
-			if (/^[0-9A-Fa-f]{6}$/.test(hexCode)) {
-				return "#" + hexCode.toUpperCase();
-			}
+		/* ---------- Parse rows once ---------- */
+		let rows;
+		let isString = false;
+		if (typeof raw === 'string') {
+			try { rows = JSON.parse(raw); isString = true; }
+			catch { return; } // garbage = bail
+		} 
+		else if (Array.isArray(raw)) {
+			rows = raw;
 		} 
 		else {
-			if (/^[0-9A-Fa-f]{6}$/.test(trimmedInput)) {
-				return "#" + trimmedInput.toUpperCase();
+			return; // unsupported shape
+		}
+
+		/* ---------- Nothing to paint? we GOEENN ---------- */
+		logger("row", 3)
+		const hasDeleted = rows.some(r => r?.message && deletedMessagesArray.has(r.message.id));
+		if (!hasDeleted) return;
+
+		/* ---------- Cache storage once ---------- */
+		const {
+			colors: { textColor, backgroundColor, backgroundColorAlpha, gutterColor, gutterColorAlpha },
+			switches: { useBackgroundColor, minimalistic, removeDismissButton, overrideIndicator, useIndicatorForDeleted, useEphemeralForDeleted },
+			inputs: { deletedMessageBuffer, customIndicator }
+		} = storage;
+
+		/* ---------- Helpers ---------- */
+		const toHex = (v, fallback) => {
+			const s = String(v || '').trim();
+			const hex = s.startsWith('#') ? s.slice(1) : s;
+			return /^[0-9a-fA-F]{6}$/.test(hex) ? `#${hex.toUpperCase()}` : fallback;
+		};
+
+		const bufferSymbol = ' • ';
+
+		logger("row", 4)
+		/* ---------- Mutate rows bery kewl ---------- */
+		for (const row of rows) {
+			if (row?.type !== 1) continue;
+			
+			const msg = row.message;
+			logger("row", 5)
+			if (!msg || !deletedMessagesArray.has(msg.id)) continue;
+
+			/* ---- indicator ---- */
+			logger("row", 6)
+			if (useIndicatorForDeleted && useEphemeralForDeleted) {
+				msg.ephemeralIndication.content[0].content = `${deletedMessageBuffer}${bufferSymbol}  `;
+			} 
+			else if (deletedMessageBuffer) {
+				msg.edited = deletedMessageBuffer;
+			}
+
+			/* ---- text colour ---- */
+			logger("row", 7)
+			if (!minimalistic) {
+				msg.textColor = ReactNative.processColor(toHex(textColor, '#E40303'));
+			}
+
+			/* ---- ephemeralIndication tweaks ---- */
+			logger("row", 8)
+			if (overrideIndicator) {
+				msg.ephemeralIndication.content = [];
+			} 
+			else if (!useIndicatorForDeleted && customIndicator) {
+				msg.ephemeralIndication.content[0].content = `${customIndicator}  `;
+			}
+
+			logger("row", 9)
+			if (removeDismissButton && msg.ephemeralIndication?.content) {
+				msg.ephemeralIndication?.content?.splice?.(1, 1);
+			}
+
+			logger("row", 10)
+			/* ---- background highlight ---- */
+			if (!minimalistic && useBackgroundColor) {
+				row.backgroundHighlight = {
+					backgroundColor: ReactNative.processColor(toHex(backgroundColor, '#FF2C2F') + backgroundColorAlpha),
+					gutterColor:   ReactNative.processColor(toHex(gutterColor,   '#FF2C2F') + gutterColorAlpha)
+				};
 			}
 		}
-		
-		return defaultColor || "#000";
+
+		/* ---------- Put back if originally was string ---------- */
+		if (isString) args[1] = JSON.stringify(rows);
+		else args[1] = rows;
+
+		/* else args[1] was mutated in place sooooo nothing to do */
+
+		return args;
+
 	}
 
-	function updateEphemeralIndication(object, removeDismissText=false, overrideText=false, onlyYouText, overrideArray=[]) {
-		
-		// Ensure object and object content exists and is an array
-		if (object && Array.isArray(object.content)) {
-			if(overrideText) {
-				if (onlyYouText != undefined) {
-					// ephemeralIndication.content[0]
-					// Update "Only you can see this"
-					object.content[0].content = onlyYouText+"  ";
-				}
-				else if(Array.isArray(overrideArray)) {
-					object.content = overrideArray
-				}
-			}
-			else {
-				if (removeDismissText) {
-					// Update "Dismiss message"
-					object?.content?.splice?.(1)
-				}				
-			}
-		}
-		object.helpArticleLink = ""
-		object.helpButtonAccessibilityLabel = "Hello, Antied here Again"
-
-		return object;
-	}
-
-	rows.forEach((row) => {
-		if(storage.debugUpdateRows) console.log(row);
-		if(row?.type == 1) {
-			if( deletedMessagesArray[row?.message?.id] ) {
-				if(deletedMessageBuffer?.length > 0 || deletedMessageBuffer != "") {
-					if(useIndicatorForDeleted && useEphemeralForDeleted) {
-						row.message.ephemeralIndication = updateEphemeralIndication(
-							row.message.ephemeralIndication, 
-							undefined,
-							true,
-							`${deletedMessageBuffer}${bufferSymbol}`
-						)
-					} 
-					else {
-					   row.message.edited = deletedMessageBuffer;						
-					}
-				}
-				
-				if(minimalistic == false) {
-					const characterColor = validateHex(textColor, "#E40303")
-					// transformObject Broke on latest,  because usernameOnClick linkColor function seem gone
-					// const appliedColor = transformObject(row?.message?.content, characterColor)
-					// row.message.content = appliedColor;
-					
-					// Apparently i find workaround for textcoloring yay
-					row.message.textColor = ReactNative.processColor(characterColor);
-				}
-				
-				if(removeDismissButton && typeof row?.message?.ephemeralIndication == "object") {
-					row.message.ephemeralIndication = updateEphemeralIndication(row.message.ephemeralIndication, true)
-				}
-
-				if(overrideIndicator) {
-					row.message.ephemeralIndication = { 
-						content: [], 
-						helpArticleLink: "", 
-						helpButtonAccessibilityLabel: "Hello, Antied here Again"
-					};
-				}
-				else if (!useIndicatorForDeleted) {
-					if(customIndicator?.length > 0 || customIndicator != "") {
-						row.message.ephemeralIndication = updateEphemeralIndication(
-							row.message.ephemeralIndication, 
-							undefined,
-							true,
-							customIndicator
-						)
-					}
-				}
-
-				row.message.obscureLearnMoreLabel = "Hello, Antied here";
-
-				if(minimalistic == false && useBackgroundColor == true) {
-					
-					const BG = validateHex( `${backgroundColor}`, "#FF2C2F" );
-					const GC = validateHex( `${gutterColor}`, "#FF2C2F");
-					
-					row.backgroundHighlight ??= {};
-					
-					row.backgroundHighlight = {
-						backgroundColor: ReactNative.processColor(`${BG}${backgroundColorAlpha}`),
-						gutterColor: ReactNative.processColor(`${GC}${gutterColorAlpha}`)
-					}
-				}
-			}
-		}
-	})
-
-	if(storage?.debugUpdateRows) {
-		console.log("AFTER")
-		console.log(isDirect)
-	  	console.log(rows)
-	}
-
-	
-	// simple safeguard if modification is faulty, we didnt push the modified rows
-	try {
-		if(isDirect) {
-			r[1] = rows;
-		}
-		else {
-        	r[1] = JSON.stringify(rows);
-		}
-    } catch (e) {
-        console.log("[ANTIED:updateRowsPatch] Failed to stringify modified rows. Aborting.", e);
-        return r; // we return as is
-    }
-
-
-	return r; // idk why i just return r[1] when originally its arrays of r
-});
+}, { suppressErrors: true });
 
 
 /*

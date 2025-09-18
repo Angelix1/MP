@@ -4,6 +4,7 @@ import { useProxy } from "@vendetta/storage";
 import { storage } from "@vendetta/plugin";
 import { semanticColors } from "@vendetta/ui";
 import { Forms, General } from "@vendetta/ui/components";
+import { getAssetIDByName } from "@vendetta/ui/assets"
 
 import PatchesComponent from './components/patches';
 import TextComponent from './components/texts';
@@ -150,13 +151,13 @@ export default function SettingPage() {
 							<FormRow
 								label={element?.label}
 								subLabel={element?.subLabel}
+								onPress={() => {
+									storage.setting[element?.id] = !storage.setting[element?.id];
+								}}
 								trailing={
-									<FormSwitch
-										value={storage.setting[element?.id]}
-										onValueChange={(value) => {
-											storage.setting[element?.id] = value
-										}}
-									/>
+									(storage.setting[element?.id] == true) ? 
+									(<FormRow.Icon source={getAssetIDByName("ic_arrow_down")} />) : 
+									(<FormRow.Icon source={getAssetIDByName("ic_arrow_right")} />)
 								}
 							/>
 							{

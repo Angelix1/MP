@@ -11,7 +11,7 @@ import { colorConverter, convert, openSheet, transparentBase64 } from "../../../
 
 const CustomColorPickerActionSheet = findByName("CustomColorPickerActionSheet");
 
-const { alphaToHex, hexAlphaToPercent, toPercentage, toDecimal, formatDecimal } = convert;
+const { alphaToHex, hexAlphaToPercent } = convert;
 
 const { ScrollView, View, Text, TouchableOpacity, TextInput, Pressable, Image, Animated } = General;
 const { FormLabel, FormIcon, FormArrow, FormRow, FormSwitch, FormSwitchRow, FormSection, FormDivider, FormInput, FormSliderRow } = Forms;
@@ -40,16 +40,18 @@ const customizeableColors = [
 export default function ColorPickComponent({ styles }) {
 	useProxy(storage)
 
+	const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
+
 	const [BGAlpha, setBGAlpha] = React.useState(
-		toDecimal( hexAlphaToPercent(storage?.colors?.backgroundColorAlpha) ?? 100 )
-	);
+		clamp((hexAlphaToPercent(storage?.colors?.backgroundColorAlpha) ?? 100), 0, 100)
+	)
 	const [gutterAlpha, setGutterAlpha] = React.useState(
-		toDecimal( hexAlphaToPercent(storage?.colors?.gutterColorAlpha) ?? 100 )
-	);
+		clamp((hexAlphaToPercent(storage?.colors?.gutterColorAlpha) ?? 100), 0, 100)
+	)
+
+	const [useText, setUseText] = React.useState(false);
 
 	const navigation = NavigationNative.useNavigation();
-
-	const parseColorPercentage = clr => alphaToHex(toPercentage(clr));
 
 	const handleSemRaw = prefix => {
 		if(!prefix) return null;
@@ -132,26 +134,32 @@ export default function ColorPickComponent({ styles }) {
 					<View style={
 						{ 
 							width: "2%",
-							backgroundColor: `${storage.colors.gutterColor}${parseColorPercentage(gutterAlpha)}`,
+							backgroundColor: `${storage.colors.gutterColor}${storage.colors.gutterColorAlpha}`,
 						}
 					}/>
+
+					{
+						// console.log(`${storage.colors.gutterColor}  ${storage.colors.gutterColor}`)
+					}
+					{
+						// console.log(`${storage.switches.useSemRawColors ? (handleSemRaw(storage?.colors?.semRawColorPrefix) || storage.colors.backgroundColor) : storage.colors.backgroundColor}${storage.colors.backgroundColorAlpha}`)
+					}
+					
 					<View style={
 						{ 
 							flex: 1,										
 							backgroundColor: `${
-								
 								storage.switches.useSemRawColors ? 
 									(handleSemRaw(storage?.colors?.semRawColorPrefix) || storage.colors.backgroundColor) :
 									storage.colors.backgroundColor
-
-							}${parseColorPercentage(BGAlpha)}`,
+							}${storage.colors.backgroundColorAlpha}`,
 							justifyContent: 'center', 
 							alignItems: 'center',
 						}
 					}>
 						<Text style={{
 								fontSize: 20, 
-								color: storage?.switches?.darkMode ? "white" : "black"
+								color: storage?.switches?.darkMode ? "black" : "white"
 							}
 						}> Low Effort Normal Example Message </Text>
 						<Text style={{
@@ -162,27 +170,73 @@ export default function ColorPickComponent({ styles }) {
 					</View>
 				</View>
 				
-				<FormSliderRow
-					label={`Background Color Alpha: ${toPercentage(BGAlpha)}%`}
-					value={BGAlpha}
-					style={{ width: "90%" }}
-					onValueChange={(v) => {
-						setBGAlpha(Number(formatDecimal(v)))
-						storage.colors.backgroundColorAlpha = alphaToHex(toPercentage(v));
+				<FormRow
+					label="Click to switch input type"
+					subLabel="Switch from slider to number and vise versa"
+					onPress={() => {
+						setUseText(!useText)
 					}}
 				/>
+
+				{
+					useText ? (<>
+							<FormInput
+								title={`Background Color Alpha: ${BGAlpha}%`}
+								keyboardType="numeric"
+								style={{ width: "90%" }}
+								value={`${BGAlpha}`}
+								onChange={(val) => {
+									val = clamp(val, 0, 100)
+
+									setBGAlpha(Number(val))
+									storage.colors.backgroundColorAlpha = alphaToHex(val);
+								}}
+							/>
+						</>) : (<>
+							<FormSliderRow
+								label={`Background Color Alpha: ${BGAlpha}%`}
+								value={BGAlpha}
+								minVal={0}
+								maxVal={100}
+								style={{ width: "90%" }}
+								onValueChange={(v) => {
+									setBGAlpha(Number(v))
+									storage.colors.backgroundColorAlpha = alphaToHex(v);
+								}}
+							/>
+						</>)
+				}
 				
 				<FormDivider/>
-				
-				<FormSliderRow
-					label={`Background Gutter Alpha: ${toPercentage(gutterAlpha)}%`}
-					value={gutterAlpha}
-					style={{ width: "90%" }}
-					onValueChange={(v) => {
-						setGutterAlpha(Number(formatDecimal(v)))
-						storage.colors.gutterColorAlpha = alphaToHex(toPercentage(v));
-					}}
-				/>
+
+				{
+					useText ? (<>
+							<FormInput
+								title={`Background Gutter Alpha: ${gutterAlpha}%`}
+								keyboardType="numeric"
+								style={{ width: "90%" }}
+								value={`${gutterAlpha}`}
+								onChange={(val) => {
+									val = clamp(val, 0, 100)
+
+									setGutterAlpha(Number(val))
+									storage.colors.gutterColorAlpha = alphaToHex(val);
+								}}
+							/>
+						</>) : (<>
+							<FormSliderRow
+								label={`Background Gutter Alpha: ${gutterAlpha}%`}
+								value={gutterAlpha}
+								minVal={0}
+								maxVal={100}
+								style={{ width: "90%" }}
+								onValueChange={(v) => {
+									setGutterAlpha(Number(v))
+									storage.colors.gutterColorAlpha = alphaToHex(v);
+								}}
+							/>
+						</>)
+				}
 			
 			</View>
 		</View>
