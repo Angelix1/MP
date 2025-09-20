@@ -46,14 +46,6 @@ const colorConverter = {
     return `#${f(0)}${f(8)}${f(4)}`;
   }
 };
-function createList(version, a = null, u = null, f = null) {
-  return {
-    version,
-    new: a,
-    updated: u,
-    fix: f
-  };
-}
 const transparentBase64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mJsrQAAAgwBAJ9P6qYAAAAASUVORK5CYII=";
 const convert = {
   alphaToHex: function(percentageValue) {
@@ -79,8 +71,6 @@ const tsStyle = function() {
   const s = plugin.storage.switches?.timestampStyle;
   return s && "tTdDfFR".includes(s) ? s : "R";
 };
-const logger$1 = function(...a) {
-};
 function fluxDispatchPatch(deletedMessageArray) {
   return patcher$1.before("dispatch", common.FluxDispatcher, function(args) {
     if (exports.isEnabled) {
@@ -96,6 +86,8 @@ function fluxDispatchPatch(deletedMessageArray) {
             return;
           const orig = ChannelMessages$2.get(ev.channelId)?.get(ev.id);
           if (!orig?.author?.id || !orig.author.username)
+            return;
+          if (orig?.author?.bot && orig?.type == 64)
             return;
           if (!orig.content && !orig.attachments?.length && !orig.embeds?.length)
             return;
@@ -116,52 +108,45 @@ function fluxDispatchPatch(deletedMessageArray) {
             return entry.message || args;
           }
           const guildId = ChannelStore$1.getChannel(orig.channel_id || ev.channelId)?.guild_id;
-          ev.type = "MESSAGE_UPDATE";
-          ev.channelId = orig.channel_id || ev.channelId;
-          ev.message = {
+          const newMessageObject = {
             ...orig,
             content: orig.content,
-            type: 0,
             channel_id: orig.channel_id || ev.channelId,
             guild_id: guildId,
-            timestamp: (/* @__PURE__ */ new Date()).toJSON(),
-            state: "SENT",
             was_deleted: true,
-            flags: cfg.switches.useEphemeralForDeleted ? 64 : orig.flags
+            message_reference: orig?.message_reference || orig?.messageReference || null
           };
-          ev.optimistic = false;
-          ev.sendMessageOptions = {};
-          ev.isPushNotification = false;
+          if (cfg.switches.useEphemeralForDeleted)
+            newMessageObject.flags = 64;
+          args[0] = {
+            type: "MESSAGE_UPDATE",
+            channelId: orig.channel_id || ev.channelId,
+            message: newMessageObject,
+            optimistic: false,
+            sendMessageOptions: {},
+            isPushNotification: false
+          };
           deletedMessageArray.set(ev.id, {
             message: args,
             stage: 1
           });
-          args[0] = ev;
           return args;
         }
         if (ev.type === "MESSAGE_UPDATE") {
-          logger$1("FX; MU", 1);
           if (!cfg.switches?.enableMU || ev.otherPluginBypass)
             return;
           const msg = ev.message;
-          logger$1("FX; MU", 2);
           if (!msg || msg.author?.bot)
             return;
           const chId = msg.channel_id || ev.channelId;
           const id = msg.id || ev.id;
-          logger$1(chId, " | ", id);
           const orig = MessageStore$1.getMessage(chId, id) || ChannelMessages$2.get(chId)?.get(id);
-          logger$1(orig);
-          logger$1("FX; MU", 3);
           if (!orig?.author?.id || !orig.author.username)
             return;
-          logger$1("FX; MU", 4);
           if (!orig.content && !orig.attachments?.length && !orig.embeds?.length)
             return;
-          logger$1("FX; MU", 5);
           if (!msg.content || msg.content === orig.content)
             return;
-          logger$1("FX; MU", 6);
           if (cfg.inputs?.ignoredUserList?.length) {
             const list = cfg.inputs.ignoredUserList;
             if (list.some(function(u) {
@@ -172,6 +157,7 @@ function fluxDispatchPatch(deletedMessageArray) {
           const editedTag = cfg.inputs?.editedMessageBuffer || "`[ EDITED ]`";
           const time = cfg.switches?.addTimestampForEdits ? `(<t:${Math.floor(now() / 1e3)}:${tsStyle()}>)` : null;
           const tsPos = cfg.misc?.timestampPos === "BEFORE";
+          const newMessage = msg || orig;
           let prefix = `${editedTag}`;
           prefix = time ? tsPos ? `${time} ${prefix}
 
@@ -180,16 +166,16 @@ function fluxDispatchPatch(deletedMessageArray) {
 ` : `${prefix}
 
 `;
-          logger$1("FX; MU", 7);
-          logger$1(orig.content.includes(editedTag), orig.content.includes(editedTag)?.length ?? "N/A");
-          logger$1(orig, "\n".msg);
-          ev.message = {
-            ...msg,
-            content: `${orig.content} ${prefix}${msg.content}`,
-            guild_id: ChannelStore$1.getChannel(chId)?.guild_id ?? msg.guild_id,
-            edited_timestamp: "invalid_timestamp"
+          args[0] = {
+            type: "MESSAGE_UPDATE",
+            message: {
+              ...newMessage,
+              content: `${orig.content} ${prefix}${msg.content}`,
+              guild_id: ChannelStore$1.getChannel(chId)?.guild_id ?? msg.guild_id,
+              edited_timestamp: "invalid_timestamp",
+              message_reference: msg?.message_reference || orig?.messageReference || null
+            }
           };
-          args[0] = ev;
           return args;
         }
       } catch (e) {
@@ -199,8 +185,6 @@ function fluxDispatchPatch(deletedMessageArray) {
     }
   });
 }const Message = metro.findByProps("sendMessage", "startEditMessage");
-const logger = function(...a) {
-};
 function selfEditPatch() {
   return patcher$1.before("startEditMessage", Message, function(args) {
     if (!exports.isEnabled)
@@ -212,14 +196,6 @@ function selfEditPatch() {
     const lats = msg.split(regexPattern);
     const f = lats[lats.length - 1];
     args[2] = f;
-    logger(`[ANTIED > self_edit]
-Modified: ${args[2]}
-Orig BELOW
-`, [
-      channelId,
-      messageId,
-      msg
-    ], regexPattern);
   });
 }const rowsController = metro.findByProps("updateRows", "getConstants") ?? metro.findByProps("updateRows");
 if (!rowsController) {
@@ -390,6 +366,7 @@ function actionsheet(deletedMessageArray) {
                       type: "MESSAGE_UPDATE",
                       message: {
                         ...message,
+                        message_reference: message?.message_reference || message?.messageReference || null,
                         content: `${targetMessage}`,
                         guild_id: ChannelStore.getChannel(originalMessage.channel_id).guild_id
                       },
@@ -440,121 +417,10 @@ function actionsheet(deletedMessageArray) {
       }
     }
   });
-}const { ScrollView: ScrollView$9, View: View$8, Text: Text$8, TouchableOpacity: TouchableOpacity$8, TextInput: TextInput$8, Pressable: Pressable$5, Image: Image$7, Animated: Animated$7 } = components.General;
-const { FormLabel: FormLabel$7, FormIcon: FormIcon$8, FormArrow: FormArrow$7, FormRow: FormRow$b, FormSwitch: FormSwitch$8, FormSwitchRow: FormSwitchRow$7, FormSection: FormSection$7, FormDivider: FormDivider$a, FormInput: FormInput$7, FormSliderRow: FormSliderRow$4 } = components.Forms;
-const togglePatch = [
-  {
-    id: "enableMD",
-    default: true,
-    label: "Toggle Message Delete",
-    subLabel: "Logs deleted message"
-  },
-  {
-    id: "enableMU",
-    default: true,
-    label: "Toggle Message Update",
-    subLabel: "Logs edited message"
-  }
-];
-function PatchesComponent({ styles }) {
-  storage.useProxy(plugin.storage);
-  return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(View$8, {
-    style: [
-      styles.subText
-    ]
-  }, togglePatch?.map(function(obj, index) {
-    return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(FormRow$b, {
-      label: obj?.label,
-      subLabel: obj?.subLabel,
-      leading: obj?.icon && /* @__PURE__ */ React.createElement(FormIcon$8, {
-        style: {
-          opacity: 1
-        },
-        source: Assets.getAssetIDByName(obj?.icon)
-      }),
-      trailing: "id" in obj ? /* @__PURE__ */ React.createElement(FormSwitch$8, {
-        value: plugin.storage?.switches[obj?.id] ?? obj?.default,
-        onValueChange: function(value) {
-          return plugin.storage.switches[obj?.id] = value;
-        }
-      }) : void 0
-    }), index !== togglePatch?.length - 1 && /* @__PURE__ */ React.createElement(FormDivider$a, null));
-  })));
-}const { ScrollView: ScrollView$8, View: View$7, Text: Text$7, TouchableOpacity: TouchableOpacity$7, TextInput: TextInput$7, Pressable: Pressable$4, Image: Image$6, Animated: Animated$6 } = components.General;
-const { FormLabel: FormLabel$6, FormIcon: FormIcon$7, FormArrow: FormArrow$6, FormRow: FormRow$a, FormSwitch: FormSwitch$7, FormSwitchRow: FormSwitchRow$6, FormSection: FormSection$6, FormDivider: FormDivider$9, FormInput: FormInput$6, FormSliderRow: FormSliderRow$3 } = components.Forms;
-const customizedableTexts = [
-  {
-    id: "deletedMessageBuffer",
-    title: "Customize Deleted Message",
-    type: "default",
-    placeholder: "This message is deleted"
-  },
-  {
-    id: "editedMessageBuffer",
-    title: "Customize Edited Separator",
-    type: "default",
-    placeholder: "`[ EDITED ]`"
-  },
-  {
-    id: "historyToast",
-    title: "Customize Remove History Toast Message",
-    type: "default",
-    placeholder: "History Removed"
-  },
-  {
-    id: "customIndicator",
-    title: "Customize Ephemeral 'Only You Can See This' Indicator (if useIndicatorForDeletedMessage enabled this feature be overriden)",
-    type: "default",
-    placeholder: "Only you can see this \u2022 "
-  }
-];
-function TextComponent({ styles }) {
-  storage.useProxy(plugin.storage);
-  return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(View$7, {
-    style: [
-      styles.subText
-    ]
-  }, customizedableTexts?.map(function(obj, index) {
-    return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(FormInput$6, {
-      title: obj?.title,
-      keyboardType: obj?.type,
-      placeholder: obj?.placeholder?.toString(),
-      value: plugin.storage?.inputs[obj.id] ?? obj?.placeholder,
-      onChange: function(val) {
-        return plugin.storage.inputs[obj.id] = val.toString();
-      }
-    }), index !== customizedableTexts.length - 1 && /* @__PURE__ */ React.createElement(FormDivider$9, null));
-  }), /* @__PURE__ */ React.createElement(FormInput$6, {
-    title: "Customize Plugin Name",
-    keyboardType: "default",
-    placeholder: plugin.storage?.inputs?.customPluginName || _vendetta.plugin?.manifest?.name || "ANTIED",
-    value: plugin.storage?.inputs?.customPluginName,
-    onChange: function(val) {
-      plugin.storage.inputs.customPluginName = val.toString();
-      _vendetta.plugin.manifest.name = val.toString();
-    }
-  }), /* @__PURE__ */ React.createElement(FormDivider$9, null), /* @__PURE__ */ React.createElement(FormRow$a, {
-    label: `Current Used Icon - ${plugin.storage?.misc?.editHistoryIcon || "ic_edit_24px"}`,
-    subLabel: "Icon for Message History Removed toast",
-    trailing: /* @__PURE__ */ React.createElement(FormIcon$7, {
-      style: {
-        opacity: 1
-      },
-      source: Assets.getAssetIDByName(plugin.storage?.misc?.editHistoryIcon)
-    })
-  }), /* @__PURE__ */ React.createElement(FormDivider$9, null), /* @__PURE__ */ React.createElement(FormInput$6, {
-    title: "Icon Name",
-    keyboardType: "default",
-    placeholder: "ic_edit_24px",
-    value: plugin.storage?.misc?.editHistoryIcon || "ic_edit_24px",
-    onChange: function(val) {
-      return plugin.storage.misc.editHistoryIcon = val.toString();
-    }
-  })));
-}const { FormRow: FormRow$9 } = components.Forms;
+}const { FormRow: FormRow$d } = components.Forms;
 const RowCheckmark = metro.findByName("RowCheckmark");
 function SelectRow({ label, subLabel, selected, onPress }) {
-  return /* @__PURE__ */ React.createElement(FormRow$9, {
+  return /* @__PURE__ */ React.createElement(FormRow$d, {
     label,
     subLabel,
     trailing: /* @__PURE__ */ React.createElement(RowCheckmark, {
@@ -562,81 +428,6 @@ function SelectRow({ label, subLabel, selected, onPress }) {
     }),
     onPress
   });
-}const timestamps = [
-  {
-    type: "t",
-    label: "Short Time",
-    subLabel: "16:20"
-  },
-  {
-    type: "T",
-    label: "Long Time",
-    subLabel: "16:20:30"
-  },
-  {
-    type: "d",
-    label: "Short Date",
-    subLabel: "20/04/2021"
-  },
-  {
-    type: "D",
-    label: "Long Date",
-    subLabel: "20 April 2021"
-  },
-  {
-    type: "f",
-    label: "Short Date/Time",
-    subLabel: "20 April 2021 16:20"
-  },
-  {
-    type: "F",
-    label: "Long Date/Time",
-    subLabel: "Tuesday, 20 April 2021 16:20"
-  },
-  {
-    type: "R",
-    label: "Relative Time",
-    subLabel: "2 months ago"
-  }
-];
-const timestampsPosition = [
-  {
-    label: "Before",
-    subLabel: "Old Message (2 minutes ago) [Edited] New Message",
-    key: "BEFORE"
-  },
-  {
-    label: "After",
-    subLabel: "Old Message [Edited] (2 minutes ago) New Message",
-    key: "AFTER"
-  }
-];
-const { FormRow: FormRow$8, FormDivider: FormDivider$8 } = components.Forms;
-function TimestampComponent() {
-  storage.useProxy(plugin.storage);
-  return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(FormRow$8, {
-    label: "Timestamp Style"
-  }), timestamps.map(function({ type, label, subLabel }, i) {
-    return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(SelectRow, {
-      label,
-      subLabel: `Example: ${subLabel}`,
-      selected: plugin.storage.switches.timestampStyle == type,
-      onPress: function() {
-        return plugin.storage.switches.timestampStyle = type;
-      }
-    }), i !== timestamps.length - 1 && /* @__PURE__ */ React.createElement(FormDivider$8, null));
-  }), /* @__PURE__ */ React.createElement(FormDivider$8, null), /* @__PURE__ */ React.createElement(FormRow$8, {
-    label: "Timestamp Position"
-  }), timestampsPosition.map(function({ key, label, subLabel }, i) {
-    return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(SelectRow, {
-      label,
-      subLabel: `Example: ${subLabel}`,
-      selected: plugin.storage.misc?.timestampPos == key,
-      onPress: function() {
-        return plugin.storage.misc.timestampPos = key;
-      }
-    }), i !== timestampsPosition.length - 1 && /* @__PURE__ */ React.createElement(FormDivider$8, null));
-  }));
 }const SC = Object.keys(ui.semanticColors).map(function(x) {
   return `semanticColors.${x}`;
 });
@@ -647,10 +438,10 @@ const semRaw = [
   ...SC,
   ...RC
 ];
-const { FormRow: FormRow$7, FormDivider: FormDivider$7, ScrollView: ScrollView$7 } = components.Forms;
+const { FormRow: FormRow$c, FormDivider: FormDivider$c, ScrollView: ScrollView$a } = components.Forms;
 function SemRawComponent() {
   storage.useProxy(plugin.storage);
-  return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(ScrollView$7, null, /* @__PURE__ */ React.createElement(FormRow$7, {
+  return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(ScrollView$a, null, /* @__PURE__ */ React.createElement(FormRow$c, {
     label: "Choose Color"
   }), semRaw.map(function(NAME, i) {
     return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(SelectRow, {
@@ -659,12 +450,12 @@ function SemRawComponent() {
       onPress: function() {
         return plugin.storage.colors.semRawColorPrefix = NAME;
       }
-    }), i !== semRaw.length - 1 && /* @__PURE__ */ React.createElement(FormDivider$7, null));
+    }), i !== semRaw.length - 1 && /* @__PURE__ */ React.createElement(FormDivider$c, null));
   })));
 }const CustomColorPickerActionSheet = metro.findByName("CustomColorPickerActionSheet");
 const { alphaToHex, hexAlphaToPercent } = convert;
-const { ScrollView: ScrollView$6, View: View$6, Text: Text$6, TouchableOpacity: TouchableOpacity$6, TextInput: TextInput$6, Pressable: Pressable$3, Image: Image$5, Animated: Animated$5 } = components.General;
-const { FormLabel: FormLabel$5, FormIcon: FormIcon$6, FormArrow: FormArrow$5, FormRow: FormRow$6, FormSwitch: FormSwitch$6, FormSwitchRow: FormSwitchRow$5, FormSection: FormSection$5, FormDivider: FormDivider$6, FormInput: FormInput$5, FormSliderRow: FormSliderRow$2 } = components.Forms;
+const { ScrollView: ScrollView$9, View: View$9, Text: Text$9, TouchableOpacity: TouchableOpacity$9, TextInput: TextInput$9, Pressable: Pressable$6, Image: Image$8, Animated: Animated$8 } = components.General;
+const { FormLabel: FormLabel$8, FormIcon: FormIcon$8, FormArrow: FormArrow$8, FormRow: FormRow$b, FormSwitch: FormSwitch$9, FormSwitchRow: FormSwitchRow$7, FormSection: FormSection$8, FormDivider: FormDivider$b, FormInput: FormInput$9, FormSliderRow: FormSliderRow$4 } = components.Forms;
 const customizeableColors = [
   {
     id: "textColor",
@@ -704,17 +495,17 @@ function ColorPickComponent({ styles }) {
       return ui.rawColors[col];
     }
   };
-  return /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(View$6, {
+  return /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(View$9, {
     style: [
       styles.subText
     ]
-  }, plugin.storage?.switches?.useSemRawColors && /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(FormRow$6, {
+  }, plugin.storage?.switches?.useSemRawColors && /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(FormRow$b, {
     label: "Semantic & Raw Colors",
     subLabel: "If you enabled [Use Semantic/Raw Color], you can pick the colors from here",
-    leading: /* @__PURE__ */ common.React.createElement(FormRow$6.Icon, {
+    leading: /* @__PURE__ */ common.React.createElement(FormRow$b.Icon, {
       source: Assets.getAssetIDByName("ic_audit_log_24px")
     }),
-    trailing: FormRow$6.Arrow,
+    trailing: FormRow$b.Arrow,
     onPress: function() {
       return navigation.push("VendettaCustomPage", {
         title: "Semantic & Raw Colors",
@@ -733,13 +524,13 @@ function ColorPickComponent({ styles }) {
         }
       });
     };
-    return /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(FormRow$6, {
+    return /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(FormRow$b, {
       label: obj?.label,
       subLabel: obj?.subLabel || "Click to Update",
       onPress: whenPressed,
-      trailing: /* @__PURE__ */ common.React.createElement(TouchableOpacity$6, {
+      trailing: /* @__PURE__ */ common.React.createElement(TouchableOpacity$9, {
         onPress: whenPressed
-      }, /* @__PURE__ */ common.React.createElement(Image$5, {
+      }, /* @__PURE__ */ common.React.createElement(Image$8, {
         source: {
           uri: transparentBase64
         },
@@ -753,22 +544,22 @@ function ColorPickComponent({ styles }) {
         }
       }))
     }));
-  }), /* @__PURE__ */ common.React.createElement(View$6, {
+  }), /* @__PURE__ */ common.React.createElement(View$9, {
     style: styles.container
-  }, /* @__PURE__ */ common.React.createElement(FormRow$6, {
+  }, /* @__PURE__ */ common.React.createElement(FormRow$b, {
     style: {
       justifyContent: "center",
       alignItems: "center"
     },
     label: `Preview Style: ${plugin.storage?.switches?.darkMode ? "Dark" : "Light"} Mode`,
     subLabel: `Click to Switch Mode`,
-    trailing: /* @__PURE__ */ common.React.createElement(FormSwitch$6, {
+    trailing: /* @__PURE__ */ common.React.createElement(FormSwitch$9, {
       value: plugin.storage?.switches?.darkMode ?? true,
       onValueChange: function(value) {
         return plugin.storage.switches.darkMode = value;
       }
     })
-  }), /* @__PURE__ */ common.React.createElement(View$6, {
+  }), /* @__PURE__ */ common.React.createElement(View$9, {
     style: [
       styles.row,
       styles.border,
@@ -777,35 +568,35 @@ function ColorPickComponent({ styles }) {
         marginRight: 10
       }
     ]
-  }, /* @__PURE__ */ common.React.createElement(View$6, {
+  }, /* @__PURE__ */ common.React.createElement(View$9, {
     style: {
       width: "2%",
       backgroundColor: `${plugin.storage.colors.gutterColor}${plugin.storage.colors.gutterColorAlpha}`
     }
-  }), /* @__PURE__ */ common.React.createElement(View$6, {
+  }), /* @__PURE__ */ common.React.createElement(View$9, {
     style: {
       flex: 1,
       backgroundColor: `${plugin.storage.switches.useSemRawColors ? handleSemRaw(plugin.storage?.colors?.semRawColorPrefix) || plugin.storage.colors.backgroundColor : plugin.storage.colors.backgroundColor}${plugin.storage.colors.backgroundColorAlpha}`,
       justifyContent: "center",
       alignItems: "center"
     }
-  }, /* @__PURE__ */ common.React.createElement(Text$6, {
+  }, /* @__PURE__ */ common.React.createElement(Text$9, {
     style: {
       fontSize: 20,
       color: plugin.storage?.switches?.darkMode ? "black" : "white"
     }
-  }, " Low Effort Normal Example Message "), /* @__PURE__ */ common.React.createElement(Text$6, {
+  }, " Low Effort Normal Example Message "), /* @__PURE__ */ common.React.createElement(Text$9, {
     style: {
       fontSize: 20,
       color: plugin.storage.colors.textColor || "#000000"
     }
-  }, " Low Effort Deleted Example Message "))), /* @__PURE__ */ common.React.createElement(FormRow$6, {
+  }, " Low Effort Deleted Example Message "))), /* @__PURE__ */ common.React.createElement(FormRow$b, {
     label: "Click to switch input type",
     subLabel: "Switch from slider to number and vise versa",
     onPress: function() {
       setUseText(!useText);
     }
-  }), useText ? /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(FormInput$5, {
+  }), useText ? /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(FormInput$9, {
     title: `Background Color Alpha: ${BGAlpha}%`,
     keyboardType: "numeric",
     style: {
@@ -817,7 +608,7 @@ function ColorPickComponent({ styles }) {
       setBGAlpha(Number(val));
       plugin.storage.colors.backgroundColorAlpha = alphaToHex(val);
     }
-  })) : /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(FormSliderRow$2, {
+  })) : /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(FormSliderRow$4, {
     label: `Background Color Alpha: ${BGAlpha}%`,
     value: BGAlpha,
     minVal: 0,
@@ -829,7 +620,7 @@ function ColorPickComponent({ styles }) {
       setBGAlpha(Number(v));
       plugin.storage.colors.backgroundColorAlpha = alphaToHex(v);
     }
-  })), /* @__PURE__ */ common.React.createElement(FormDivider$6, null), useText ? /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(FormInput$5, {
+  })), /* @__PURE__ */ common.React.createElement(FormDivider$b, null), useText ? /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(FormInput$9, {
     title: `Background Gutter Alpha: ${gutterAlpha}%`,
     keyboardType: "numeric",
     style: {
@@ -841,7 +632,7 @@ function ColorPickComponent({ styles }) {
       setGutterAlpha(Number(val));
       plugin.storage.colors.gutterColorAlpha = alphaToHex(val);
     }
-  })) : /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(FormSliderRow$2, {
+  })) : /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(FormSliderRow$4, {
     label: `Background Gutter Alpha: ${gutterAlpha}%`,
     value: gutterAlpha,
     minVal: 0,
@@ -854,26 +645,117 @@ function ColorPickComponent({ styles }) {
       plugin.storage.colors.gutterColorAlpha = alphaToHex(v);
     }
   })))));
-}const { ScrollView: ScrollView$5, View: View$5, Text: Text$5, TouchableOpacity: TouchableOpacity$5, TextInput: TextInput$5, Image: Image$4, Animated: Animated$4 } = components.General;
-const { FormLabel: FormLabel$4, FormIcon: FormIcon$5, FormArrow: FormArrow$4, FormRow: FormRow$5, FormSwitch: FormSwitch$5, FormSwitchRow: FormSwitchRow$4, FormSection: FormSection$4, FormDivider: FormDivider$5, FormInput: FormInput$4 } = components.Forms;
+}const { ScrollView: ScrollView$8, View: View$8, Text: Text$8, TouchableOpacity: TouchableOpacity$8, TextInput: TextInput$8, Pressable: Pressable$5, Image: Image$7, Animated: Animated$7 } = components.General;
+const { FormRow: FormRow$a, FormIcon: FormIcon$7, FormSwitch: FormSwitch$8, FormDivider: FormDivider$a } = components.Forms;
+const HelpMessage$1 = metro.findByName("HelpMessage");
+const customizeableSwitches = [
+  {
+    id: "minimalistic",
+    default: true,
+    label: "Minimalistic Settings",
+    subLabel: "Removes all Styling (Enabled by Default)"
+  },
+  {
+    id: "useBackgroundColor",
+    default: false,
+    label: "Enable Background Color",
+    subLabel: "Background Color for Deleted Message, similiar to Mention but Customizeable"
+  },
+  {
+    id: "useSemRawColors",
+    default: false,
+    label: "Use Semantic/Raw Color",
+    subLabel: "Use Semantic/Raw Color instead of Custom Color for Background Color, doesn't applied to GutterColor"
+  },
+  {
+    id: "ignoreBots",
+    default: false,
+    label: "Ignore Bots",
+    subLabel: "Ignore bot deleted messages."
+  },
+  {
+    id: "removeDismissButton",
+    default: false,
+    label: "Remove Dissmiss Message",
+    subLabel: "Remove clickable Dismiss Message text from deleted ephemeral messages."
+  },
+  {
+    id: "addTimestampForEdits",
+    default: false,
+    label: "Add Edit Timestamp",
+    subLabel: "Add Timestamp for edited messages."
+  },
+  {
+    id: "useEphemeralForDeleted",
+    default: true,
+    label: "Use Ephemeral for Deleted",
+    subLabel: "When messages got deleted it'll use ephemeral instead of normal message (Enabled by Default)."
+  },
+  {
+    id: "useIndicatorForDeleted",
+    default: false,
+    label: "use Indicator For 'This Message is Deleted'",
+    subLabel: "Use 'only you can see this' for deleted message info, instead of (edited)"
+  },
+  {
+    id: "overrideIndicator",
+    default: false,
+    label: "Remove Ephemeral Indicator",
+    subLabel: "When messages got deleted it'll have indicator under the text like 'only you can see this' and this remove those."
+  },
+  {
+    id: "useCustomPluginName",
+    default: false,
+    label: "Override Plugin Name with custom one",
+    subLabel: "Replace plugin name with custom one when enabled"
+  }
+];
+function CustomizationComponent({ styles }) {
+  storage.useProxy(plugin.storage);
+  return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(View$8, {
+    style: [
+      styles.subText
+    ]
+  }, plugin.storage?.switches.minimalistic && /* @__PURE__ */ React.createElement(HelpMessage$1, {
+    messageType: 0
+  }, 'To use styling, disable "Minimalistic" option'), customizeableSwitches?.map(function(obj, index) {
+    return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(FormRow$a, {
+      label: obj?.label,
+      subLabel: obj?.subLabel,
+      leading: obj?.icon && /* @__PURE__ */ React.createElement(FormIcon$7, {
+        style: {
+          opacity: 1
+        },
+        source: Assets.getAssetIDByName(obj?.icon)
+      }),
+      trailing: "id" in obj ? /* @__PURE__ */ React.createElement(FormSwitch$8, {
+        value: plugin.storage?.switches[obj?.id] ?? obj?.default,
+        onValueChange: function(value) {
+          return plugin.storage.switches[obj?.id] = value;
+        }
+      }) : void 0
+    }), index !== customizeableSwitches?.length - 1 && /* @__PURE__ */ React.createElement(FormDivider$a, null));
+  })));
+}const { ScrollView: ScrollView$7, View: View$7, Text: Text$7, TouchableOpacity: TouchableOpacity$7, TextInput: TextInput$7, Image: Image$6, Animated: Animated$6 } = components.General;
+const { FormLabel: FormLabel$7, FormIcon: FormIcon$6, FormArrow: FormArrow$7, FormRow: FormRow$9, FormSwitch: FormSwitch$7, FormSwitchRow: FormSwitchRow$6, FormSection: FormSection$7, FormDivider: FormDivider$9, FormInput: FormInput$8 } = components.Forms;
 const useIsFocused$1 = metro.findByName("useIsFocused");
 const { BottomSheetFlatList: BottomSheetFlatList$1 } = metro.findByProps("BottomSheetScrollView");
-const UserStore = metro.findByStoreName("UserStore");
+const UserStore$1 = metro.findByStoreName("UserStore");
 const Profiles = metro.findByProps("showUserProfile");
 Assets.getAssetIDByName("ic_add_24px");
 Assets.getAssetIDByName("ic_arrow");
 Assets.getAssetIDByName("ic_minus_circle_24px");
 Assets.getAssetIDByName("Check");
 Assets.getAssetIDByName("Small");
-function addIcon$2(i) {
-  return /* @__PURE__ */ common.React.createElement(FormIcon$5, {
+function addIcon$1(i) {
+  return /* @__PURE__ */ common.React.createElement(FormIcon$6, {
     style: {
       opacity: 1
     },
     source: Assets.getAssetIDByName(i)
   });
 }
-const styles$3 = common.stylesheet.createThemedStyleSheet({
+const styles$2 = common.stylesheet.createThemedStyleSheet({
   basicPad: {
     paddingRight: 10,
     marginBottom: 10,
@@ -943,16 +825,16 @@ const styles$3 = common.stylesheet.createThemedStyleSheet({
 function AddUser({ index }) {
   storage.useProxy(plugin.storage);
   let object = plugin.storage?.inputs?.ignoredUserList[index];
-  const animatedButtonScale = common.React.useRef(new Animated$4.Value(1)).current;
+  const animatedButtonScale = common.React.useRef(new Animated$6.Value(1)).current;
   const onPressIn = function() {
-    return Animated$4.spring(animatedButtonScale, {
+    return Animated$6.spring(animatedButtonScale, {
       toValue: 1.1,
       duration: 10,
       useNativeDriver: true
     }).start();
   };
   const onPressOut = function() {
-    return Animated$4.spring(animatedButtonScale, {
+    return Animated$6.spring(animatedButtonScale, {
       toValue: 1,
       duration: 250,
       useNativeDriver: true
@@ -965,8 +847,8 @@ function AddUser({ index }) {
       }
     ]
   };
-  let user = UserStore.getUser(object?.id);
-  let cached = Object.values(UserStore.getUsers());
+  let user = UserStore$1.getUser(object?.id);
+  let cached = Object.values(UserStore$1.getUsers());
   if (!user)
     user = cached.find(function(u) {
       return u?.username == object?.username;
@@ -977,19 +859,19 @@ function AddUser({ index }) {
     });
   const navigation = common.NavigationNative.useNavigation();
   useIsFocused$1();
-  return /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(ScrollView$5, null, /* @__PURE__ */ common.React.createElement(View$5, {
+  return /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(ScrollView$7, null, /* @__PURE__ */ common.React.createElement(View$7, {
     style: [
-      styles$3.basicPad,
-      styles$3.sub
+      styles$2.basicPad,
+      styles$2.sub
     ]
-  }, /* @__PURE__ */ common.React.createElement(FormSection$4, {
+  }, /* @__PURE__ */ common.React.createElement(FormSection$7, {
     title: "User Setting",
     style: [
-      styles$3.header
+      styles$2.header
     ]
-  }, /* @__PURE__ */ common.React.createElement(FormRow$5, {
+  }, /* @__PURE__ */ common.React.createElement(FormRow$9, {
     label: "Find User Id or Username",
-    leading: addIcon$2("ic_search"),
+    leading: addIcon$1("ic_search"),
     onPress: function() {
       if (user && !object.username?.length) {
         object.username = user.username;
@@ -999,38 +881,38 @@ function AddUser({ index }) {
         toasts.showToast("Cannot find User Id/Username.");
       }
     }
-  }), /* @__PURE__ */ common.React.createElement(FormInput$4, {
+  }), /* @__PURE__ */ common.React.createElement(FormInput$8, {
     title: "User Username | Case Sensitive",
     placeholder: "Missing No",
     value: object?.username,
     onChange: function(v) {
       return object.username = v;
     }
-  }), /* @__PURE__ */ common.React.createElement(FormInput$4, {
+  }), /* @__PURE__ */ common.React.createElement(FormInput$8, {
     title: "User Id",
     placeholder: "Missing No",
     value: object?.id,
     onChange: function(v) {
       return object.id = v;
     }
-  }), /* @__PURE__ */ common.React.createElement(FormRow$5, {
+  }), /* @__PURE__ */ common.React.createElement(FormRow$9, {
     label: "User is webhook?",
     subLabel: "User is webhook or system, and not BOT or Normal User.",
-    leading: addIcon$2("ic_webhook_24px"),
-    trailing: /* @__PURE__ */ common.React.createElement(FormSwitch$5, {
+    leading: addIcon$1("ic_webhook_24px"),
+    trailing: /* @__PURE__ */ common.React.createElement(FormSwitch$7, {
       value: object?.isWebhook || false,
       onValueChange: function(value) {
         return object.isWebhook = value;
       }
     })
-  })), user && /* @__PURE__ */ common.React.createElement(View$5, {
+  })), user && /* @__PURE__ */ common.React.createElement(View$7, {
     style: [
-      styles$3.container,
+      styles$2.container,
       {
         paddingBottom: 10
       }
     ]
-  }, /* @__PURE__ */ common.React.createElement(TouchableOpacity$5, {
+  }, /* @__PURE__ */ common.React.createElement(TouchableOpacity$7, {
     onPress: function() {
       return Profiles.showUserProfile?.({
         userId: user?.id
@@ -1038,9 +920,9 @@ function AddUser({ index }) {
     },
     onPressIn,
     onPressOut
-  }, /* @__PURE__ */ common.React.createElement(Animated$4.View, {
+  }, /* @__PURE__ */ common.React.createElement(Animated$6.View, {
     style: animatedScaleStyle
-  }, /* @__PURE__ */ common.React.createElement(Image$4, {
+  }, /* @__PURE__ */ common.React.createElement(Image$6, {
     source: {
       uri: user?.getAvatarURL?.()?.replace?.("webp", "png") || "https://cdn.discordapp.com/embed/avatars/2.png"
     },
@@ -1049,21 +931,21 @@ function AddUser({ index }) {
       height: 128,
       borderRadius: 10
     }
-  }))), /* @__PURE__ */ common.React.createElement(View$5, {
-    style: styles$3.textContainer
-  }, /* @__PURE__ */ common.React.createElement(TouchableOpacity$5, {
+  }))), /* @__PURE__ */ common.React.createElement(View$7, {
+    style: styles$2.textContainer
+  }, /* @__PURE__ */ common.React.createElement(TouchableOpacity$7, {
     onPress: function() {
       return Profiles.showUserProfile({
         userId: user?.id
       });
     }
-  }, /* @__PURE__ */ common.React.createElement(Text$5, {
+  }, /* @__PURE__ */ common.React.createElement(Text$7, {
     style: [
-      styles$3.mainText,
-      styles$3.header
+      styles$2.mainText,
+      styles$2.header
     ]
-  }, user?.username || object?.username || "No Name"))), /* @__PURE__ */ common.React.createElement(FormDivider$5, null)), /* @__PURE__ */ common.React.createElement(FormRow$5, {
-    label: /* @__PURE__ */ common.React.createElement(FormLabel$4, {
+  }, user?.username || object?.username || "No Name"))), /* @__PURE__ */ common.React.createElement(FormDivider$9, null)), /* @__PURE__ */ common.React.createElement(FormRow$9, {
+    label: /* @__PURE__ */ common.React.createElement(FormLabel$7, {
       text: "Remove User from Ignore List",
       style: {
         color: ui.rawColors.RED_400
@@ -1074,10 +956,10 @@ function AddUser({ index }) {
       plugin.storage?.inputs?.ignoredUserList?.splice(index, 1);
     }
   }))));
-}const { ScrollView: ScrollView$4, View: View$4, Text: Text$4, TouchableOpacity: TouchableOpacity$4, TextInput: TextInput$4 } = components.General;
-const { FormLabel: FormLabel$3, FormIcon: FormIcon$4, FormArrow: FormArrow$3, FormRow: FormRow$4, FormSwitch: FormSwitch$4, FormSwitchRow: FormSwitchRow$3, FormSection: FormSection$3, FormDivider: FormDivider$4, FormInput: FormInput$3 } = components.Forms;
-function addIcon$1(i, dr) {
-  return /* @__PURE__ */ common.React.createElement(FormIcon$4, {
+}const { ScrollView: ScrollView$6, View: View$6, Text: Text$6, TouchableOpacity: TouchableOpacity$6, TextInput: TextInput$6 } = components.General;
+const { FormLabel: FormLabel$6, FormIcon: FormIcon$5, FormArrow: FormArrow$6, FormRow: FormRow$8, FormSwitch: FormSwitch$6, FormSwitchRow: FormSwitchRow$5, FormSection: FormSection$6, FormDivider: FormDivider$8, FormInput: FormInput$7 } = components.Forms;
+function addIcon(i, dr) {
+  return /* @__PURE__ */ common.React.createElement(FormIcon$5, {
     style: {
       opacity: 1
     },
@@ -1093,7 +975,7 @@ Assets.getAssetIDByName("ic_minus_circle_24px");
 Assets.getAssetIDByName("Check");
 Assets.getAssetIDByName("Small");
 const Trash = Assets.getAssetIDByName("ic_trash_24px");
-const styles$2 = common.stylesheet.createThemedStyleSheet({
+const styles$1 = common.stylesheet.createThemedStyleSheet({
   basicPad: {
     paddingRight: 10,
     marginBottom: 10,
@@ -1163,23 +1045,23 @@ function ListUsers() {
       });
     }
   };
-  return /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(ScrollView$4, {
+  return /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(ScrollView$6, {
     style: {
       flex: 1
     }
-  }, /* @__PURE__ */ common.React.createElement(FormSection$3, {
+  }, /* @__PURE__ */ common.React.createElement(FormSection$6, {
     style: [
-      styles$2.header,
-      styles$2.basicPad
+      styles$1.header,
+      styles$1.basicPad
     ]
-  }, /* @__PURE__ */ common.React.createElement(View$4, {
+  }, /* @__PURE__ */ common.React.createElement(View$6, {
     style: [
-      styles$2.header,
-      styles$2.sub
+      styles$1.header,
+      styles$1.sub
     ]
-  }, users.length > 0 && /* @__PURE__ */ common.React.createElement(FormRow$4, {
+  }, users.length > 0 && /* @__PURE__ */ common.React.createElement(FormRow$8, {
     label: "Clear List",
-    trailing: addIcon$1(Trash),
+    trailing: addIcon(Trash),
     onPress: function() {
       if (users.length !== 0) {
         alerts.showConfirmationAlert({
@@ -1195,9 +1077,9 @@ function ListUsers() {
       }
     }
   }), users?.map(function(comp, i) {
-    return /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(FormRow$4, {
+    return /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(FormRow$8, {
       label: comp?.username || comp?.id || "No Data",
-      trailing: /* @__PURE__ */ common.React.createElement(FormArrow$3, null),
+      trailing: /* @__PURE__ */ common.React.createElement(FormArrow$6, null),
       onPress: function() {
         return navigation.push("VendettaCustomPage", {
           title: "Editing User",
@@ -1208,24 +1090,24 @@ function ListUsers() {
           }
         });
       }
-    }), i !== users?.length - 1 && /* @__PURE__ */ common.React.createElement(FormDivider$4, null));
-  }), /* @__PURE__ */ common.React.createElement(FormRow$4, {
-    label: /* @__PURE__ */ common.React.createElement(TextInput$4, {
+    }), i !== users?.length - 1 && /* @__PURE__ */ common.React.createElement(FormDivider$8, null));
+  }), /* @__PURE__ */ common.React.createElement(FormRow$8, {
+    label: /* @__PURE__ */ common.React.createElement(TextInput$6, {
       value: newUser,
       onChangeText: setNewUser,
       placeholder: "User ID or Username",
-      placeholderTextColor: styles$2.placeholder.color,
+      placeholderTextColor: styles$1.placeholder.color,
       selectionColor: common.constants.Colors.PRIMARY_DARK_100,
       onSubmitEditing: addNewUser,
       returnKeyType: "done",
-      style: styles$2.input
+      style: styles$1.input
     }),
-    trailing: /* @__PURE__ */ common.React.createElement(TouchableOpacity$4, {
+    trailing: /* @__PURE__ */ common.React.createElement(TouchableOpacity$6, {
       onPress: addNewUser
-    }, addIcon$1(Add))
+    }, addIcon(Add))
   })))));
-}const { ScrollView: ScrollView$3, View: View$3, Text: Text$3, TouchableOpacity: TouchableOpacity$3, TextInput: TextInput$3, Pressable: Pressable$2, Image: Image$3, Animated: Animated$3 } = components.General;
-const { FormLabel: FormLabel$2, FormIcon: FormIcon$3, FormArrow: FormArrow$2, FormRow: FormRow$3, FormSwitch: FormSwitch$3, FormSwitchRow: FormSwitchRow$2, FormSection: FormSection$2, FormDivider: FormDivider$3, FormInput: FormInput$2, FormSliderRow: FormSliderRow$1 } = components.Forms;
+}const { ScrollView: ScrollView$5, View: View$5, Text: Text$5, TouchableOpacity: TouchableOpacity$5, TextInput: TextInput$5, Pressable: Pressable$4, Image: Image$5, Animated: Animated$5 } = components.General;
+const { FormLabel: FormLabel$5, FormIcon: FormIcon$4, FormArrow: FormArrow$5, FormRow: FormRow$7, FormSwitch: FormSwitch$5, FormSwitchRow: FormSwitchRow$4, FormSection: FormSection$5, FormDivider: FormDivider$7, FormInput: FormInput$6, FormSliderRow: FormSliderRow$3 } = components.Forms;
 function IgnoreListComponent() {
   storage.useProxy(plugin.storage);
   const navigation = common.NavigationNative.useNavigation();
@@ -1237,143 +1119,404 @@ function IgnoreListComponent() {
       }
     });
   };
-  return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(FormRow$3, {
+  return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(FormRow$7, {
     label: "Add User to List",
     subLabel: "List of ignored users for the plugin",
-    leading: /* @__PURE__ */ React.createElement(FormIcon$3, {
+    leading: /* @__PURE__ */ React.createElement(FormIcon$4, {
       style: {
         opacity: 1
       },
       source: Assets.getAssetIDByName("ic_members")
     }),
     onPress: listIgnore,
-    trailing: /* @__PURE__ */ React.createElement(TouchableOpacity$3, {
+    trailing: /* @__PURE__ */ React.createElement(TouchableOpacity$5, {
       onPress: listIgnore
-    }, /* @__PURE__ */ React.createElement(FormIcon$3, {
+    }, /* @__PURE__ */ React.createElement(FormIcon$4, {
       style: {
         opacity: 1
       },
       source: Assets.getAssetIDByName("ic_add_24px")
     }))
-  }), /* @__PURE__ */ React.createElement(FormDivider$3, null));
-}const { ScrollView: ScrollView$2, View: View$2, Text: Text$2, TouchableOpacity: TouchableOpacity$2, TextInput: TextInput$2, Pressable: Pressable$1, Image: Image$2, Animated: Animated$2 } = components.General;
-const { FormRow: FormRow$2, FormIcon: FormIcon$2, FormSwitch: FormSwitch$2, FormDivider: FormDivider$2 } = components.Forms;
-const HelpMessage = metro.findByName("HelpMessage");
-const customizeableSwitches = [
+  }), /* @__PURE__ */ React.createElement(FormDivider$7, null));
+}const HelpMessage = metro.findByName("HelpMessage");
+const { FormRow: FormRow$6, FormDivider: FormDivider$6, FormInput: FormInput$5, FormSwitch: FormSwitch$4 } = components.Forms;
+function NerdComponent({ stx }) {
+  storage.useProxy(plugin.storage);
+  const [plugUri, setPlugUri] = React.useState(_vendetta.plugin.id);
+  return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(HelpMessage, {
+    messageType: 0
+  }, "Changing the plugin URL may redirect future updates to the new source, or prevent updates entirely."), /* @__PURE__ */ React.createElement(FormInput$5, {
+    title: "Change Plugin URL",
+    keyboardType: "default",
+    placeholder: "https://angelix1.github.io/MP/angel/antied",
+    value: plugUri,
+    onChange: function(val) {
+      _vendetta.plugin.id = val?.toString();
+      setPlugUri(val?.toString());
+    }
+  }), /* @__PURE__ */ React.createElement(FormDivider$6, null), /* @__PURE__ */ React.createElement(FormRow$6, {
+    label: "Restore original URL",
+    subLabel: "Click to switch to the production build URL (will exit debug version)",
+    onPress: function() {
+      _vendetta.plugin.id = "https://angelix1.github.io/MP/angel/antied";
+      toasts.showToast("Plugin URL source restored to original URL.");
+    }
+  }), /* @__PURE__ */ React.createElement(FormDivider$6, null), /* @__PURE__ */ React.createElement(FormRow$6, {
+    label: "Restore original plugin name",
+    subLabel: "Click to reset to the default name",
+    onPress: function() {
+      _vendetta.plugin.manifest.name = _vendetta.plugin.manifest.originalName;
+      toasts.showToast("Plugin Name restored to original name.");
+    }
+  }), /* @__PURE__ */ React.createElement(FormDivider$6, null), /* @__PURE__ */ React.createElement(FormRow$6, {
+    label: "Debug",
+    subLabel: "Enable general console logging",
+    style: {
+      paddingBottom: 20
+    },
+    trailing: /* @__PURE__ */ React.createElement(FormSwitch$4, {
+      value: plugin.storage.debug,
+      onValueChange: function(value) {
+        plugin.storage.debug = value;
+      }
+    })
+  }), /* @__PURE__ */ React.createElement(FormDivider$6, null), /* @__PURE__ */ React.createElement(FormRow$6, {
+    label: "Debug updateRows",
+    subLabel: "Enable updateRows console logging",
+    style: {
+      paddingBottom: 20
+    },
+    trailing: /* @__PURE__ */ React.createElement(FormSwitch$4, {
+      value: plugin.storage.debugUpdateRows,
+      onValueChange: function(value) {
+        plugin.storage.debugUpdateRows = value;
+      }
+    })
+  }));
+}const { ScrollView: ScrollView$4, View: View$4, Text: Text$4, TouchableOpacity: TouchableOpacity$4, TextInput: TextInput$4, Pressable: Pressable$3, Image: Image$4, Animated: Animated$4 } = components.General;
+const { FormLabel: FormLabel$4, FormIcon: FormIcon$3, FormArrow: FormArrow$4, FormRow: FormRow$5, FormSwitch: FormSwitch$3, FormSwitchRow: FormSwitchRow$3, FormSection: FormSection$4, FormDivider: FormDivider$5, FormInput: FormInput$4, FormSliderRow: FormSliderRow$2 } = components.Forms;
+const togglePatch = [
   {
-    id: "minimalistic",
+    id: "enableMD",
     default: true,
-    label: "Minimalistic Settings",
-    subLabel: "Removes all Styling (Enabled by Default)"
+    label: "Toggle Message Delete",
+    subLabel: "Logs deleted message"
   },
   {
-    id: "useBackgroundColor",
-    default: false,
-    label: "Enable Background Color",
-    subLabel: "Background Color for Deleted Message, similiar to Mention but Customizeable"
-  },
-  {
-    id: "useSemRawColors",
-    default: false,
-    label: "Use Semantic/Raw Color",
-    subLabel: "Use Semantic/Raw Color instead of Custom Color for Background Color, doesn't applied to GutterColor"
-  },
-  {
-    id: "ignoreBots",
-    default: false,
-    label: "Ignore Bots",
-    subLabel: "Ignore bot deleted messages."
-  },
-  {
-    id: "removeDismissButton",
-    default: false,
-    label: "Remove Dissmiss Message",
-    subLabel: "Remove clickable Dismiss Message text from deleted ephemeral messages."
-  },
-  {
-    id: "addTimestampForEdits",
-    default: false,
-    label: "Add Edit Timestamp",
-    subLabel: "Add Timestamp for edited messages."
-  },
-  {
-    id: "useEphemeralForDeleted",
+    id: "enableMU",
     default: true,
-    label: "Use Ephemeral for Deleted",
-    subLabel: "When messages got deleted it'll use ephemeral instead of normal message (Enabled by Default)."
-  },
-  {
-    id: "useIndicatorForDeleted",
-    default: false,
-    label: "use Indicator For 'This Message is Deleted'",
-    subLabel: "Use 'only you can see this' for deleted message info, instead of (edited)"
-  },
-  {
-    id: "overrideIndicator",
-    default: false,
-    label: "Remove Ephemeral Indicator",
-    subLabel: "When messages got deleted it'll have indicator under the text like 'only you can see this' and this remove those."
-  },
-  {
-    id: "useCustomPluginName",
-    default: false,
-    label: "Override Plugin Name with custom one",
-    subLabel: "Replace plugin name with custom one when enabled"
+    label: "Toggle Message Update",
+    subLabel: "Logs edited message"
   }
 ];
-function CustomizationComponent({ styles }) {
+function PatchesComponent({ styles }) {
   storage.useProxy(plugin.storage);
-  return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(View$2, {
+  return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(View$4, {
     style: [
       styles.subText
     ]
-  }, plugin.storage?.switches.minimalistic && /* @__PURE__ */ React.createElement(HelpMessage, {
-    messageType: 0
-  }, 'To use styling, disable "Minimalistic" option'), customizeableSwitches?.map(function(obj, index) {
-    return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(FormRow$2, {
+  }, togglePatch?.map(function(obj, index) {
+    return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(FormRow$5, {
       label: obj?.label,
       subLabel: obj?.subLabel,
-      leading: obj?.icon && /* @__PURE__ */ React.createElement(FormIcon$2, {
+      leading: obj?.icon && /* @__PURE__ */ React.createElement(FormIcon$3, {
         style: {
           opacity: 1
         },
         source: Assets.getAssetIDByName(obj?.icon)
       }),
-      trailing: "id" in obj ? /* @__PURE__ */ React.createElement(FormSwitch$2, {
+      trailing: "id" in obj ? /* @__PURE__ */ React.createElement(FormSwitch$3, {
         value: plugin.storage?.switches[obj?.id] ?? obj?.default,
         onValueChange: function(value) {
           return plugin.storage.switches[obj?.id] = value;
         }
       }) : void 0
-    }), index !== customizeableSwitches?.length - 1 && /* @__PURE__ */ React.createElement(FormDivider$2, null));
+    }), index !== togglePatch?.length - 1 && /* @__PURE__ */ React.createElement(FormDivider$5, null));
   })));
-}function ma(...a) {
-  return [
-    ...a
-  ];
-}
-const update = [
-  createList("1.4.0", ma("[1.4] Trying to reinstate colorful setting for IOS.", "[1.4] Added new Option to Remove Ephemeral Indicator", "[1.4] Added new Option to Switch 'this message is deleted' to be an indicator", "[1.4] Added Known Bugs Section for those annoying peoples complaining about things.", "[1.4.3] Added use Custom Plugin name option and alternative way to set Alpha."), ma("[1.4] Discontinued Support for older version related to updateRows function, Use Version 1.3.1 if you using old version", "[1.4.3] Refactor Flux and Row to be more efficent and added cache limit.", "[1.4.3] Fixed editing message issue where it includes old content."), ma("[1.4] Update updateRowsPatch to Support Newer Version of Discord", "[1.4.1] Fixed ActionSheet button being weird, updated in 293.xx Stable release", "[1.4.2] Fortified updateRowsPatch with additonal safeguards, possibly fixed crashes on Alpha/Beta builds."))
-];
-var updates = update.reverse();const knownBugs = [
+}const { ScrollView: ScrollView$3, View: View$3, Text: Text$3, TouchableOpacity: TouchableOpacity$3, TextInput: TextInput$3, Pressable: Pressable$2, Image: Image$3, Animated: Animated$3 } = components.General;
+const { FormLabel: FormLabel$3, FormIcon: FormIcon$2, FormArrow: FormArrow$3, FormRow: FormRow$4, FormSwitch: FormSwitch$2, FormSwitchRow: FormSwitchRow$2, FormSection: FormSection$3, FormDivider: FormDivider$4, FormInput: FormInput$3, FormSliderRow: FormSliderRow$1 } = components.Forms;
+const customizedableTexts = [
   {
-    bugType: "EDIT",
-    bugDescription: "Removing Edit Logs with link in it caused a crash"
+    id: "deletedMessageBuffer",
+    title: "Customize Deleted Message",
+    type: "default",
+    placeholder: "This message is deleted"
   },
   {
-    bugType: "EDIT",
-    bugDescription: "in Rare Occasion, edits Patcher can logs multiple edits of same text or Double Fire Func"
+    id: "editedMessageBuffer",
+    title: "Customize Edited Separator",
+    type: "default",
+    placeholder: "`[ EDITED ]`"
+  },
+  {
+    id: "historyToast",
+    title: "Customize Remove History Toast Message",
+    type: "default",
+    placeholder: "History Removed"
+  },
+  {
+    id: "customIndicator",
+    title: "Customize Ephemeral 'Only You Can See This' Indicator (if useIndicatorForDeletedMessage enabled this feature be overriden)",
+    type: "default",
+    placeholder: "Only you can see this \u2022 "
+  }
+];
+function TextComponent({ styles }) {
+  storage.useProxy(plugin.storage);
+  return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(View$3, {
+    style: [
+      styles.subText
+    ]
+  }, customizedableTexts?.map(function(obj, index) {
+    return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(FormInput$3, {
+      title: obj?.title,
+      keyboardType: obj?.type,
+      placeholder: obj?.placeholder?.toString(),
+      value: plugin.storage?.inputs[obj.id] ?? obj?.placeholder,
+      onChange: function(val) {
+        return plugin.storage.inputs[obj.id] = val.toString();
+      }
+    }), index !== customizedableTexts.length - 1 && /* @__PURE__ */ React.createElement(FormDivider$4, null));
+  }), /* @__PURE__ */ React.createElement(FormInput$3, {
+    title: "Customize Plugin Name",
+    keyboardType: "default",
+    placeholder: plugin.storage?.inputs?.customPluginName || _vendetta.plugin?.manifest?.name || "ANTIED",
+    value: plugin.storage?.inputs?.customPluginName,
+    onChange: function(val) {
+      plugin.storage.inputs.customPluginName = val.toString();
+      _vendetta.plugin.manifest.name = val.toString();
+    }
+  }), /* @__PURE__ */ React.createElement(FormDivider$4, null), /* @__PURE__ */ React.createElement(FormRow$4, {
+    label: `Current Used Icon - ${plugin.storage?.misc?.editHistoryIcon || "ic_edit_24px"}`,
+    subLabel: "Icon for Message History Removed toast",
+    trailing: /* @__PURE__ */ React.createElement(FormIcon$2, {
+      style: {
+        opacity: 1
+      },
+      source: Assets.getAssetIDByName(plugin.storage?.misc?.editHistoryIcon)
+    })
+  }), /* @__PURE__ */ React.createElement(FormDivider$4, null), /* @__PURE__ */ React.createElement(FormInput$3, {
+    title: "Icon Name",
+    keyboardType: "default",
+    placeholder: "ic_edit_24px",
+    value: plugin.storage?.misc?.editHistoryIcon || "ic_edit_24px",
+    onChange: function(val) {
+      return plugin.storage.misc.editHistoryIcon = val.toString();
+    }
+  })));
+}const timestamps = [
+  {
+    type: "t",
+    label: "Short Time",
+    subLabel: "16:20"
+  },
+  {
+    type: "T",
+    label: "Long Time",
+    subLabel: "16:20:30"
+  },
+  {
+    type: "d",
+    label: "Short Date",
+    subLabel: "20/04/2021"
+  },
+  {
+    type: "D",
+    label: "Long Date",
+    subLabel: "20 April 2021"
+  },
+  {
+    type: "f",
+    label: "Short Date/Time",
+    subLabel: "20 April 2021 16:20"
+  },
+  {
+    type: "F",
+    label: "Long Date/Time",
+    subLabel: "Tuesday, 20 April 2021 16:20"
+  },
+  {
+    type: "R",
+    label: "Relative Time",
+    subLabel: "2 months ago"
+  }
+];
+const timestampsPosition = [
+  {
+    label: "Before",
+    subLabel: "Old Message (2 minutes ago) [Edited] New Message",
+    key: "BEFORE"
+  },
+  {
+    label: "After",
+    subLabel: "Old Message [Edited] (2 minutes ago) New Message",
+    key: "AFTER"
+  }
+];
+const { FormRow: FormRow$3, FormDivider: FormDivider$3 } = components.Forms;
+function TimestampComponent() {
+  storage.useProxy(plugin.storage);
+  return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(FormRow$3, {
+    label: "Timestamp Style"
+  }), timestamps.map(function({ type, label, subLabel }, i) {
+    return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(SelectRow, {
+      label,
+      subLabel: `Example: ${subLabel}`,
+      selected: plugin.storage.switches.timestampStyle == type,
+      onPress: function() {
+        return plugin.storage.switches.timestampStyle = type;
+      }
+    }), i !== timestamps.length - 1 && /* @__PURE__ */ React.createElement(FormDivider$3, null));
+  }), /* @__PURE__ */ React.createElement(FormDivider$3, null), /* @__PURE__ */ React.createElement(FormRow$3, {
+    label: "Timestamp Position"
+  }), timestampsPosition.map(function({ key, label, subLabel }, i) {
+    return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(SelectRow, {
+      label,
+      subLabel: `Example: ${subLabel}`,
+      selected: plugin.storage.misc?.timestampPos == key,
+      onPress: function() {
+        return plugin.storage.misc.timestampPos = key;
+      }
+    }), i !== timestampsPosition.length - 1 && /* @__PURE__ */ React.createElement(FormDivider$3, null));
+  }));
+}const UserStore = metro.findByStoreName("UserStore");
+const { ScrollView: ScrollView$2, View: View$2, Text: Text$2, TouchableOpacity: TouchableOpacity$2, TextInput: TextInput$2, Pressable: Pressable$1, Image: Image$2, Animated: Animated$2 } = components.General;
+const { FormLabel: FormLabel$2, FormArrow: FormArrow$2, FormRow: FormRow$2, FormSection: FormSection$2, FormDivider: FormDivider$2, FormInput: FormInput$2 } = components.Forms;
+const me = {
+  name: "Angel",
+  role: "Author & Maintainer",
+  uuid: "692632336961110087"
+};
+const qa = [
+  {
+    name: "Rairof",
+    role: "Quality Assurance",
+    uuid: "923212189123346483"
+  },
+  {
+    name: "Moodle",
+    role: "Quality Assurance",
+    uuid: "807170846497570848"
+  },
+  {
+    name: "Catinette",
+    role: "Quality Assurance",
+    uuid: "1302022854740807730"
+  },
+  {
+    name: "Win8.1VMUser",
+    role: "Quality Assurance",
+    uuid: "793935599702507542"
+  }
+];
+const links = [
+  {
+    label: "Source Code",
+    url: "https://github.com/angelix1/MP"
+  },
+  {
+    label: "Tip via PayPal",
+    url: "https://paypal.me/alixymizuki"
+  },
+  {
+    label: "Buy me a Ko-fi",
+    url: "https://ko-fi.com/angel_wolf"
+  }
+];
+function CreditsPage() {
+  storage.useProxy(plugin.storage);
+  const open = function(uri) {
+    return common.url.openURL(uri).catch(function() {
+    });
+  };
+  const getUser = function(id) {
+    return UserStore?.getUser(id) || Object.values(UserStore?.getUsers()).find(function(u) {
+      return u.id === id;
+    }) || null;
+  };
+  const getUserPng = function(id) {
+    const u = getUser(id);
+    return u?.getAvatarURL?.()?.replace("webp", "png") || null;
+  };
+  const box = function(u) {
+    return /* @__PURE__ */ common.React.createElement(Image$2, {
+      source: {
+        uri: u
+      },
+      style: {
+        width: 40,
+        height: 40,
+        borderRadius: 20
+      }
+    });
+  };
+  return /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(ScrollView$2, null, /* @__PURE__ */ common.React.createElement(FormSection$2, {
+    title: "Developers"
+  }, /* @__PURE__ */ common.React.createElement(FormRow$2, {
+    label: me.name,
+    subLabel: me.role,
+    leading: box(getUserPng(me?.uuid))
+  })), /* @__PURE__ */ common.React.createElement(FormSection$2, {
+    title: "Testers"
+  }, qa.map(function(p, i) {
+    const avatarUri = getUserPng(p?.uuid);
+    return /* @__PURE__ */ common.React.createElement(FormRow$2, {
+      key: i,
+      label: p.name,
+      subLabel: p.role,
+      leading: avatarUri ? box(avatarUri) : null
+    });
+  })), /* @__PURE__ */ common.React.createElement(FormDivider$2, null), /* @__PURE__ */ common.React.createElement(FormSection$2, {
+    title: "Support & Source"
+  }, /* @__PURE__ */ common.React.createElement(View$2, {
+    style: {
+      margin: 50
+    }
+  }, links.map(function(l, i) {
+    let finalIcon = l.icon ? l.icon?.startsWith("https") ? /* @__PURE__ */ common.React.createElement(Image$2, {
+      source: {
+        uri: l.icon
+      },
+      style: {
+        width: 120,
+        height: 40
+      }
+    }) : /* @__PURE__ */ common.React.createElement(FormRow$2.Icon, {
+      source: Assets.getAssetIDByName(l.icon)
+    }) : null;
+    return /* @__PURE__ */ common.React.createElement(FormRow$2, {
+      key: i,
+      label: l.label,
+      leading: finalIcon,
+      trailing: /* @__PURE__ */ common.React.createElement(FormArrow$2, null),
+      onPress: function() {
+        return open(l.url);
+      }
+    });
+  }))), /* @__PURE__ */ common.React.createElement(FormDivider$2, null), /* @__PURE__ */ common.React.createElement(View$2, {
+    style: {
+      height: 40
+    }
+  })));
+}const knownBugs = [
+  {
+    bugType: "SELF_EDIT_MESSAGE",
+    bugDescription: "When starting to edit a message, old history gets included. Use BetterBetterChatGestrure Plugin to force edit message using function Antied Watch."
+  },
+  {
+    bugType: "MESSAGE_DELETION_BOT_DISMISS",
+    bugDescription: "in Rare Occasion, Delete Patcher can fail to dismiss ephemeral messages, often happens in bot messages."
   }
 ];const { ScrollView: ScrollView$1, View: View$1, Text: Text$1, TouchableOpacity: TouchableOpacity$1, TextInput: TextInput$1, Image: Image$1, Animated: Animated$1 } = components.General;
 const { FormLabel: FormLabel$1, FormIcon: FormIcon$1, FormArrow: FormArrow$1, FormRow: FormRow$1, FormSwitch: FormSwitch$1, FormSwitchRow: FormSwitchRow$1, FormSection: FormSection$1, FormDivider: FormDivider$1, FormInput: FormInput$1 } = components.Forms;
-const current = Assets.getAssetIDByName("ic_radio_square_checked_24px");
-const older = Assets.getAssetIDByName("ic_radio_square_24px");
-const info = Assets.getAssetIDByName("ic_information_24px");
+Assets.getAssetIDByName("ic_radio_square_checked_24px");
+Assets.getAssetIDByName("ic_radio_square_24px");
+Assets.getAssetIDByName("ic_information_24px");
 Assets.getAssetIDByName("ic_info");
-const newStuff = Assets.getAssetIDByName("premium_sparkles");
-const updatedStuff = Assets.getAssetIDByName("ic_sync_24px");
-const fixStuff = Assets.getAssetIDByName("ic_progress_wrench_24px");
-const styles$1 = common.stylesheet.createThemedStyleSheet({
+Assets.getAssetIDByName("premium_sparkles");
+Assets.getAssetIDByName("ic_sync_24px");
+Assets.getAssetIDByName("ic_progress_wrench_24px");
+common.stylesheet.createThemedStyleSheet({
   border: {
     borderRadius: 10
   },
@@ -1399,51 +1542,7 @@ const styles$1 = common.stylesheet.createThemedStyleSheet({
     padding: 15,
     backgroundColor: "rgba(33, 219, 222, 0.34)"
   }
-});
-function addIcon(icon) {
-  return /* @__PURE__ */ common.React.createElement(FormIcon$1, {
-    style: {
-      opacity: 1
-    },
-    source: icon
-  });
-}
-function VersionChange({ change, index, totalIndex }) {
-  const [isOpen, setOpen] = common.React.useState(false);
-  const [isRowOpen, setRowOpen] = common.React.useState(false);
-  function createSubRow(arr, label, subLabel, icon) {
-    return /* @__PURE__ */ common.React.createElement(View$1, null, /* @__PURE__ */ common.React.createElement(FormRow$1, {
-      label: label || "No Section",
-      subLabel: subLabel || null,
-      leading: icon && addIcon(icon),
-      style: [
-        styles$1.textHeader
-      ]
-    }), arr.map(function(x, i) {
-      return /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(FormRow$1, {
-        label: x,
-        style: [
-          styles$1.textBody,
-          styles$1.rowLabel,
-          styles$1.border
-        ]
-      }));
-    }));
-  }
-  return /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(components.ErrorBoundary, null, /* @__PURE__ */ common.React.createElement(FormRow$1, {
-    label: change?.version,
-    leading: index == 0 ? addIcon(current) : addIcon(older),
-    trailing: addIcon(info),
-    onPress: function() {
-      setOpen(!isOpen);
-    }
-  }), isOpen && /* @__PURE__ */ common.React.createElement(View$1, {
-    style: [
-      styles$1.versionBG,
-      styles$1.border
-    ]
-  }, change?.new?.length > 0 && createSubRow(change.new, "New", "New stuffies", newStuff), change?.updated?.length > 0 && createSubRow(change.updated, "Changes", "Update things", updatedStuff), change?.fix?.length > 0 && createSubRow(change.fix, "Fixes", "Me hate borken things", fixStuff)), index == totalIndex.length - 1 ? void 0 : /* @__PURE__ */ common.React.createElement(FormDivider$1, null)));
-}const { ScrollView, View, Text, TouchableOpacity, TextInput, Pressable, Image, Animated } = components.General;
+});const { ScrollView, View, Text, TouchableOpacity, TextInput, Pressable, Image, Animated } = components.General;
 const { FormLabel, FormIcon, FormArrow, FormRow, FormSwitch, FormSwitchRow, FormSection, FormDivider, FormInput, FormSliderRow } = components.Forms;
 const LinearGradient = metro.findByName("LinearGradient");
 const styles = common.stylesheet.createThemedStyleSheet({
@@ -1523,6 +1622,17 @@ function SettingPage() {
   storage.useProxy(plugin.storage);
   const [animation] = common.React.useState(new Animated.Value(0));
   const [isKnownBugOpen, setKnownBugOpen] = common.React.useState(false);
+  const navigation = common.NavigationNative.useNavigation();
+  const openCreditPage = function() {
+    navigation.push("VendettaCustomPage", {
+      title: `Credits & Support`,
+      render: function() {
+        return common.React.createElement(CreditsPage, {
+          styles
+        });
+      }
+    });
+  };
   common.React.useEffect(function() {
     Animated.loop(Animated.timing(animation, {
       toValue: 4,
@@ -1564,9 +1674,9 @@ function SettingPage() {
     createChild("text", "Text Variables", "Customize Texts", null, TextComponent, styles),
     createChild("timestamp", "Timestamp", "Timestamp Styles", null, TimestampComponent, styles),
     createChild("colorpick", "Colors", "Customize Colors", null, ColorPickComponent, styles),
-    createChild("ingorelist", "Ignore List", "Show IngoreList", null, IgnoreListComponent, null)
+    createChild("ingorelist", "Ignore List", "Show IngoreList", null, IgnoreListComponent, null),
+    createChild("nerd", "Nerd Stuff", "Open Sesami", null, NerdComponent, null)
   ];
-  common.ReactNative?.Platform?.OS || null;
   const entireUIList = /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(View, {
     style: [
       styles.lnBorder,
@@ -1597,51 +1707,13 @@ function SettingPage() {
     }, common.React.createElement(element.props, {
       styles: element.propsData
     }))));
-  }), /* @__PURE__ */ common.React.createElement(FormDivider, null), /* @__PURE__ */ common.React.createElement(FormSection, {
-    title: "Nerd Stuff"
-  }, /* @__PURE__ */ common.React.createElement(FormRow, {
-    label: "Debug",
-    subLabel: "Enable console logging",
-    style: [
-      styles.padBot
-    ],
-    trailing: /* @__PURE__ */ common.React.createElement(FormSwitch, {
-      value: plugin.storage.debug,
-      onValueChange: function(value) {
-        plugin.storage.debug = value;
-      }
-    })
-  }), /* @__PURE__ */ common.React.createElement(FormDivider, null), /* @__PURE__ */ common.React.createElement(FormRow, {
-    label: "Debug updateRows",
-    subLabel: "Enable updateRows console logging",
-    style: [
-      styles.padBot
-    ],
-    trailing: /* @__PURE__ */ common.React.createElement(FormSwitch, {
-      value: plugin.storage.debugUpdateRows,
-      onValueChange: function(value) {
-        plugin.storage.debugUpdateRows = value;
-      }
-    })
-  })), /* @__PURE__ */ common.React.createElement(FormDivider, null), updates && /* @__PURE__ */ common.React.createElement(FormSection, {
-    title: "Updates"
-  }, /* @__PURE__ */ common.React.createElement(View, {
-    style: {
-      margin: 5,
-      padding: 5,
-      borderRadius: 10,
-      backgroundColor: "rgba(59, 30, 55, 0.15)"
-    }
-  }, updates.map(function(data, index) {
-    return /* @__PURE__ */ common.React.createElement(VersionChange, {
-      change: data,
-      index,
-      totalIndex: updates.length
-    });
-  }))), /* @__PURE__ */ common.React.createElement(FormDivider, null), knownBugs && /* @__PURE__ */ common.React.createElement(FormSection, {
+  }), knownBugs && /* @__PURE__ */ common.React.createElement(FormSection, {
     title: "Known Bugs"
   }, /* @__PURE__ */ common.React.createElement(FormRow, {
     label: "Click to show those Lady Bug",
+    style: {
+      padding: 2
+    },
     onPress: function() {
       setKnownBugOpen(!isKnownBugOpen);
     }
@@ -1684,7 +1756,23 @@ function SettingPage() {
       styles.lnShadow,
       styles.padBot
     ]
-  }, entireUIList)));
+  }, /* @__PURE__ */ common.React.createElement(FormRow, {
+    label: "CREDITS",
+    subLabel: "See the people behind the plugin and ways to support its development.",
+    onPress: openCreditPage,
+    style: [
+      styles.lnBorder,
+      bgStyle,
+      styles.darkMask
+    ],
+    trailing: /* @__PURE__ */ common.React.createElement(FormRow.Icon, {
+      source: Assets.getAssetIDByName("ic_arrow_right")
+    })
+  }), entireUIList), /* @__PURE__ */ common.React.createElement(View, {
+    style: {
+      height: 60
+    }
+  })));
 }const ChannelMessages = metro.findByProps("_channelMessages");
 const regexEscaper = function(string) {
   return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -1749,8 +1837,8 @@ makeDefaults(plugin.storage, {
 let deletedMessageArray = /* @__PURE__ */ new Map();
 let unpatch = null;
 let intervalPurge;
-const KEEP_NEWEST = 5;
-const DELETE_EACH_CYCLE = 95;
+const KEEP_NEWEST = 10;
+const DELETE_EACH_CYCLE = 140;
 const patches = [
   [
     fluxDispatchPatch,
@@ -1813,7 +1901,7 @@ var index = {
           break;
       }
     }, 15 * 60 * 1e3);
-    _vendetta.plugin.manifest.name = plugin.storage?.switches?.useCustomPluginName ? plugin.storage?.inputs?.customPluginName : _vendetta.plugin.manifest.name;
+    _vendetta.plugin.manifest.name = plugin.storage?.switches?.useCustomPluginName ? plugin.storage?.inputs?.customPluginName : _vendetta.plugin?.manifest?.name;
   },
   onUnload: function() {
     exports.isEnabled = false;
