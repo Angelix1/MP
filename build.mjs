@@ -95,6 +95,9 @@ async function buildPlugin(isDebug = false, NOTE, path, distro, plugins, usesKey
 
 			if(isDebug) {
 				manifest.name = `[DEBUG] ${manifest.name}`;
+				if(manifest?.originalName) {
+					manifest.originalName = `[DEBUG] ${manifest.originalName}`;
+				}
 			}
 
 			await writeFile(`${distro}/${plug}/manifest.json`, JSON.stringify(manifest));

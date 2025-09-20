@@ -29,10 +29,8 @@ export default deletedMessagesArray => before("updateRows", rowsController, func
 	if(isEnabled) {
 
 		/* ---------- Fail-fast guards ---------- */
-		logger("row", 1)
 		if (!args?.length) return;
 		const raw = args[1];
-		logger("row", 2)
 		if (!raw) return;
 
 		/* ---------- Parse rows once ---------- */
@@ -50,7 +48,6 @@ export default deletedMessagesArray => before("updateRows", rowsController, func
 		}
 
 		/* ---------- Nothing to paint? we GOEENN ---------- */
-		logger("row", 3)
 		const hasDeleted = rows.some(r => r?.message && deletedMessagesArray.has(r.message.id));
 		if (!hasDeleted) return;
 
@@ -70,17 +67,14 @@ export default deletedMessagesArray => before("updateRows", rowsController, func
 
 		const bufferSymbol = ' • ';
 
-		logger("row", 4)
 		/* ---------- Mutate rows bery kewl ---------- */
 		for (const row of rows) {
 			if (row?.type !== 1) continue;
 			
 			const msg = row.message;
-			logger("row", 5)
 			if (!msg || !deletedMessagesArray.has(msg.id)) continue;
 
 			/* ---- indicator ---- */
-			logger("row", 6)
 			if (useIndicatorForDeleted && useEphemeralForDeleted) {
 				msg.ephemeralIndication.content[0].content = `${deletedMessageBuffer}${bufferSymbol}  `;
 			} 
@@ -89,13 +83,11 @@ export default deletedMessagesArray => before("updateRows", rowsController, func
 			}
 
 			/* ---- text colour ---- */
-			logger("row", 7)
 			if (!minimalistic) {
 				msg.textColor = ReactNative.processColor(toHex(textColor, '#E40303'));
 			}
 
 			/* ---- ephemeralIndication tweaks ---- */
-			logger("row", 8)
 			if (overrideIndicator) {
 				msg.ephemeralIndication.content = [];
 			} 
@@ -103,12 +95,10 @@ export default deletedMessagesArray => before("updateRows", rowsController, func
 				msg.ephemeralIndication.content[0].content = `${customIndicator}  `;
 			}
 
-			logger("row", 9)
 			if (removeDismissButton && msg.ephemeralIndication?.content) {
 				msg.ephemeralIndication?.content?.splice?.(1, 1);
 			}
 
-			logger("row", 10)
 			/* ---- background highlight ---- */
 			if (!minimalistic && useBackgroundColor) {
 				row.backgroundHighlight = {

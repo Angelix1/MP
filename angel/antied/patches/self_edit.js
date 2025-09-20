@@ -29,5 +29,5 @@ export default () => before('startEditMessage', Message, (args) => {
 
 	args[2] = f;
 
-	logger(`[ANTIED > self_edit]\nModified: ${args[2]}\nOrig BELOW\n`, [channelId, messageId, msg], regexPattern)
+	// logger(`[ANTIED > self_edit]\nModified: ${args[2]}\nOrig BELOW\n`, [channelId, messageId, msg], regexPattern)
 });

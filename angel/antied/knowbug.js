@@ -1,11 +1,11 @@
 const knownBugs = [
 	{
-		bugType: "EDIT",
-		bugDescription: "Removing Edit Logs with link in it caused a crash"
+		bugType: "SELF_EDIT_MESSAGE",
+		bugDescription: "When starting to edit a message, old history gets included. Use BetterBetterChatGestrure Plugin to force edit message using function Antied Watch."
 	},
 	{
-		bugType: "EDIT",
-		bugDescription: "in Rare Occasion, edits Patcher can logs multiple edits of same text or Double Fire Func"
+		bugType: "MESSAGE_DELETION_BOT_DISMISS",
+		bugDescription: "in Rare Occasion, Delete Patcher can fail to dismiss ephemeral messages, often happens in bot messages."
 	},
 ]
 

@@ -42,6 +42,9 @@ export default deletedMessageArray => before("dispatch", FluxDispatcher, args =>
 				const orig = ChannelMessages.get(ev.channelId)?.get(ev.id);
 				if (!orig?.author?.id || !orig.author.username) return;
 
+				// ephemeral message dismiss (from bots)
+				if(orig?.author?.bot && orig?.type == 64) return;
+
 				// empty message check
 				if (!orig.content && !orig.attachments?.length && !orig.embeds?.length) return;
 
@@ -63,26 +66,30 @@ export default deletedMessageArray => before("dispatch", FluxDispatcher, args =>
 
 				/*  reuse the same object shape every time  */
 
-				ev.type = "MESSAGE_UPDATE";
-				ev.channelId = orig.channel_id || ev.channelId;
-				ev.message = {
+				const newMessageObject = {
 					...orig,
 					content: orig.content,
-					type: 0,
 					channel_id: orig.channel_id || ev.channelId,
 					guild_id: guildId,
-					timestamp: new Date().toJSON(),
-					state: "SENT",
 					was_deleted: true,
-					flags: cfg.switches.useEphemeralForDeleted ? 64 : orig.flags
-				};
-				ev.optimistic = false;
-				ev.sendMessageOptions = {};
-				ev.isPushNotification = false;
+					message_reference: orig?.message_reference || orig?.messageReference || null,
+					// type: 0,
+					// timestamp: new Date().toJSON(),
+					// state: "SENT",
+				}
+
+				if(cfg.switches.useEphemeralForDeleted) newMessageObject.flags = 64;
+
+				args[0] = {
+					type: "MESSAGE_UPDATE",
+					channelId: orig.channel_id || ev.channelId,
+					message: newMessageObject,
+					optimistic: false,
+					sendMessageOptions: {},
+					isPushNotification: false
+				}
 
 				deletedMessageArray.set(ev.id, { message: args, stage: 1 });
-
-				args[0] = ev;
 
 				return args;
 			}
@@ -91,30 +98,22 @@ export default deletedMessageArray => before("dispatch", FluxDispatcher, args =>
 				MESSAGE_UPDATE
 			==========================================================*/
 			if (ev.type === "MESSAGE_UPDATE") {
-				logger("FX; MU", 1)
 				if (!cfg.switches?.enableMU || ev.otherPluginBypass) return;
 				const msg = ev.message;
-				logger("FX; MU", 2)
+
 				if (!msg || msg.author?.bot) return;
 
 				const chId = msg.channel_id || ev.channelId;
 				const id = msg.id || ev.id;
 
-				logger(chId, " | ", id)
-
 				const orig = MessageStore.getMessage(chId, id) || ChannelMessages.get(chId)?.get(id);
 
-
-				logger(orig)
-
-				logger("FX; MU", 3)
 				if (!orig?.author?.id || !orig.author.username) return;
-				logger("FX; MU", 4)
+				
 				if (!orig.content && !orig.attachments?.length && !orig.embeds?.length) return;
-				logger("FX; MU", 5)
+				
 				if (!msg.content || msg.content === orig.content) return;
 
-				logger("FX; MU", 6)
 				if (cfg.inputs?.ignoredUserList?.length) {
 					const list = cfg.inputs.ignoredUserList;
 					if (list.some(u => u.id === orig.author.id || u.username === orig.author.username)) return;
@@ -127,6 +126,7 @@ export default deletedMessageArray => before("dispatch", FluxDispatcher, args =>
 					: null;
 
 				const tsPos = cfg.misc?.timestampPos === "BEFORE";
+				const newMessage = msg || orig;
 
 				let prefix = `${editedTag}`;
 
@@ -135,22 +135,17 @@ export default deletedMessageArray => before("dispatch", FluxDispatcher, args =>
 						`${time} ${prefix}\n\n` : `${prefix} ${time}\n\n` : 
 					`${prefix}\n\n`;
 
-				logger("FX; MU", 7)
 
-
-				logger(orig.content.includes(editedTag), orig.content.includes(editedTag)?.length ?? "N/A")
-
-				logger(orig, "\n". msg)
-
-
-				ev.message = {
-					...msg,
-					content: `${orig.content} ${prefix}${msg.content}`,
-					guild_id: ChannelStore.getChannel(chId)?.guild_id ?? msg.guild_id,
-					edited_timestamp: "invalid_timestamp"
+				args[0] = {
+					type: "MESSAGE_UPDATE",  
+					message: {
+						...newMessage,
+						content: `${orig.content} ${prefix}${msg.content}`,
+						guild_id: ChannelStore.getChannel(chId)?.guild_id ?? msg.guild_id,
+						edited_timestamp: "invalid_timestamp",
+						message_reference: msg?.message_reference || orig?.messageReference || null,
+					}
 				};
-
-				args[0] = ev;
 
 				return args;
 			}
@@ -161,3 +156,14 @@ export default deletedMessageArray => before("dispatch", FluxDispatcher, args =>
 		}
 	}
 });
+
+/*
+type: 19
+
+messageReference:
+   { type: 0,
+     message_id: '1418310241086472312',
+     guild_id: '1088889567354028083',
+     channel_id: '1100378389744992317' },
+
+     */

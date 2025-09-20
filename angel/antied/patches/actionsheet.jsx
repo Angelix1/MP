@@ -128,6 +128,7 @@ export default (deletedMessageArray) => before("openLazy", ActionSheet, ([compon
 											type: "MESSAGE_UPDATE",
 											message: {
 												...message,
+												message_reference: message?.message_reference || message?.messageReference || null,
 												content: `${targetMessage}`,
 												guild_id: ChannelStore.getChannel(originalMessage.channel_id).guild_id,
 											},

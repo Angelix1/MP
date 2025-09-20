@@ -1,4 +1,4 @@
-import { constants, React, ReactNative, stylesheet } from "@vendetta/metro/common";
+import { constants, React, ReactNative, stylesheet, NavigationNative } from "@vendetta/metro/common";
 import { findByName } from '@vendetta/metro';
 import { useProxy } from "@vendetta/storage";
 import { storage } from "@vendetta/plugin";
@@ -6,14 +6,15 @@ import { semanticColors } from "@vendetta/ui";
 import { Forms, General } from "@vendetta/ui/components";
 import { getAssetIDByName } from "@vendetta/ui/assets"
 
+import ColorPickComponent from './components/colorpick';
+import CustomizationComponent from './components/customize';
+import IgnoreListComponent from './components/ignorelist';
+import NerdComponent from './components/nerd';
 import PatchesComponent from './components/patches';
 import TextComponent from './components/texts';
 import TimestampComponent from './components/timestamp';
-import ColorPickComponent from './components/colorpick';
-import IgnoreListComponent from './components/ignorelist';
-import CustomizationComponent from './components/customize';
+import CreditsPage from './components/credits';
 
-import updates from "./update";
 import bugs from "./knowbug";
 import VersionChange from "../../lib/components/versionChange";
 
@@ -101,6 +102,15 @@ export default function SettingPage() {
 	const [animation] = React.useState(new Animated.Value(0));
 	const [isKnownBugOpen, setKnownBugOpen] = React.useState(false)
 
+	const navigation = NavigationNative.useNavigation();
+
+	const openCreditPage = () => {
+		navigation.push("VendettaCustomPage", {
+			title: `Credits & Support`,
+			render: () => React.createElement(CreditsPage, { styles: styles })
+		})
+	}
+
 	React.useEffect(() => {
 		Animated.loop(
 			Animated.timing(
@@ -138,9 +148,10 @@ export default function SettingPage() {
 		createChild("timestamp", "Timestamp", "Timestamp Styles", null, TimestampComponent, styles),
 		createChild("colorpick", "Colors", "Customize Colors", null, ColorPickComponent, styles),
 		createChild("ingorelist", "Ignore List", "Show IngoreList", null, IgnoreListComponent, null),
+		createChild("nerd", "Nerd Stuff", "Open Sesami", null, NerdComponent, null, styles),
 	]
 
-	const currentOS = ReactNative?.Platform?.OS || null;
+	// const currentOS = ReactNative?.Platform?.OS || null;
 
 	const entireUIList = (<>
 		<View style={[ styles.lnBorder, bgStyle, styles.darkMask ]}>
@@ -177,61 +188,13 @@ export default function SettingPage() {
 					</>)
 				})
 			}
-			<FormDivider />
-			<FormSection title="Nerd Stuff">
-				<FormRow
-					label="Debug"
-					subLabel="Enable console logging"
-					style={[styles.padBot]}
-					trailing={
-						<FormSwitch
-							value={storage.debug}
-							onValueChange={(value) => {
-								storage.debug = value
-							}}
-						/>
-					}
-				/>
-				<FormDivider />
-				<FormRow
-					label="Debug updateRows"
-					subLabel="Enable updateRows console logging"
-					style={[styles.padBot]}
-					trailing={
-						<FormSwitch
-							value={storage.debugUpdateRows}
-							onValueChange={(value) => {
-								storage.debugUpdateRows = value
-							}}
-						/>
-					}
-				/>
-			</FormSection>
-			<FormDivider />
-			{
-				updates && (
-					<FormSection title="Updates">
-						<View style={{ 
-							margin: 5, 
-							padding: 5,
-							borderRadius: 10,
-							backgroundColor: "rgba(59, 30, 55, 0.15)"
-						}}>
-							{
-								updates.map((data, index) => {
-									return <VersionChange change={data} index={index} totalIndex={updates.length}/>
-								})
-							}
-						</View>
-					</FormSection>
-				)
-			}
-			<FormDivider />
+			
 			{
 				bugs && (
 					<FormSection title="Known Bugs">
 						<FormRow
 							label="Click to show those Lady Bug"
+							style={{padding: 2 }}
 							onPress={() => {
 								setKnownBugOpen(!isKnownBugOpen)
 							}}
@@ -267,30 +230,23 @@ export default function SettingPage() {
 
 	return (<>
 		<ScrollView>
-			{
-				/*
-				(currentOS == "android") ? 
-					(<>					
-						<LinearGradient 
-							start={{x: 0.8, y: 0}}
-							end={{x: 0, y: 0.8}}
-							colors={[ "#b8ff34", "#4bff61", "#44f6ff", "#4dafff", "#413dff", "#d63efd" ]}
-							style={[ styles.lnBorder, styles.shadowTemplate, styles.lnShadow, styles.padBot ]}
-						>
-							{entireUIList}	
-						</LinearGradient>
-					</>) :
-					(entireUIList)
-				*/
-			}
 			<LinearGradient 
 				start={{x: 0.8, y: 0}}
 				end={{x: 0, y: 0.8}}
 				colors={[ "#b8ff34", "#4bff61", "#44f6ff", "#4dafff", "#413dff", "#d63efd" ]}
 				style={[ styles.lnBorder, styles.shadowTemplate, styles.lnShadow, styles.padBot ]}
 			>
+				<FormRow
+					label="CREDITS"
+					subLabel="See the people behind the plugin and ways to support its development."
+					onPress={openCreditPage}
+					style={[ styles.lnBorder, bgStyle, styles.darkMask ]}
+					trailing={<FormRow.Icon source={getAssetIDByName("ic_arrow_right")} />}
+				/>
+
 				{entireUIList}	
 			</LinearGradient>
+			<View style={{ height: 60 }} />
 		</ScrollView>
 	</>)
 }

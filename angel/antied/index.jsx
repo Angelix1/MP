@@ -82,8 +82,8 @@ let unpatch = null;
 // these value are hardocoded simply i dont trust users would actively keep it low. for their own sake tbf
 // old code doesnt have cache limit crash things, yet you expect me makes it customizeable?
 let intervalPurge;
-const KEEP_NEWEST = 5;                     // how many we want to keep (newest entry on the list)
-const DELETE_EACH_CYCLE = 95;              // how many we purge for each cycle
+const KEEP_NEWEST = 10;                     // how many we want to keep (newest entry on the list)
+const DELETE_EACH_CYCLE = 140;              // how many we purge for each cycle
 
 // timers
 let intReg, intTs;
@@ -128,7 +128,9 @@ export default {
 		}, 15 * 60 * 1000);  // 15 min check to purge caches
 
 		// apply custom name if override enabled
-		plugin.manifest.name = storage?.switches?.useCustomPluginName ? storage?.inputs?.customPluginName : plugin.manifest.name;
+		plugin.manifest.name = storage?.switches?.useCustomPluginName ? 
+			storage?.inputs?.customPluginName : 
+			plugin?.manifest?.name;
 
 	},
 	onUnload: () => {

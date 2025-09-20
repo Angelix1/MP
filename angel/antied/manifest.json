@@ -1,6 +1,7 @@
 {
-    "name":"Cute Moodle should get lot of hugs v1.4.3",
-    "description":"Keeps deleted messages and logs edited messages, until you restart/reloads the app",
+    "name":"Cute Moodle should get lot of hugs v1.4.3a",
+    "originalName": "Cute Moodle should get lot of hugs v1.4.3a",
+    "description":"Keeps a temporary record of deleted messages and any edits until you reload the app.",
     "main": "index.jsx",
     "authors": [
         {
