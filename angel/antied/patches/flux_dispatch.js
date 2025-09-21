@@ -66,7 +66,7 @@ export default deletedMessageArray => before("dispatch", FluxDispatcher, args =>
 
 				/*  reuse the same object shape every time  */
 
-				const newMessageObject = {
+				ev.message = {
 					...orig,
 					content: orig.content,
 					channel_id: orig.channel_id || ev.channelId,
@@ -78,16 +78,14 @@ export default deletedMessageArray => before("dispatch", FluxDispatcher, args =>
 					// state: "SENT",
 				}
 
-				if(cfg.switches.useEphemeralForDeleted) newMessageObject.flags = 64;
+				if(cfg.switches.useEphemeralForDeleted) ev.message.flags = 64;
 
-				args[0] = {
-					type: "MESSAGE_UPDATE",
-					channelId: orig.channel_id || ev.channelId,
-					message: newMessageObject,
-					optimistic: false,
-					sendMessageOptions: {},
-					isPushNotification: false
-				}
+				ev.type = "MESSAGE_UPDATE"
+				ev.channelId = orig.channel_id || ev.channelId;
+				ev.optimistic = false;
+				ev.sendMessageOptions = {};
+				ev.isPushNotification = false;
+				
 
 				deletedMessageArray.set(ev.id, { message: args, stage: 1 });
 
@@ -126,7 +124,6 @@ export default deletedMessageArray => before("dispatch", FluxDispatcher, args =>
 					: null;
 
 				const tsPos = cfg.misc?.timestampPos === "BEFORE";
-				const newMessage = msg || orig;
 
 				let prefix = `${editedTag}`;
 
@@ -135,16 +132,14 @@ export default deletedMessageArray => before("dispatch", FluxDispatcher, args =>
 						`${time} ${prefix}\n\n` : `${prefix} ${time}\n\n` : 
 					`${prefix}\n\n`;
 
-
-				args[0] = {
-					type: "MESSAGE_UPDATE",  
-					message: {
-						...newMessage,
-						content: `${orig.content} ${prefix}${msg.content}`,
-						guild_id: ChannelStore.getChannel(chId)?.guild_id ?? msg.guild_id,
-						edited_timestamp: "invalid_timestamp",
-						message_reference: msg?.message_reference || orig?.messageReference || null,
-					}
+  
+				ev.message = {
+					...msg,
+					content: `${orig.content} ${prefix}${msg.content}`,
+					guild_id: ChannelStore.getChannel(chId)?.guild_id ?? msg.guild_id,
+					edited_timestamp: "invalid_timestamp",
+					message_reference: msg?.message_reference || orig?.messageReference || null,
+					
 				};
 
 				return args;
@@ -156,14 +151,3 @@ export default deletedMessageArray => before("dispatch", FluxDispatcher, args =>
 		}
 	}
 });
-
-/*
-type: 19
-
-messageReference:
-   { type: 0,
-     message_id: '1418310241086472312',
-     guild_id: '1088889567354028083',
-     channel_id: '1100378389744992317' },
-
-     */
