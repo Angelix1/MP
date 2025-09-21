@@ -108,7 +108,7 @@ function fluxDispatchPatch(deletedMessageArray) {
             return entry.message || args;
           }
           const guildId = ChannelStore$1.getChannel(orig.channel_id || ev.channelId)?.guild_id;
-          const newMessageObject = {
+          ev.message = {
             ...orig,
             content: orig.content,
             channel_id: orig.channel_id || ev.channelId,
@@ -117,15 +117,12 @@ function fluxDispatchPatch(deletedMessageArray) {
             message_reference: orig?.message_reference || orig?.messageReference || null
           };
           if (cfg.switches.useEphemeralForDeleted)
-            newMessageObject.flags = 64;
-          args[0] = {
-            type: "MESSAGE_UPDATE",
-            channelId: orig.channel_id || ev.channelId,
-            message: newMessageObject,
-            optimistic: false,
-            sendMessageOptions: {},
-            isPushNotification: false
-          };
+            ev.message.flags = 64;
+          ev.type = "MESSAGE_UPDATE";
+          ev.channelId = orig.channel_id || ev.channelId;
+          ev.optimistic = false;
+          ev.sendMessageOptions = {};
+          ev.isPushNotification = false;
           deletedMessageArray.set(ev.id, {
             message: args,
             stage: 1
@@ -157,7 +154,6 @@ function fluxDispatchPatch(deletedMessageArray) {
           const editedTag = cfg.inputs?.editedMessageBuffer || "`[ EDITED ]`";
           const time = cfg.switches?.addTimestampForEdits ? `(<t:${Math.floor(now() / 1e3)}:${tsStyle()}>)` : null;
           const tsPos = cfg.misc?.timestampPos === "BEFORE";
-          const newMessage = msg || orig;
           let prefix = `${editedTag}`;
           prefix = time ? tsPos ? `${time} ${prefix}
 
@@ -166,15 +162,12 @@ function fluxDispatchPatch(deletedMessageArray) {
 ` : `${prefix}
 
 `;
-          args[0] = {
-            type: "MESSAGE_UPDATE",
-            message: {
-              ...newMessage,
-              content: `${orig.content} ${prefix}${msg.content}`,
-              guild_id: ChannelStore$1.getChannel(chId)?.guild_id ?? msg.guild_id,
-              edited_timestamp: "invalid_timestamp",
-              message_reference: msg?.message_reference || orig?.messageReference || null
-            }
+          ev.message = {
+            ...msg,
+            content: `${orig.content} ${prefix}${msg.content}`,
+            guild_id: ChannelStore$1.getChannel(chId)?.guild_id ?? msg.guild_id,
+            edited_timestamp: "invalid_timestamp",
+            message_reference: msg?.message_reference || orig?.messageReference || null
           };
           return args;
         }
