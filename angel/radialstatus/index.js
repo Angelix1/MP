@@ -23,7 +23,7 @@ makeDefaults(storage, {
 
 // Export for other file to use as references
 export let isEnabled = false;
-export const pluginNameToast = "[Ring Indicator]";
+export const pluginNameToast = "[Radial Status]";
 export const getExt = url => new URL(url).pathname.split('.').pop();
 
 // Definitions

@@ -1,5 +1,5 @@
 {
-    "name":"Ring Indicator v1.0.0",
+    "name":"Radial Status v1.0.0",
     "description":"Modify members presence indicator to be ring around their profile picture.",
     "main": "index.js",
     "authors": [
