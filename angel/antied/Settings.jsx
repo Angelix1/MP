@@ -99,7 +99,6 @@ const styles = stylesheet.createThemedStyleSheet({
 export default function SettingPage() {  
 	useProxy(storage);
 
-	const [animation] = React.useState(new Animated.Value(0));
 	const [isKnownBugOpen, setKnownBugOpen] = React.useState(false)
 
 	const navigation = NavigationNative.useNavigation();
@@ -110,32 +109,6 @@ export default function SettingPage() {
 			render: () => React.createElement(CreditsPage, { styles: styles })
 		})
 	}
-
-	React.useEffect(() => {
-		Animated.loop(
-			Animated.timing(
-				animation,
-				{
-					toValue: 4,
-					duration: 8000,
-					useNativeDriver: true,
-				}
-			)
-		).start();
-	}, []);
-
-	const bgStyle = {
-		backgroundColor: animation.interpolate({
-			inputRange: [0, 1, 2, 3, 4],
-			outputRange: [
-				"rgba(188,31,31,0.5)",
-				"rgba(46,168,30,0.5)",
-				"rgba(48,179,173,0.5)",
-				"rgba(183,40,198,0.5)",
-				"rgba(188,31,31,0.5)",
-			],
-		}),
-	};
 
 	const createChild = (id, title, label, subLabel, props, propsData) => { 
 		return { id, title, label, subLabel, props, propsData }
@@ -154,25 +127,12 @@ export default function SettingPage() {
 	// const currentOS = ReactNative?.Platform?.OS || null;
 
 	const entireUIList = (<>
-		<View style={[ styles.lnBorder, bgStyle, styles.darkMask ]}>
+		<View>
 			{
 				ComponentChildren.map((element) => {				
 					return (<>
 						<FormSection title={element?.title}>
-							<FormRow
-								label={element?.label}
-								subLabel={element?.subLabel}
-								onPress={() => {
-									storage.setting[element?.id] = !storage.setting[element?.id];
-								}}
-								trailing={
-									(storage.setting[element?.id] == true) ? 
-									(<FormRow.Icon source={getAssetIDByName("ic_arrow_down")} />) : 
-									(<FormRow.Icon source={getAssetIDByName("ic_arrow_right")} />)
-								}
-							/>
 							{
-								storage.setting[element.id] && 
 								element.props && (
 									<View style={{ 
 										margin: 5, 
@@ -230,22 +190,14 @@ export default function SettingPage() {
 
 	return (<>
 		<ScrollView>
-			<LinearGradient 
-				start={{x: 0.8, y: 0}}
-				end={{x: 0, y: 0.8}}
-				colors={[ "#b8ff34", "#4bff61", "#44f6ff", "#4dafff", "#413dff", "#d63efd" ]}
-				style={[ styles.lnBorder, styles.shadowTemplate, styles.lnShadow, styles.padBot ]}
-			>
-				<FormRow
-					label="CREDITS"
-					subLabel="See the people behind the plugin and ways to support its development."
-					onPress={openCreditPage}
-					style={[ styles.lnBorder, bgStyle, styles.darkMask ]}
-					trailing={<FormRow.Icon source={getAssetIDByName("ic_arrow_right")} />}
-				/>
+			<FormRow
+				label="CREDITS"
+				subLabel="See the people behind the plugin and ways to support its development."
+				onPress={openCreditPage}
+				trailing={<FormRow.Icon source={getAssetIDByName("ic_arrow_right")} />}
+			/>
 
-				{entireUIList}	
-			</LinearGradient>
+			{entireUIList}
 			<View style={{ height: 60 }} />
 		</ScrollView>
 	</>)
