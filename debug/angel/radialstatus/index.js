@@ -269,7 +269,7 @@ function setting() {
   size: 28
 });
 exports.isEnabled = false;
-const pluginNameToast = "[Ring Indicator]";
+const pluginNameToast = "[Radial Status]";
 const getExt = function(url) {
   return new URL(url).pathname.split(".").pop();
 };
