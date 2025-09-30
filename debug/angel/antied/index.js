@@ -87,7 +87,7 @@ function fluxDispatchPatch(deletedMessageArray) {
           const orig = ChannelMessages$2.get(ev.channelId)?.get(ev.id);
           if (!orig?.author?.id || !orig.author.username)
             return;
-          if (orig?.author?.bot && orig?.type == 64)
+          if (orig?.author?.bot && orig?.flags == 64)
             return;
           if (!orig.content && !orig.attachments?.length && !orig.embeds?.length)
             return;
@@ -1667,7 +1667,7 @@ function SettingPage() {
     createChild("text", "Text Variables", "Customize Texts", null, TextComponent, styles),
     createChild("timestamp", "Timestamp", "Timestamp Styles", null, TimestampComponent, styles),
     createChild("colorpick", "Colors", "Customize Colors", null, ColorPickComponent, styles),
-    createChild("ingorelist", "Ignore List", "Show IngoreList", null, IgnoreListComponent, null),
+    createChild("ingorelist", "Ignore List", "Show Ignore List", null, IgnoreListComponent, null),
     createChild("nerd", "Nerd Stuff", "Open Sesami", null, NerdComponent, null)
   ];
   const entireUIList = /* @__PURE__ */ common.React.createElement(common.React.Fragment, null, /* @__PURE__ */ common.React.createElement(View, {
