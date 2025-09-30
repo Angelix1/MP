@@ -43,7 +43,7 @@ export default deletedMessageArray => before("dispatch", FluxDispatcher, args =>
 				if (!orig?.author?.id || !orig.author.username) return;
 
 				// ephemeral message dismiss (from bots)
-				if(orig?.author?.bot && orig?.type == 64) return;
+				if(orig?.author?.bot && orig?.flags == 64) return;
 
 				// empty message check
 				if (!orig.content && !orig.attachments?.length && !orig.embeds?.length) return;

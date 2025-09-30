@@ -147,7 +147,7 @@ export default function SettingPage() {
 		createChild("text", "Text Variables", "Customize Texts", null, TextComponent, styles),
 		createChild("timestamp", "Timestamp", "Timestamp Styles", null, TimestampComponent, styles),
 		createChild("colorpick", "Colors", "Customize Colors", null, ColorPickComponent, styles),
-		createChild("ingorelist", "Ignore List", "Show IngoreList", null, IgnoreListComponent, null),
+		createChild("ingorelist", "Ignore List", "Show Ignore List", null, IgnoreListComponent, null),
 		createChild("nerd", "Nerd Stuff", "Open Sesami", null, NerdComponent, null, styles),
 	]
 

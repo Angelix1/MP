@@ -32,5 +32,6 @@ module.exports = {
         "react/display-name": "off",
         "react/react-in-jsx-scope": "off",
         "no-unused-vars": "off",
+        "no-mixed-spaces-and-tabs": "off"
     }
 }

@@ -61,6 +61,12 @@ async function buildPlugin(isDebug = false, NOTE, path, distro, plugins, usesKey
 	const files = await readdir(`./${path}`);
 	for (let plug of files) {
 		const manifest = JSON.parse(await readFile(`./${path}/${plug}/manifest.json`));
+
+		if(!manifest || !manifest.main) {
+			console.log(`Skipped => ${plug} => invalid manifest entry.`)
+			continue;
+		}
+
 		const outPath = `${distro}/${plug}/index.js`;
 
 		// await readdir("./debug").catch(() => mkdir("./debug"))

@@ -1,6 +1,6 @@
 {
-    "name":"Must Hug Cute Moodle v1.4.3b",
-    "originalName": "Must Hug Cute Moodle v1.4.3b",
+    "name":"Cute Moodle v1.4.4",
+    "originalName": "Cute Moodle v1.4.4",
     "description":"Keeps a temporary record of deleted messages and any edits until you reload the app.",
     "main": "index.jsx",
     "authors": [

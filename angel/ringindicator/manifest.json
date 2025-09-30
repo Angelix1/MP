@@ -1,0 +1,14 @@
+{
+    "name":"Ring Indicator v1.0.0",
+    "description":"Modify members presence indicator to be ring around their profile picture.",
+    "main": "index.js",
+    "authors": [
+        {
+            "name": "AngelW0lf",
+            "id": "692632336961110087"
+        }
+    ],
+    "vendetta": {
+    	"icon":"ic_progress_wrench_24px"
+    }
+}
