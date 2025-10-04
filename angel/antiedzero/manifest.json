@@ -1,0 +1,15 @@
+{
+    "name":"Antied Zero",
+    "originalName": "Antied Zero",
+    "description":"Keeps a temporary record of deleted messages and any edits until you reload the app.",
+    "main": "index.jsx",
+    "authors": [
+        {
+            "name": "Angelw0lf",
+            "id": "692632336961110087"
+        }
+    ],
+    "vendetta": {
+    	"icon":"ic_edit_24px"
+    }
+}
