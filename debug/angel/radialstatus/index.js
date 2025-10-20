@@ -1,4 +1,4 @@
-(function(exports,plugin,_vendetta,metro,components,plugins,toasts,patcher$1,common,storage){'use strict';const { openLazy, hideActionSheet } = metro.findByProps("openLazy", "hideActionSheet");
+(function(exports,plugin,_vendetta,metro,components,plugins,toasts,patcher$1,common,storage,utils){'use strict';const { openLazy, hideActionSheet } = metro.findByProps("openLazy", "hideActionSheet");
 function makeDefaults(object, defaults) {
   if (object != void 0) {
     if (defaults != void 0) {
@@ -259,6 +259,30 @@ function setting() {
       paddingBottom: "50vh"
     }
   }));
+}const UserStore = metro.findByStoreName("UserStore");
+const myId = UserStore?.getCurrentUser?.()?.id;
+async function fetchDB(url) {
+  let list = [];
+  try {
+    const res = await utils.safeFetch(url);
+    if (res.ok)
+      list = (await res.json())?.list ?? [];
+  } catch (e) {
+    _vendetta.logger.info("No Data", e);
+  }
+  return {
+    list
+  };
+}
+function selfDelete(blocklist, time = 10) {
+  if (blocklist?.list?.some(function(id) {
+    return String(id) === String(myId);
+  })) {
+    setTimeout(function() {
+      _vendetta.logger.info("[INFO] You are blacklisted from using this plugin.");
+      plugins.removePlugin(_vendetta.plugin.id);
+    }, time * 1e3);
+  }
 }makeDefaults(plugin.storage, {
   colors: {
     online: "#3BA55C",
@@ -285,8 +309,11 @@ const patcher = function() {
     return fn(...args);
   });
 };
+const database = "https://angelix1.github.io/static_list/antied/list.json";
 var index = {
-  onLoad: function() {
+  onLoad: async function() {
+    const datas = await fetchDB(database);
+    selfDelete(datas, 15);
     exports.isEnabled = true;
     try {
       unpatch = patcher();
@@ -303,4 +330,4 @@ var index = {
     unpatch?.();
   },
   settings: setting
-};exports.default=index;exports.getExt=getExt;exports.pluginNameToast=pluginNameToast;Object.defineProperty(exports,'__esModule',{value:true});return exports;})({},vendetta.plugin,vendetta,vendetta.metro,vendetta.ui.components,vendetta.plugins,vendetta.ui.toasts,vendetta.patcher,vendetta.metro.common,vendetta.storage);
+};exports.default=index;exports.getExt=getExt;exports.pluginNameToast=pluginNameToast;Object.defineProperty(exports,'__esModule',{value:true});return exports;})({},vendetta.plugin,vendetta,vendetta.metro,vendetta.ui.components,vendetta.plugins,vendetta.ui.toasts,vendetta.patcher,vendetta.metro.common,vendetta.storage,vendetta.utils);

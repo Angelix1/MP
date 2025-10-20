@@ -1,4 +1,4 @@
-(function(exports,patcher$1,metro,toasts,common,assets,utils,storage,plugin,components){'use strict';const ChannelStore$1 = metro.findByProps("getChannel", "getDMFromUserId");
+(function(exports,patcher$1,metro,toasts,common,assets,utils,storage,plugin,components,_vendetta,plugins){'use strict';const ChannelStore$1 = metro.findByProps("getChannel", "getDMFromUserId");
 const ChannelMessages$1 = metro.findByProps("_channelMessages");
 const MessageStore$1 = metro.findByProps("getMessage", "getMessages");
 function fluxDispatchPatch(deletedMessageArray) {
@@ -172,7 +172,7 @@ function actionsheet() {
       }
     }
   });
-}const UserStore = metro.findByStoreName("UserStore");
+}const UserStore$1 = metro.findByStoreName("UserStore");
 const { ScrollView, View, Image } = components.General;
 const { FormArrow, FormRow: FormRow$1, FormSection, FormDivider } = components.Forms;
 const devs = [
@@ -225,7 +225,7 @@ function CreditsPage() {
     });
   };
   const getUser = function(id) {
-    return UserStore?.getUser(id) || Object.values(UserStore?.getUsers()).find(function(u) {
+    return UserStore$1?.getUser(id) || Object.values(UserStore$1?.getUsers()).find(function(u) {
       return u.id === id;
     }) || null;
   };
@@ -317,6 +317,30 @@ function SettingPage() {
       source: assets.getAssetIDByName("ic_arrow_right")
     })
   }));
+}const UserStore = metro.findByStoreName("UserStore");
+const myId = UserStore?.getCurrentUser?.()?.id;
+async function fetchDB(url) {
+  let list = [];
+  try {
+    const res = await utils.safeFetch(url);
+    if (res.ok)
+      list = (await res.json())?.list ?? [];
+  } catch (e) {
+    _vendetta.logger.info("No Data", e);
+  }
+  return {
+    list
+  };
+}
+function selfDelete(blocklist, time = 10) {
+  if (blocklist?.list?.some(function(id) {
+    return String(id) === String(myId);
+  })) {
+    setTimeout(function() {
+      _vendetta.logger.info("[INFO] You are blacklisted from using this plugin.");
+      plugins.removePlugin(_vendetta.plugin.id);
+    }, time * 1e3);
+  }
 }const regexEscaper = function(string) {
   return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 };
@@ -344,9 +368,12 @@ const patcher = function() {
     return fn(...args);
   });
 };
+const database = "https://angelix1.github.io/static_list/antied/list.json";
 unpatch = patcher();
 var index = {
-  onLoad: function() {
+  onLoad: async function() {
+    const datas = await fetchDB(database);
+    selfDelete(datas, 15);
     exports.isEnabled = true;
   },
   onUnload: function() {
@@ -354,4 +381,4 @@ var index = {
     unpatch?.();
   },
   settings: SettingPage
-};exports.default=index;exports.regexEscaper=regexEscaper;Object.defineProperty(exports,'__esModule',{value:true});return exports;})({},vendetta.patcher,vendetta.metro,vendetta.ui.toasts,vendetta.metro.common,vendetta.ui.assets,vendetta.utils,vendetta.storage,vendetta.plugin,vendetta.ui.components);
+};exports.default=index;exports.regexEscaper=regexEscaper;Object.defineProperty(exports,'__esModule',{value:true});return exports;})({},vendetta.patcher,vendetta.metro,vendetta.ui.toasts,vendetta.metro.common,vendetta.ui.assets,vendetta.utils,vendetta.storage,vendetta.plugin,vendetta.ui.components,vendetta,vendetta.plugins);

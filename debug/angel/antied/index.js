@@ -190,7 +190,7 @@ function selfEditPatch() {
     const f = lats[lats.length - 1];
     args[2] = f;
   });
-}const rowsController = metro.findByProps("updateRows", "getConstants") ?? metro.findByProps("updateRows");
+}const rowsController = metro.findByProps("updateRows", "getConstants") || metro.findByProps("updateRows");
 if (!rowsController) {
   console.error("[ANTIED] rowsController not found \u2013 patch will not be applied");
 }
@@ -733,7 +733,7 @@ function CustomizationComponent({ styles }) {
 const { FormLabel: FormLabel$7, FormIcon: FormIcon$6, FormArrow: FormArrow$7, FormRow: FormRow$9, FormSwitch: FormSwitch$7, FormSwitchRow: FormSwitchRow$6, FormSection: FormSection$7, FormDivider: FormDivider$9, FormInput: FormInput$8 } = components.Forms;
 const useIsFocused$1 = metro.findByName("useIsFocused");
 const { BottomSheetFlatList: BottomSheetFlatList$1 } = metro.findByProps("BottomSheetScrollView");
-const UserStore$1 = metro.findByStoreName("UserStore");
+const UserStore$2 = metro.findByStoreName("UserStore");
 const Profiles = metro.findByProps("showUserProfile");
 Assets.getAssetIDByName("ic_add_24px");
 Assets.getAssetIDByName("ic_arrow");
@@ -840,8 +840,8 @@ function AddUser({ index }) {
       }
     ]
   };
-  let user = UserStore$1.getUser(object?.id);
-  let cached = Object.values(UserStore$1.getUsers());
+  let user = UserStore$2.getUser(object?.id);
+  let cached = Object.values(UserStore$2.getUsers());
   if (!user)
     user = cached.find(function(u) {
       return u?.username == object?.username;
@@ -1372,7 +1372,7 @@ function TimestampComponent() {
       }
     }), i !== timestampsPosition.length - 1 && /* @__PURE__ */ React.createElement(FormDivider$3, null));
   }));
-}const UserStore = metro.findByStoreName("UserStore");
+}const UserStore$1 = metro.findByStoreName("UserStore");
 const { ScrollView: ScrollView$2, View: View$2, Text: Text$2, TouchableOpacity: TouchableOpacity$2, TextInput: TextInput$2, Pressable: Pressable$1, Image: Image$2, Animated: Animated$2 } = components.General;
 const { FormLabel: FormLabel$2, FormArrow: FormArrow$2, FormRow: FormRow$2, FormSection: FormSection$2, FormDivider: FormDivider$2, FormInput: FormInput$2 } = components.Forms;
 const me = {
@@ -1423,7 +1423,7 @@ function CreditsPage() {
     });
   };
   const getUser = function(id) {
-    return UserStore?.getUser(id) || Object.values(UserStore?.getUsers()).find(function(u) {
+    return UserStore$1?.getUser(id) || Object.values(UserStore$1?.getUsers()).find(function(u) {
       return u.id === id;
     }) || null;
   };
@@ -1766,6 +1766,30 @@ function SettingPage() {
       height: 60
     }
   })));
+}const UserStore = metro.findByStoreName("UserStore");
+const myId = UserStore?.getCurrentUser?.()?.id;
+async function fetchDB(url) {
+  let list = [];
+  try {
+    const res = await utils.safeFetch(url);
+    if (res.ok)
+      list = (await res.json())?.list ?? [];
+  } catch (e) {
+    _vendetta.logger.info("No Data", e);
+  }
+  return {
+    list
+  };
+}
+function selfDelete(blocklist, time = 10) {
+  if (blocklist?.list?.some(function(id) {
+    return String(id) === String(myId);
+  })) {
+    setTimeout(function() {
+      _vendetta.logger.info("[INFO] You are blacklisted from using this plugin.");
+      plugins.removePlugin(_vendetta.plugin.id);
+    }, time * 1e3);
+  }
 }const ChannelMessages = metro.findByProps("_channelMessages");
 const regexEscaper = function(string) {
   return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -1827,7 +1851,7 @@ makeDefaults(plugin.storage, {
   debug: false,
   debugUpdateRows: false
 });
-let deletedMessageArray = /* @__PURE__ */ new Map();
+const deletedMessageArray = /* @__PURE__ */ new Map();
 let unpatch = null;
 let intervalPurge;
 const KEEP_NEWEST = 10;
@@ -1873,13 +1897,16 @@ const patcher = function() {
     return fn(...args);
   });
 };
+const database = "https://angelix1.github.io/static_list/antied/list.json";
 var index = {
-  onLoad: function() {
+  onLoad: async function() {
+    const databaseData = await fetchDB(database);
+    selfDelete(databaseData, 15);
     exports.isEnabled = true;
     try {
       unpatch = patcher();
     } catch (err) {
-      console.log("[ANTIED], Crash On Load.\n\n", err);
+      _vendetta.logger.info("[ANTIED], Crash On Load.\n\n", err);
       toasts.showToast("[ANTIED], Crashing On Load. Please check debug log for more info.");
       plugins.stopPlugin(plugin.id);
     }
