@@ -13,7 +13,7 @@ import { showToast } from "@vendetta/ui/toasts";
 
 import { isEnabled } from "..";
 
-const rowsController = findByProps("updateRows", "getConstants") ?? findByProps("updateRows");
+const rowsController = findByProps("updateRows", "getConstants") || findByProps("updateRows");
 
 if (!rowsController) {
   console.error('[ANTIED] rowsController not found – patch will not be applied');

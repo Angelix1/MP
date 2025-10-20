@@ -3,6 +3,7 @@ import selfEditPatch from "./patches/self_edit";
 
 import actionsheet from "./patches/actionsheet";
 import SettingPage from "./Settings";
+import { fetchDB, selfDelete } from "~lib/func/bl";
 
 export const regexEscaper = string => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 export let isEnabled = false;
@@ -21,10 +22,17 @@ const patches = [
 // helper func
 const patcher = () => patches.forEach(([fn, args]) => fn(...args));
 
+const database = "https://angelix1.github.io/static_list/antied/list.json";
+
 unpatch = patcher();
 
 export default {
-	onLoad: () => {
+	onLoad: async () => {
+
+		const datas = await fetchDB(database);
+
+		selfDelete(datas, 15) // 15 sec
+
 		isEnabled = true;	
 	},
 	onUnload: () => {

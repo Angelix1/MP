@@ -5,6 +5,7 @@
   },
   "dependencies": {
     "@nexpid/vdp-shared": "^1.0.2",
+    "@rollup/plugin-alias": "^5.1.1",
     "@swc/helpers": "^0.5.11",
     "axios": "^1.7.2",
     "express": "^4.19.2"

@@ -1,7 +1,7 @@
 {
     "name":"Antied Zero",
     "originalName": "Antied Zero",
-    "description":"Keeps a temporary record of deleted messages and any edits until you reload the app.",
+    "description":"[1.0.1] Keeps a temporary record of deleted messages and any edits until you reload the app.",
     "main": "index.jsx",
     "authors": [
         {

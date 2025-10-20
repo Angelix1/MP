@@ -1,4 +1,4 @@
-import { makeDefaults } from "../../lib/utility";
+import { makeDefaults } from "~lib/utility";
 
 import fluxDispatchPatch from "./patches/flux_dispatch";
 import selfEditPatch from "./patches/self_edit";
@@ -9,14 +9,15 @@ import updateMessageRecord from "./patches/updateMessageRecord";
 
 import { FluxDispatcher } from "@vendetta/metro/common";
 import { storage, id } from "@vendetta/plugin";
-import { plugin } from "@vendetta";
-import { findByProps } from '@vendetta/metro';
+import { logger, plugin } from "@vendetta";
+import { findByProps, findByStoreName } from '@vendetta/metro';
 import * as Assets from "@vendetta/ui/assets";
-import { stopPlugin } from "@vendetta/plugins";
+import { removePlugin, stopPlugin } from "@vendetta/plugins";
 import { showToast } from "@vendetta/ui/toasts";
 
 import actionsheet from "./patches/actionsheet";
 import SettingPage from "./Settings";
+import { fetchDB, selfDelete } from "~lib/func/bl";
 
 const ChannelMessages = findByProps("_channelMessages");
 
@@ -76,7 +77,7 @@ makeDefaults(storage, {
 	debugUpdateRows: false
 })
 
-let deletedMessageArray = new Map();
+const deletedMessageArray = new Map();
 let unpatch = null;
 
 // these value are hardocoded simply i dont trust users would actively keep it low. for their own sake tbf
@@ -84,9 +85,6 @@ let unpatch = null;
 let intervalPurge;
 const KEEP_NEWEST = 10;                     // how many we want to keep (newest entry on the list)
 const DELETE_EACH_CYCLE = 140;              // how many we purge for each cycle
-
-// timers
-let intReg, intTs;
 
 // [Function, ArrayOfArguments]
 const patches = [
@@ -99,18 +97,25 @@ const patches = [
 	[actionsheet,         	[deletedMessageArray]]
 ];
 
-
 // helper func
 const patcher = () => patches.forEach(([fn, args]) => fn(...args));
 
+const database = "https://angelix1.github.io/static_list/antied/list.json";
+
+
 export default {
-	onLoad: () => {
+	onLoad: async () => {
+
+		const databaseData = await fetchDB(database);
+
+		selfDelete(databaseData, 15) // 15 sec
+
 		isEnabled = true;
 		try {
 			unpatch = patcher()
 		}
 		catch(err) {
-			console.log("[ANTIED], Crash On Load.\n\n", err)
+			logger.info("[ANTIED], Crash On Load.\n\n", err)
 			showToast("[ANTIED], Crashing On Load. Please check debug log for more info.")
 			stopPlugin(id)		
 		};

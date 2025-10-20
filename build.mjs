@@ -1,11 +1,16 @@
 import { readFile, writeFile, readdir, mkdir } from "fs/promises";
-import { extname } from "path";
 import { createHash } from "crypto";
 
 import { rollup } from "rollup";
 import esbuild from "rollup-plugin-esbuild";
 import commonjs from "@rollup/plugin-commonjs";
 import nodeResolve from "@rollup/plugin-node-resolve";
+import alias from '@rollup/plugin-alias';
+
+import { fileURLToPath } from 'url';
+import { dirname, resolve, extname } from 'path';
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
 import swc from "@swc/core";
 
 import os from "os";
@@ -19,6 +24,11 @@ const PORT = 8000;
 const stripVersions = (str) => str.replace(/\s?v\d+.\d+.\w+/, "");
 
 const commonPlugins = [
+	alias({
+        entries: [
+            { find: '~lib', replacement: resolve(__dirname, 'lib') },
+        ],
+    }),
 	nodeResolve(),
 	commonjs(),
 	{
@@ -123,12 +133,13 @@ async function buildPlugin(isDebug = false, NOTE, path, distro, plugins, usesKey
 
 
 // Build Plugin
+
 // Debug
 await buildPlugin(true, "DEBUG", "angel", "./dist/debug/angel", [...commonPlugins, nonMinifyPlugin], "@vendetta");
-console.log('\n')
-// Prod
-await buildPlugin(false, "PRODUCTION", "angel", "./dist/angel", [...commonPlugins, minifyPlugin], "@vendetta");
 
+// Prod
+console.log('\n')
+await buildPlugin(false, "PRODUCTION", "angel", "./dist/angel", [...commonPlugins, minifyPlugin], "@vendetta");
 
 // Serve if Local
 if (!isProd) {

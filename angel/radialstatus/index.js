@@ -1,6 +1,6 @@
 // Import Lib
 import { storage, id } from "@vendetta/plugin";
-import { makeDefaults } from "../../lib/utility";
+import { makeDefaults } from "~lib/utility";
 
 // Imports
 import { stopPlugin } from "@vendetta/plugins";
@@ -9,6 +9,7 @@ import { logger } from "@vendetta";
 
 import ViewComponent from "./patches/ViewComponent";
 import setting from "./pages/setting";
+import { fetchDB, selfDelete } from "~lib/func/bl";
 
 makeDefaults(storage, {
 	colors: {
@@ -37,10 +38,17 @@ const patches = [
 // Helper Definitions
 const patcher = () => patches.forEach(([fn, args]) => fn(...args));
 
+const database = "https://angelix1.github.io/static_list/antied/list.json";
 
 // export MAIN
 export default {
-	onLoad: () => {
+	onLoad: async () => {
+
+		const datas = await fetchDB(database);
+
+		selfDelete(datas, 15) // 15 sec
+
+
 		isEnabled = true;
 		try {
 			unpatch = patcher();
